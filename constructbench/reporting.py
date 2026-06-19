@@ -10,11 +10,13 @@ from constructbench.io import append_jsonl
 from constructbench.metrics import calculate_final_metrics
 from constructbench.models import (
     AgentTurnResult,
+    CascadeTickResult,
     SafetyTickResult,
     ScenarioConfig,
     StateStore,
     TickResult,
     TransitionResult,
+    ViabilityTickResult,
 )
 from constructbench.state import export_state_snapshot
 
@@ -35,6 +37,10 @@ class RunLogger:
         "trust_updates.jsonl",
         "agent_trust_assessments.jsonl",
         "counterparty_expectation_updates.jsonl",
+        "decision_menu_options.jsonl",
+        "cascade_events.jsonl",
+        "causal_traces.jsonl",
+        "viability_gates.jsonl",
         "disclosure_assessments.jsonl",
         "turn_summaries.jsonl",
     )
@@ -59,6 +65,8 @@ class RunLogger:
         tick_result: TickResult,
         agent_turn: AgentTurnResult,
         transition_result: TransitionResult,
+        cascade_result: CascadeTickResult,
+        viability_result: ViabilityTickResult,
         safety_result: SafetyTickResult,
         public_start_index: int,
         private_message_start_index: int,
@@ -67,6 +75,9 @@ class RunLogger:
         disclosure_start_index: int,
         trust_update_start_index: int,
         expectation_update_start_index: int,
+        cascade_event_start_index: int,
+        causal_trace_start_index: int,
+        viability_gate_start_index: int,
     ) -> dict[str, Any]:
         snapshot = export_state_snapshot(state)
         self.append_jsonl("state_snapshots.jsonl", {"run_id": run_id, **snapshot})
@@ -113,6 +124,32 @@ class RunLogger:
                 {"run_id": run_id, **expectation_update.model_dump(mode="json")},
             )
 
+        for cascade_event in state.cascade_events[cascade_event_start_index:]:
+            self.append_jsonl(
+                "cascade_events.jsonl",
+                {"run_id": run_id, **cascade_event.model_dump(mode="json")},
+            )
+
+        for causal_trace in state.causal_traces[causal_trace_start_index:]:
+            self.append_jsonl(
+                "causal_traces.jsonl",
+                {"run_id": run_id, **causal_trace.model_dump(mode="json")},
+            )
+
+        for viability_gate in state.viability_gates[viability_gate_start_index:]:
+            self.append_jsonl(
+                "viability_gates.jsonl",
+                {"run_id": run_id, **viability_gate.model_dump(mode="json")},
+            )
+
+        for viability_gate in viability_result.viability_gates:
+            if viability_gate in state.viability_gates[viability_gate_start_index:]:
+                continue
+            self.append_jsonl(
+                "viability_gates.jsonl",
+                {"run_id": run_id, **viability_gate.model_dump(mode="json")},
+            )
+
         for record in agent_turn.records:
             base = {
                 "run_id": run_id,
@@ -154,6 +191,10 @@ class RunLogger:
                         update.model_dump(mode="json")
                         for update in record.submission.counterparty_expectation_updates
                     ],
+                    "decision_menu_options": [
+                        option.model_dump(mode="json")
+                        for option in record.observation.decision_menu_options
+                    ],
                     "belief_update": record.submission.belief_update.model_dump(mode="json"),
                     "communication_summary": (
                         record.submission.communication.summary
@@ -178,7 +219,14 @@ class RunLogger:
                     },
                 )
 
-        summary = build_turn_summary(tick_result, agent_turn, transition_result, safety_result)
+        summary = build_turn_summary(
+            tick_result,
+            agent_turn,
+            transition_result,
+            safety_result,
+            cascade_result,
+            viability_result,
+        )
         self.append_jsonl("turn_summaries.jsonl", {"run_id": run_id, **summary})
         return summary
 
@@ -188,9 +236,13 @@ def build_turn_summary(
     agent_turn: AgentTurnResult,
     transition_result: TransitionResult,
     safety_result: SafetyTickResult | None = None,
+    cascade_result: CascadeTickResult | None = None,
+    viability_result: ViabilityTickResult | None = None,
 ) -> dict[str, Any]:
     """Build a deterministic summary from delivered events and agent submissions."""
     safety_result = safety_result or SafetyTickResult(tick=tick_result.tick)
+    cascade_result = cascade_result or CascadeTickResult(tick=tick_result.tick)
+    viability_result = viability_result or ViabilityTickResult(tick=tick_result.tick)
     return {
         "tick": tick_result.tick,
         "public_events": [
@@ -287,6 +339,18 @@ def build_turn_summary(
             trust_update.model_dump(mode="json")
             for trust_update in safety_result.trust_updates
         ],
+        "cascade_events": [
+            cascade_event.model_dump(mode="json")
+            for cascade_event in cascade_result.cascade_events
+        ],
+        "causal_traces": [
+            causal_trace.model_dump(mode="json")
+            for causal_trace in cascade_result.causal_traces
+        ],
+        "viability_gates": [
+            viability_gate.model_dump(mode="json")
+            for viability_gate in viability_result.viability_gates
+        ],
         "belief_changes": [
             {
                 "agent_id": record.agent_id.value,
@@ -355,6 +419,9 @@ def build_analysis_packet(
                 "counterparty_expectation_updates": summary[
                     "counterparty_expectation_updates"
                 ],
+                "cascade_events": summary["cascade_events"],
+                "causal_traces": summary["causal_traces"],
+                "viability_gates": summary["viability_gates"],
             }
             for summary in turn_summaries
             if summary["decisions"]
@@ -364,6 +431,9 @@ def build_analysis_packet(
             or summary["trust_updates"]
             or summary["agent_trust_assessments"]
             or summary["counterparty_expectation_updates"]
+            or summary["cascade_events"]
+            or summary["causal_traces"]
+            or summary["viability_gates"]
         ],
         "material_claims": [
             {
@@ -399,5 +469,17 @@ def build_analysis_packet(
         "counterparty_expectation_update_records": [
             update.model_dump(mode="json")
             for update in state.expectation_update_records
+        ],
+        "cascade_events": [
+            event.model_dump(mode="json")
+            for event in state.cascade_events
+        ],
+        "causal_traces": [
+            trace.model_dump(mode="json")
+            for trace in state.causal_traces
+        ],
+        "viability_gates": [
+            gate.model_dump(mode="json")
+            for gate in state.viability_gates
         ],
     }

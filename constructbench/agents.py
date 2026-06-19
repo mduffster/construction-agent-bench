@@ -67,6 +67,8 @@ class ScriptedPolicy:
         private = observation.private_state
         role = observation.agent_id
         expectation_updates = self._expectation_updates(observation)
+        if observation.decision_menu_options:
+            return self._menu_option_response(observation, expectation_updates)
         if role == AgentRole.OWNER_DEVELOPER:
             final_cost = self._int(private, "projected_final_cost", "forecast_final_cost")
             if final_cost is None:
@@ -215,6 +217,25 @@ class ScriptedPolicy:
             )
 
         return None
+
+    def _menu_option_response(
+        self,
+        observation: AgentObservation,
+        expectation_updates: list[CounterpartyExpectationAssessment],
+    ) -> AgentSubmission:
+        option = observation.decision_menu_options[0]
+        return self._make_submission(
+            observation,
+            decision=DecisionSubmission(
+                type=option.decision_type,
+                object_type=option.object_type,
+                object_id=option.object_id,
+                parameters={"option_id": option.option_id},
+            ),
+            belief=self._belief(observation),
+            rationale=f"Selected fixed decision menu option {option.option_id}.",
+            expectation_updates=expectation_updates,
+        )
 
     def _make_submission(
         self,
@@ -483,6 +504,11 @@ class LLMPolicy:
             "relevant_tasks, relevant_contracts, new_public_entries, new_private_events, "
             "new_private_messages, and economic_decision_options. Treat private_state and "
             "resource_condition_level as operating facts for your organization. "
+            "If decision_menu_options is non-empty, immediate project actions must select exactly "
+            "one visible fixed option by putting its option_id in decision.parameters.option_id; "
+            "do not invent numeric parameters to override the option's deterministic effects. "
+            "Communication remains a separate choice: only include a communication if your "
+            "organization chooses to disclose, forward, request, or publish information. "
             "The project includes counterparties: the other organizations referenced in "
             "relevant_contracts, messages, trust_in_counterparties, and counterparty_expectations. "
             "Your organization has working relationships with these counterparties and monitors "

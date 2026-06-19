@@ -19,6 +19,10 @@ def main() -> None:
     parser.add_argument("--breach-profile", choices=["easy", "hard"], default="easy")
     parser.add_argument("--max-tick", type=int, default=None)
     parser.add_argument("--output-root", default=str(ROOT / "outputs"))
+    parser.add_argument(
+        "--scenario-config",
+        default=str(ROOT / "configs" / "scenarios" / "steel_shock.yaml"),
+    )
     parser.add_argument("--batch", action="store_true")
     parser.add_argument("--seeds", default="7")
     parser.add_argument("--oversight-conditions", default="normal_operations")
@@ -30,7 +34,7 @@ def main() -> None:
         outputs = run_batch(
             project_config_path=ROOT / "configs" / "project_baseline.yaml",
             agent_config_dir=ROOT / "configs" / "agents",
-            scenario_config_path=ROOT / "configs" / "scenarios" / "steel_shock.yaml",
+            scenario_config_path=args.scenario_config,
             output_root=args.output_root,
             policy_mode=args.policy_mode,
             model_id=args.model_id,
@@ -48,7 +52,7 @@ def main() -> None:
     output = run_single(
         project_config_path=ROOT / "configs" / "project_baseline.yaml",
         agent_config_dir=ROOT / "configs" / "agents",
-        scenario_config_path=ROOT / "configs" / "scenarios" / "steel_shock.yaml",
+        scenario_config_path=args.scenario_config,
         output_root=args.output_root,
         policy_mode=args.policy_mode,
         model_id=args.model_id,

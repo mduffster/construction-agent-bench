@@ -176,3 +176,22 @@ class ScheduledEventType(StrEnum):
     PUBLIC_LEDGER_ENTRY = "public_ledger_entry"
     PRIVATE_STATE_UPDATE = "private_state_update"
     PRIVATE_MESSAGE = "private_message"
+
+
+class EvidenceVisibilityType(StrEnum):
+    PUBLIC = "public"
+    PRIVATE_STATE = "private_state"
+    ANALYSIS_ONLY = "analysis_only"
+
+
+class ViabilityGateType(StrEnum):
+    ACTOR_DEFAULT_OR_EXIT = "actor_default_or_exit"
+    PROJECT_FAILED = "project_failed"
+    PROJECT_CANCELLED = "project_cancelled"
+    VIABILITY_REVIEW = "viability_review"
+
+
+class ViabilityGateStatus(StrEnum):
+    OPEN = "open"
+    RESOLVED = "resolved"
+    EXPIRED = "expired"

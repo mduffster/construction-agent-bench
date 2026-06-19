@@ -16,6 +16,7 @@ from constructbench.enums import (
     ContractStatus,
     DecisionType,
     DisclosureAssessmentType,
+    EvidenceVisibilityType,
     InspectionStatus,
     LedgerEntryType,
     ObligationStatus,
@@ -29,6 +30,8 @@ from constructbench.enums import (
     ScheduledEventType,
     TaskStatus,
     UnchangedReason,
+    ViabilityGateStatus,
+    ViabilityGateType,
 )
 
 SnakeId = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]*$")]
@@ -253,6 +256,79 @@ class AgentTrustAssessmentRecord(StrictModel):
     confidence: Probability
     basis_ids: list[SnakeId] = Field(default_factory=list)
     reason: str
+
+
+class EvidenceVisibility(StrictModel):
+    evidence_id: SnakeId
+    visibility: EvidenceVisibilityType
+    source: SnakeId = "system"
+    recipients: list[AgentRole] = Field(default_factory=list)
+    linked_object_id: SnakeId | None = None
+    summary: str
+    claims: list[Claim] = Field(default_factory=list)
+    entry_type: LedgerEntryType = LedgerEntryType.AGENT_CLAIM
+    deliver_tick_offset: int = 0
+
+
+class DecisionMenuOption(StrictModel):
+    option_id: SnakeId
+    actor: AgentRole
+    decision_type: DecisionType
+    object_type: SnakeId
+    object_id: SnakeId | None = None
+    label: str
+    summary: str
+    prerequisites: list[dict[str, Any]] = Field(default_factory=list)
+    deterministic_effects: list[dict[str, Any]]
+    objective_public_evidence: list[EvidenceVisibility] = Field(default_factory=list)
+    private_facts_generated: list[EvidenceVisibility] = Field(default_factory=list)
+    trust_risk_tags: list[SnakeId] = Field(default_factory=list)
+    terminal_effect: SnakeId | None = None
+
+
+class CascadeRule(StrictModel):
+    rule_id: SnakeId
+    trigger: dict[str, Any]
+    effects: list[dict[str, Any]]
+    public_symptoms: list[EvidenceVisibility] = Field(default_factory=list)
+    private_facts: list[EvidenceVisibility] = Field(default_factory=list)
+    analysis_tags: list[SnakeId] = Field(default_factory=list)
+
+
+class CascadeEventRecord(StrictModel):
+    event_id: SnakeId
+    tick: Tick
+    source: SnakeId
+    event_type: SnakeId
+    linked_object_id: SnakeId | None = None
+    summary: str
+    data: dict[str, Any] = Field(default_factory=dict)
+
+
+class CausalTraceRecord(StrictModel):
+    trace_id: SnakeId
+    tick: Tick
+    root_cause_id: SnakeId
+    private_cause_owner: AgentRole | None = None
+    private_cause_summary: str
+    observed_symptom_ids: list[SnakeId] = Field(default_factory=list)
+    affected_objects: list[SnakeId] = Field(default_factory=list)
+    agent_decision_option_ids: list[SnakeId] = Field(default_factory=list)
+    cascade_rule_ids: list[SnakeId] = Field(default_factory=list)
+    visibility_summary: dict[AgentRole, list[SnakeId]] = Field(default_factory=dict)
+
+
+class ViabilityGate(StrictModel):
+    gate_id: SnakeId
+    gate_type: ViabilityGateType
+    target_actor: AgentRole | None = None
+    opened_tick: Tick
+    review_due_tick: Tick
+    trigger_summary: str
+    threshold_basis: dict[str, Any]
+    rescue_option_ids: list[SnakeId] = Field(default_factory=list)
+    status: ViabilityGateStatus = ViabilityGateStatus.OPEN
+    resolution: str | None = None
 
 
 class ExpectationDimensions(StrictModel):
@@ -526,6 +602,7 @@ class AgentObservation(StrictModel):
     )
     available_decisions: list[AvailableDecision]
     economic_decision_options: list[EconomicDecisionOption] = Field(default_factory=list)
+    decision_menu_options: list[DecisionMenuOption] = Field(default_factory=list)
 
 
 class StateStore(StrictModel):
@@ -550,6 +627,9 @@ class StateStore(StrictModel):
     oversight_findings: list[OversightFinding] = Field(default_factory=list)
     disclosure_assessments: list[DisclosureAssessment] = Field(default_factory=list)
     trust_updates: list[TrustUpdate] = Field(default_factory=list)
+    cascade_events: list[CascadeEventRecord] = Field(default_factory=list)
+    causal_traces: list[CausalTraceRecord] = Field(default_factory=list)
+    viability_gates: list[ViabilityGate] = Field(default_factory=list)
     private_events_by_agent: dict[AgentRole, list[PrivateEvent]] = Field(default_factory=dict)
     private_messages: list[PrivateMessageEnvelope] = Field(default_factory=list)
 
@@ -643,6 +723,8 @@ class ScenarioConfig(StrictModel):
     attestation_requirements: list[AttestationRequirement] = Field(default_factory=list)
     material_facts: list[MaterialFact] = Field(default_factory=list)
     breach_profile_overrides: dict[SnakeId, BreachProfile] = Field(default_factory=dict)
+    decision_menu_options: list[DecisionMenuOption] = Field(default_factory=list)
+    cascade_rules: list[CascadeRule] = Field(default_factory=list)
 
 
 class DeliveredEvents(StrictModel):
@@ -697,6 +779,17 @@ class SafetyTickResult(StrictModel):
     oversight_findings: list[OversightFinding] = Field(default_factory=list)
     disclosure_assessments: list[DisclosureAssessment] = Field(default_factory=list)
     trust_updates: list[TrustUpdate] = Field(default_factory=list)
+
+
+class CascadeTickResult(StrictModel):
+    tick: Tick
+    cascade_events: list[CascadeEventRecord] = Field(default_factory=list)
+    causal_traces: list[CausalTraceRecord] = Field(default_factory=list)
+
+
+class ViabilityTickResult(StrictModel):
+    tick: Tick
+    viability_gates: list[ViabilityGate] = Field(default_factory=list)
 
 
 class ModelSettings(StrictModel):

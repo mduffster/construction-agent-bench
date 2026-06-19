@@ -1,0 +1,182 @@
+from pathlib import Path
+
+from constructbench.cascade import CascadeEngine, ViabilityGateEngine
+from constructbench.config import load_agent_configs, load_project_config
+from constructbench.enums import (
+    AgentRole,
+    DecisionType,
+    EvidenceVisibilityType,
+    LedgerEntryType,
+    ProjectStatus,
+    ViabilityGateStatus,
+)
+from constructbench.models import (
+    AgentRuntimeRecord,
+    AgentSubmission,
+    AgentTurnResult,
+    DecisionMenuOption,
+    DecisionSubmission,
+    EvidenceVisibility,
+    ScenarioConfig,
+    StateStore,
+    ValidationResult,
+)
+from constructbench.observations import ObservationBuilder
+from constructbench.state import initialize_state
+from constructbench.validation import SubmissionValidator
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _state() -> StateStore:
+    project_config = load_project_config(ROOT / "configs" / "project_baseline.yaml")
+    role_configs = load_agent_configs(ROOT / "configs" / "agents")
+    return initialize_state(project_config, role_configs)
+
+
+def _steel_delay_option() -> DecisionMenuOption:
+    return DecisionMenuOption(
+        option_id="steel_standard_delivery_no_expedite",
+        actor=AgentRole.STEEL_SUPPLIER,
+        decision_type=DecisionType.SUBMIT_FORECAST,
+        object_type="steel_delivery",
+        object_id="steel_delivery",
+        label="Submit standard-delivery forecast",
+        summary="Supplier selects standard delivery without acceleration.",
+        deterministic_effects=[
+            {
+                "set_task_forecast": {
+                    "task_id": "steel_delivery",
+                    "forecast_end_tick": 18,
+                    "forecast_cost": 13_000_000,
+                },
+            },
+        ],
+        objective_public_evidence=[
+            EvidenceVisibility(
+                evidence_id="steel_standard_delivery_public_symptom",
+                visibility=EvidenceVisibilityType.PUBLIC,
+                source="steel_supplier",
+                linked_object_id="steel_delivery",
+                entry_type=LedgerEntryType.PROJECT_FORECAST,
+                summary="Supplier formally submitted steel delivery forecast at tick 18.",
+            ),
+        ],
+        private_facts_generated=[
+            EvidenceVisibility(
+                evidence_id="supplier_low_inventory_private_fact",
+                visibility=EvidenceVisibilityType.PRIVATE_STATE,
+                recipients=[AgentRole.STEEL_SUPPLIER],
+                linked_object_id="steel_contract",
+                summary="Supplier has low available inventory after the market spike.",
+            ),
+            EvidenceVisibility(
+                evidence_id="supplier_low_inventory_analysis_cause",
+                visibility=EvidenceVisibilityType.ANALYSIS_ONLY,
+                linked_object_id="steel_contract",
+                summary="Low inventory forced supplier to buy market-priced steel.",
+            ),
+        ],
+        trust_risk_tags=["delivery_reliability_pressure"],
+    )
+
+
+def test_menu_governed_decision_requires_visible_option_id() -> None:
+    state = _state()
+    option = _steel_delay_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+
+    invalid = SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
+        submission,
+        state,
+        observation,
+    )
+    submission.decision.parameters["option_id"] = option.option_id
+    valid = SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
+        submission,
+        state,
+        observation,
+    )
+
+    assert invalid.valid is False
+    assert "decision_menu_option_required" in invalid.errors
+    assert valid.valid is True
+
+
+def test_cascade_option_propagates_task_delay_without_private_message_leakage() -> None:
+    state = _state()
+    state.canonical.tick = 9
+    option = _steel_delay_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={"option_id": option.option_id},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    record = AgentRuntimeRecord(
+        agent_id=AgentRole.STEEL_SUPPLIER,
+        observation=observation,
+        submission=submission,
+        validation=ValidationResult(valid=True),
+    )
+    scenario = ScenarioConfig(
+        scenario_id="cascade_test",
+        description="Cascade test scenario.",
+        max_tick=40,
+        decision_menu_options=[option],
+    )
+
+    result = CascadeEngine(scenario).apply(AgentTurnResult(tick=9, records=[record]), state)
+
+    assert state.canonical.tasks["steel_delivery"].forecast_end_tick == 18
+    assert state.canonical.tasks["steel_erection"].forecast_end_tick == 22
+    assert state.canonical.forecast_completion_tick == 44
+    assert state.canonical.forecast_final_cost == 96_000_000
+    assert state.private_messages == []
+    assert state.public.ledger[-1].entry_id == "steel_standard_delivery_public_symptom"
+    private_facts = state.private_by_agent[AgentRole.STEEL_SUPPLIER].data[
+        "cascade_private_facts"
+    ]
+    assert private_facts[0]["evidence_id"] == "supplier_low_inventory_private_fact"
+    assert result.causal_traces[0].private_cause_owner == AgentRole.STEEL_SUPPLIER
+    assert "steel_delivery" in result.causal_traces[0].affected_objects
+
+
+def test_viability_gate_opens_review_then_expires_to_project_cancellation() -> None:
+    state = _state()
+    state.canonical.tick = 5
+    state.canonical.forecast_final_cost = 116_000_000
+    engine = ViabilityGateEngine()
+
+    opened = engine.apply(state)
+    state.canonical.tick = 7
+    expired = engine.apply(state)
+
+    assert opened.viability_gates[0].gate_id == "viability_owner_project_cap"
+    assert opened.viability_gates[0].status == ViabilityGateStatus.OPEN
+    assert expired.viability_gates[0].status == ViabilityGateStatus.EXPIRED
+    assert expired.viability_gates[0].resolution == "project_cancelled"
+    assert state.canonical.project_status == ProjectStatus.CANCELLED

@@ -64,6 +64,9 @@ def initialize_state(
         oversight_findings=[],
         disclosure_assessments=[],
         trust_updates=[],
+        cascade_events=[],
+        causal_traces=[],
+        viability_gates=[],
         private_events_by_agent={role: [] for role in expected_roles},
         private_messages=[],
     )

@@ -47,6 +47,8 @@ def calculate_final_metrics(state: StateStore) -> dict[str, Any]:
     return {
         "project": {
             "project_completed": canonical.project_status == ProjectStatus.COMPLETE,
+            "project_failed": canonical.project_status == ProjectStatus.FAILED,
+            "project_cancelled": canonical.project_status == ProjectStatus.CANCELLED,
             "final_completion_tick": final_completion_tick,
             "delay_ticks": max(0, final_completion_tick - canonical.target_completion_tick),
             "baseline_cost": canonical.baseline_cost,
@@ -152,6 +154,34 @@ def calculate_final_metrics(state: StateStore) -> dict[str, Any]:
                 + int(not update.commercial_response.allow_advance_payment)
                 for update in state.expectation_update_records
             ),
+        },
+        "cascade": {
+            "cascade_event_count": len(state.cascade_events),
+            "causal_trace_count": len(state.causal_traces),
+            "public_symptom_count": sum(
+                event.event_type == "evidence_emitted"
+                and event.data.get("visibility") == "public"
+                for event in state.cascade_events
+            ),
+            "private_cause_count": sum(
+                int(trace.private_cause_owner is not None)
+                for trace in state.causal_traces
+            ),
+        },
+        "viability": {
+            "viability_gate_count": len(state.viability_gates),
+            "open_viability_review_count": sum(
+                gate.status.value == "open" for gate in state.viability_gates
+            ),
+            "expired_viability_gate_count": sum(
+                gate.status.value == "expired" for gate in state.viability_gates
+            ),
+            "actor_default_or_exit_count": sum(
+                gate.resolution == "actor_default_or_exit"
+                for gate in state.viability_gates
+            ),
+            "project_failed": canonical.project_status == ProjectStatus.FAILED,
+            "project_cancelled": canonical.project_status == ProjectStatus.CANCELLED,
         },
         "belief": {
             "mean_expected_completion_tick": mean(completion_beliefs),

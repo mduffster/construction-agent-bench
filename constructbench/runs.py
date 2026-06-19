@@ -7,16 +7,18 @@ from pathlib import Path
 from typing import Any, Literal
 
 from constructbench.agents import LLMPolicy, OllamaModelAdapter
+from constructbench.cascade import CascadeEngine, ViabilityGateEngine
 from constructbench.config import load_agent_configs, load_project_config, load_scenario_config
 from constructbench.enums import (
     AgentRole,
     AssessmentUpdateMode,
     BehaviorProfile,
     BreachProfile,
+    ProjectStatus,
     ResourceConditionLevel,
 )
 from constructbench.metrics import calculate_final_metrics
-from constructbench.models import ModelSettings
+from constructbench.models import ModelSettings, ViabilityTickResult
 from constructbench.observations import ObservationBuilder
 from constructbench.reporting import RunLogger, build_analysis_packet
 from constructbench.runner import SimulationRunner
@@ -104,15 +106,23 @@ def run_single(
         "final_termination_reason": "max_tick_reached",
     }
     logger.write_json("run_config.json", run_config)
+    for option in scenario_config.decision_menu_options:
+        logger.append_jsonl(
+            "decision_menu_options.jsonl",
+            {"run_id": resolved_run_id, **option.model_dump(mode="json")},
+        )
 
     policies = _policies(policy_mode, model_id, random_seed)
     agent_manager = AgentManager(
         policies,
         observation_builder=ObservationBuilder(
             assessment_update_mode=resolved_assessment_update_mode,
+            decision_menu_options=scenario_config.decision_menu_options,
         ),
     )
     transition_resolver = TransitionResolver()
+    cascade_engine = CascadeEngine(scenario_config)
+    viability_gate_engine = ViabilityGateEngine()
     safety_engine = SafetyEngine(
         scenario_config,
         breach_profile=resolved_breach_profile,
@@ -129,6 +139,9 @@ def run_single(
         disclosure_start_index = len(state.disclosure_assessments)
         trust_update_start_index = len(state.trust_updates)
         expectation_update_start_index = len(state.expectation_update_records)
+        cascade_event_start_index = len(state.cascade_events)
+        causal_trace_start_index = len(state.causal_traces)
+        viability_gate_start_index = len(state.viability_gates)
         tick_result = runner.advance_tick()
         agent_turn = agent_manager.process_tick(tick_result, state)
         transition_result = transition_resolver.apply(
@@ -136,6 +149,11 @@ def run_single(
             state,
             scenario_config.default_message_delay_ticks,
         )
+        cascade_result = cascade_engine.apply(agent_turn, state)
+        if cascade_result.cascade_events or state.viability_gates:
+            viability_result = viability_gate_engine.apply(state)
+        else:
+            viability_result = ViabilityTickResult(tick=state.canonical.tick)
         safety_result = safety_engine.evaluate(state)
         turn_summary = logger.write_tick_artifacts(
             resolved_run_id,
@@ -143,6 +161,8 @@ def run_single(
             tick_result,
             agent_turn,
             transition_result,
+            cascade_result,
+            viability_result,
             safety_result,
             public_start_index,
             private_message_start_index,
@@ -151,6 +171,9 @@ def run_single(
             disclosure_start_index,
             trust_update_start_index,
             expectation_update_start_index,
+            cascade_event_start_index,
+            causal_trace_start_index,
+            viability_gate_start_index,
         )
         turn_summaries.append(turn_summary)
 
@@ -187,6 +210,9 @@ def run_single(
             if not isinstance(transition_rejections, list):
                 raise TypeError("transition_rejections must be a list")
             transition_rejections.extend(transition_result.rejected)
+        if state.canonical.project_status in {ProjectStatus.FAILED, ProjectStatus.CANCELLED}:
+            run_config["final_termination_reason"] = state.canonical.project_status.value
+            break
 
     final_metrics = calculate_final_metrics(state)
     analysis_packet = build_analysis_packet(

@@ -8,6 +8,7 @@ from constructbench.enums import AgentRole, AssessmentUpdateMode, DecisionType
 from constructbench.models import (
     AgentObservation,
     CommercialResponse,
+    DecisionMenuOption,
     DeliveredEvents,
     EconomicDecisionOption,
     EvidenceSummary,
@@ -21,12 +22,14 @@ class ObservationBuilder:
     def __init__(
         self,
         assessment_update_mode: AssessmentUpdateMode | str = AssessmentUpdateMode.SCALAR_BASELINE,
+        decision_menu_options: list[DecisionMenuOption] | None = None,
     ) -> None:
         self.assessment_update_mode = (
             assessment_update_mode
             if isinstance(assessment_update_mode, AssessmentUpdateMode)
             else AssessmentUpdateMode(assessment_update_mode)
         )
+        self.decision_menu_options = decision_menu_options or []
 
     def build(
         self,
@@ -86,7 +89,67 @@ class ObservationBuilder:
             commercial_response_options=self._commercial_response_options(agent_id),
             available_decisions=role_config.permitted_decisions,
             economic_decision_options=self._economic_options(agent_id, state),
+            decision_menu_options=self._decision_menu_options(agent_id, state),
         )
+
+    def _decision_menu_options(
+        self,
+        agent_id: AgentRole,
+        state: StateStore,
+    ) -> list[DecisionMenuOption]:
+        return [
+            option.model_copy(deep=True)
+            for option in self.decision_menu_options
+            if option.actor == agent_id and self._prerequisites_met(option, state)
+        ]
+
+    def _prerequisites_met(self, option: DecisionMenuOption, state: StateStore) -> bool:
+        for prerequisite in option.prerequisites:
+            if not self._prerequisite_met(prerequisite, state):
+                return False
+        return True
+
+    def _prerequisite_met(self, prerequisite: dict[str, Any], state: StateStore) -> bool:
+        if not prerequisite:
+            return True
+        tick_at_least = prerequisite.get("tick_at_least")
+        if isinstance(tick_at_least, int) and state.canonical.tick < tick_at_least:
+            return False
+        tick_at_most = prerequisite.get("tick_at_most")
+        if isinstance(tick_at_most, int) and state.canonical.tick > tick_at_most:
+            return False
+        private_field = prerequisite.get("private_field")
+        actor = prerequisite.get("actor")
+        if isinstance(private_field, str) and isinstance(actor, str):
+            try:
+                role = AgentRole(actor)
+            except ValueError:
+                return False
+            value = state.private_by_agent[role].data.get(private_field)
+            if "equals" in prerequisite and value != prerequisite["equals"]:
+                return False
+            if "min" in prerequisite and not self._numeric_compare(
+                value,
+                prerequisite["min"],
+                "min",
+            ):
+                return False
+            if "max" in prerequisite and not self._numeric_compare(
+                value,
+                prerequisite["max"],
+                "max",
+            ):
+                return False
+        return True
+
+    def _numeric_compare(self, value: Any, threshold: Any, mode: str) -> bool:
+        if isinstance(value, bool) or isinstance(threshold, bool):
+            return False
+        if not isinstance(value, (int, float)) or not isinstance(threshold, (int, float)):
+            return False
+        if mode == "min":
+            return value >= threshold
+        return value <= threshold
 
     def _public_project_state(self, state: StateStore) -> dict[str, int | str | None]:
         canonical = state.canonical

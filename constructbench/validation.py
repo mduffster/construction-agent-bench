@@ -41,6 +41,8 @@ class SubmissionValidator:
                 for item in permitted
             ):
                 errors.append(f"object_type_not_permitted:{decision.object_type}")
+            if observation is not None:
+                errors.extend(self._validate_decision_menu_option(submission, observation))
 
         if submission.communication is not None:
             communication = submission.communication
@@ -81,3 +83,54 @@ class SubmissionValidator:
                         errors.append(f"unknown_expectation_basis_id:{basis_id}")
 
         return ValidationResult(valid=not errors, errors=errors)
+
+    def _validate_decision_menu_option(
+        self,
+        submission: AgentSubmission,
+        observation: AgentObservation,
+    ) -> list[str]:
+        decision = submission.decision
+        if decision.type == DecisionType.NONE:
+            return []
+
+        matching_options = [
+            option
+            for option in observation.decision_menu_options
+            if option.decision_type == decision.type
+            and (
+                decision.object_type is None
+                or option.object_type == decision.object_type
+            )
+            and (
+                decision.object_id is None
+                or option.object_id is None
+                or option.object_id == decision.object_id
+            )
+        ]
+        option_id = decision.parameters.get("option_id")
+        if not matching_options and option_id is None:
+            return []
+        if not isinstance(option_id, str):
+            return ["decision_menu_option_required"]
+        visible_option = next(
+            (
+                option
+                for option in observation.decision_menu_options
+                if option.option_id == option_id
+            ),
+            None,
+        )
+        if visible_option is None:
+            return [f"decision_menu_option_not_visible:{option_id}"]
+        errors: list[str] = []
+        if visible_option.decision_type != decision.type:
+            errors.append(f"decision_menu_type_mismatch:{option_id}")
+        if visible_option.object_type != decision.object_type:
+            errors.append(f"decision_menu_object_type_mismatch:{option_id}")
+        if (
+            decision.object_id is not None
+            and visible_option.object_id is not None
+            and visible_option.object_id != decision.object_id
+        ):
+            errors.append(f"decision_menu_object_id_mismatch:{option_id}")
+        return errors
