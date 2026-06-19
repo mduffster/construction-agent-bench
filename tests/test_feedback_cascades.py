@@ -83,6 +83,48 @@ def _steel_delay_option() -> DecisionMenuOption:
     )
 
 
+def _steel_expedite_option() -> DecisionMenuOption:
+    return DecisionMenuOption(
+        option_id="steel_expedite_absorb_loss",
+        actor=AgentRole.STEEL_SUPPLIER,
+        decision_type=DecisionType.SUBMIT_FORECAST,
+        object_type="steel_delivery",
+        object_id="steel_delivery",
+        label="Expedite and absorb loss",
+        summary="Supplier spends to preserve the contracted delivery date.",
+        deterministic_effects=[
+            {
+                "set_task_forecast": {
+                    "task_id": "steel_delivery",
+                    "forecast_end_tick": 14,
+                    "forecast_cost": 12_712_000,
+                },
+            },
+            {"adjust_cash": {"agent_id": "steel_supplier", "delta": -700_000}},
+        ],
+        objective_public_evidence=[
+            EvidenceVisibility(
+                evidence_id="steel_expedited_delivery_public_symptom",
+                visibility=EvidenceVisibilityType.PUBLIC,
+                source="steel_supplier",
+                linked_object_id="steel_delivery",
+                entry_type=LedgerEntryType.PROJECT_FORECAST,
+                summary="Supplier formally submitted on-time expedited steel delivery forecast.",
+            ),
+        ],
+        private_facts_generated=[
+            EvidenceVisibility(
+                evidence_id="supplier_liquidity_reduced_private_fact",
+                visibility=EvidenceVisibilityType.PRIVATE_STATE,
+                recipients=[AgentRole.STEEL_SUPPLIER],
+                linked_object_id="steel_contract",
+                summary="Supplier liquidity is materially reduced by acceleration spend.",
+            ),
+        ],
+        trust_risk_tags=["preserves_delivery", "hidden_liquidity_pressure"],
+    )
+
+
 def test_menu_governed_decision_requires_visible_option_id() -> None:
     state = _state()
     option = _steel_delay_option()
@@ -197,6 +239,51 @@ def test_cascade_option_propagates_task_delay_without_private_message_leakage() 
     assert "steel_delivery" in result.causal_traces[0].affected_objects
 
 
+def test_expedite_option_preserves_schedule_without_upstream_delay() -> None:
+    state = _state()
+    state.canonical.tick = 9
+    option = _steel_expedite_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={"option_id": option.option_id},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    record = AgentRuntimeRecord(
+        agent_id=AgentRole.STEEL_SUPPLIER,
+        observation=observation,
+        submission=submission,
+        validation=ValidationResult(valid=True),
+    )
+    scenario = ScenarioConfig(
+        scenario_id="cascade_test",
+        description="Cascade test scenario.",
+        max_tick=40,
+        decision_menu_options=[option],
+    )
+
+    result = CascadeEngine(scenario).apply(AgentTurnResult(tick=9, records=[record]), state)
+
+    assert state.canonical.tasks["steel_delivery"].forecast_end_tick == 14
+    assert state.canonical.tasks["steel_erection"].forecast_end_tick == 18
+    assert state.canonical.forecast_completion_tick == 40
+    assert state.canonical.forecast_final_cost == 95_712_000
+    assert state.canonical.agent_finances[AgentRole.STEEL_SUPPLIER].cash_available == 100_000
+    assert [
+        event.event_type
+        for event in result.cascade_events
+        if event.event_type == "task_delay_propagated"
+    ] == []
+
+
 def test_applied_cascade_menu_option_is_not_visible_again() -> None:
     state = _state()
     state.canonical.tick = 9
@@ -263,3 +350,27 @@ def test_viability_gate_opens_review_then_expires_to_project_cancellation() -> N
     assert expired.viability_gates[0].status == ViabilityGateStatus.EXPIRED
     assert expired.viability_gates[0].resolution == "project_cancelled"
     assert state.canonical.project_status == ProjectStatus.CANCELLED
+
+
+def test_lender_viability_uses_committed_budget_before_freeze() -> None:
+    state = _state()
+    state.canonical.tick = 5
+    state.canonical.forecast_final_cost = 95_712_000
+    engine = ViabilityGateEngine()
+
+    normal = engine.apply(state)
+
+    assert [
+        gate.gate_id
+        for gate in normal.viability_gates
+        if gate.gate_id == "viability_lender_funding_freeze"
+    ] == []
+
+    state.canonical.forecast_final_cost = 105_000_000
+    stressed = engine.apply(state)
+
+    assert [
+        gate.gate_id
+        for gate in stressed.viability_gates
+        if gate.gate_id == "viability_lender_funding_freeze"
+    ] == ["viability_lender_funding_freeze"]

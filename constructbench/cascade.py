@@ -340,10 +340,17 @@ class CascadeEngine:
         events: list[CascadeEventRecord] = []
         tasks = state.canonical.tasks
         affected = set(changed_task_ids)
+        frontier = set(changed_task_ids)
         for _ in range(len(tasks)):
             changed = False
+            next_frontier: set[str] = set()
             for task_id, task in tasks.items():
-                if not task.dependencies:
+                if (
+                    not task.dependencies
+                    or not (set(task.dependencies) & frontier)
+                    or task.status == TaskStatus.COMPLETE
+                    or task.actual_end_tick is not None
+                ):
                     continue
                 dependency_end = max(tasks[dep].forecast_end_tick for dep in task.dependencies)
                 if dependency_end <= task.planned_start_tick:
@@ -355,6 +362,7 @@ class CascadeEngine:
                 before = task.forecast_end_tick
                 task.forecast_end_tick = propagated_end
                 affected.add(task_id)
+                next_frontier.add(task_id)
                 changed = True
                 events.append(
                     self._event(
@@ -372,6 +380,7 @@ class CascadeEngine:
                 )
             if not changed:
                 break
+            frontier = next_frontier
 
         handover = tasks.get("handover")
         if (
@@ -643,8 +652,9 @@ class ViabilityGateEngine:
         lender_private = state.private_by_agent[AgentRole.LENDER].data
         owner_private = state.private_by_agent[AgentRole.OWNER_DEVELOPER].data
         loan = self._int(lender_private.get("undisbursed_loan_balance")) or 0
+        owner_cash = self._int(owner_private.get("cash_available")) or 0
         equity = self._int(owner_private.get("maximum_additional_equity")) or 0
-        available = loan + equity
+        available = max(loan + owner_cash + equity, state.canonical.approved_budget + equity)
         required = max(
             0,
             state.canonical.forecast_final_cost - state.canonical.actual_cost_to_date,
@@ -661,6 +671,10 @@ class ViabilityGateEngine:
             trigger_summary="Loan plus confirmed equity cannot cover cost to complete.",
             threshold_basis={
                 "available_funding": available,
+                "approved_budget": state.canonical.approved_budget,
+                "undisbursed_loan_balance": loan,
+                "owner_cash_available": owner_cash,
+                "maximum_additional_equity": equity,
                 "required_with_contingency": required_with_contingency,
             },
         )
