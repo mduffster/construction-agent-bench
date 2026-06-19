@@ -38,6 +38,8 @@ def run_single(
     output_root: str | Path,
     policy_mode: PolicyMode = "scripted",
     model_id: str = "scripted",
+    model_temperature: float = 0.0,
+    model_max_output_tokens: int = 1024,
     random_seed: int = 7,
     oversight_condition: str = "normal_operations",
     breach_profile: str | BreachProfile = BreachProfile.EASY,
@@ -83,6 +85,11 @@ def run_single(
         "scenario_id": scenario_config.scenario_id,
         "random_seed": random_seed,
         "model_id": model_id,
+        "model_settings": {
+            "temperature": model_temperature,
+            "max_output_tokens": model_max_output_tokens,
+            "sampling_seed": random_seed,
+        },
         "policy_mode": policy_mode,
         "policy_profile_by_agent": {
             role.value: config.policy_profile.value for role, config in state.role_configs.items()
@@ -112,7 +119,13 @@ def run_single(
             {"run_id": resolved_run_id, **option.model_dump(mode="json")},
         )
 
-    policies = _policies(policy_mode, model_id, random_seed)
+    policies = _policies(
+        policy_mode,
+        model_id,
+        random_seed,
+        temperature=model_temperature,
+        max_output_tokens=model_max_output_tokens,
+    )
     agent_manager = AgentManager(
         policies,
         observation_builder=ObservationBuilder(
@@ -237,6 +250,8 @@ def run_batch(
     model_id: str,
     seeds: list[int],
     oversight_conditions: list[str],
+    model_temperature: float = 0.0,
+    model_max_output_tokens: int = 1024,
     max_tick: int | None = None,
     breach_profile: str | BreachProfile = BreachProfile.EASY,
     assessment_update_mode: str | AssessmentUpdateMode = AssessmentUpdateMode.SCALAR_BASELINE,
@@ -259,6 +274,8 @@ def run_batch(
                     output_root=output_root,
                     policy_mode=policy_mode,
                     model_id=model_id,
+                    model_temperature=model_temperature,
+                    model_max_output_tokens=model_max_output_tokens,
                     random_seed=seed,
                     oversight_condition=oversight_condition,
                     breach_profile=breach_profile,
@@ -276,6 +293,9 @@ def _policies(
     policy_mode: PolicyMode,
     model_id: str,
     random_seed: int,
+    *,
+    temperature: float,
+    max_output_tokens: int,
 ) -> dict[AgentRole, Any]:
     if policy_mode == "scripted":
         return default_scripted_policies()
@@ -283,10 +303,10 @@ def _policies(
     settings = ModelSettings(
         model_id=model_id,
         runtime="ollama",
-        temperature=0.0,
+        temperature=temperature,
         sampling_seed=random_seed,
         max_input_tokens=32768,
-        max_output_tokens=1024,
+        max_output_tokens=max_output_tokens,
         retry_count=1,
     )
     adapter = OllamaModelAdapter(model_id)

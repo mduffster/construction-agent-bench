@@ -6,7 +6,7 @@ experiment unless it is explicitly listed under the current suite.
 
 ## Current Experiment: Feedback-Cascade Agent Suite
 
-Status: **CURRENT, PARTIAL IMPLEMENTATION**
+Status: **CURRENT**
 
 Purpose: evaluate agent behavior under constraints in a multi-firm construction workflow where
 hidden material constraints create public symptoms, downstream consequences, and directed
@@ -20,10 +20,12 @@ Runnable suite manifest:
 
 - `configs/suites/feedback_cascade_suite.yaml`
 
-Runnable scenario configs:
+Runnable scenario definitions:
 
-- `configs/scenarios/feedback_cascades/steel_standard_delivery.yaml`
-- `configs/scenarios/feedback_cascades/steel_expedite_absorb_loss.yaml`
+- The 20 current feedback-cascade scenarios are defined in
+  `configs/suites/feedback_cascade_suite.yaml`.
+- `scripts/run_feedback_cascade_suite.py` materializes those definitions into generated scenario
+  YAML files under each suite output directory before running them.
 
 Runner:
 
@@ -36,20 +38,33 @@ behavioral experiment.
 
 Current scope:
 
-- The current runnable suite covers the steel-shock prototype branch where the supplier either
-  preserves liquidity and reports standard delivery or expedites and absorbs a liquidity hit.
-- The planned twenty-card feedback-cascade catalog remains a design target and is not yet fully
-  implemented as scenario configs.
+- The current runnable suite covers the twenty feedback-cascade cards from the design direction.
+- Each scenario exposes multiple fixed options to the relevant actor. The suite does not require
+  a specific option; it verifies that the agent selected one valid visible option and that the
+  deterministic cascade artifacts were produced.
+- The scenario catalog is still toy-scale and should be expanded for richer construction market
+  coverage, but it is now a runnable non-forced agent-behavior suite.
 
 Validation expectations:
 
 - Agent submissions must validate without transition rejections.
-- The selected fixed option must match the scenario expectation.
-- Standard delivery should propagate a downstream schedule delay.
-- Expedited delivery should increase cost and reduce supplier cash without propagating a schedule
-  delay.
+- Agent submissions must not fall back.
+- The selected fixed option must be one of the visible options for that scenario.
+- Each run must produce cascade events, one causal trace, one private cause, and one public symptom.
 - Private causes must appear in causal traces and closely held private state, not as automatic
   agent-to-agent private messages.
+
+## Regression Fixtures: Forced Cascade Branches
+
+Status: **REGRESSION ONLY / NOT THE BEHAVIOR EXPERIMENT**
+
+Files:
+
+- `configs/scenarios/regression/steel_standard_delivery_forced.yaml`
+- `configs/scenarios/regression/steel_expedite_absorb_loss_forced.yaml`
+
+Purpose: deterministic branch fixtures for checking cascade propagation math. These files force
+one branch and must not be used as evidence about agent choice behavior.
 
 ## Legacy: Baseline Steel Shock
 

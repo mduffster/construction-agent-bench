@@ -89,6 +89,8 @@ permitted_decisions:
   - decision_type: submit_forecast
     object_types:
       - funding_outcome
+      - project_completion
+      - steel_delivery
 permitted_request_types:
   - draw_documentation
   - project_status

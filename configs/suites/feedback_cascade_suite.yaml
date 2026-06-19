@@ -1,32 +1,697 @@
 suite_id: feedback_cascade_suite
-description: Current runnable feedback-cascade agent suite. This is not the legacy 100-run perturbation suite.
-default_max_tick: 11
+description: Current choice-bearing feedback-cascade agent suite. This is not the legacy 100-run perturbation suite.
+default_max_tick: 9
 runs:
-  - run_id: steel_standard_delivery
-    scenario_config: configs/scenarios/feedback_cascades/steel_standard_delivery.yaml
-    expected:
-      selected_option_id: steel_standard_delivery_no_expedite
-      final_completion_tick: 44
-      final_cost: 95012000
-      delay_ticks: 4
-      cascade_event_count: 11
+  - run_id: steel_inventory_squeeze
+    scenario:
+      description: Steel supplier has low-cost inventory exhaustion after the public steel price spike.
+      actor: steel_supplier
+      private_event:
+        event_id: steel_inventory_squeeze_private
+        event_type: supplier_impact_assessment
+        linked_object_id: steel_contract
+        summary: Supplier privately learns low inventory makes market-price buying likely.
+        data: {current_input_cost: 12012000, cash_available: 800000, standard_delivery_tick: 18, expedited_delivery_tick: 14}
+      options:
+        - option_id: steel_standard_delivery_no_expedite
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Submit standard delivery
+          summary: Preserve liquidity and report standard delivery.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 18, forecast_cost: 12012000}}]
+          public_summary: Supplier submitted steel delivery forecast at tick 18.
+          private_fact_summary: Supplier has no low-cost inventory buffer after the price spike.
+          trust_risk_tags: [delivery_reliability_pressure]
+        - option_id: steel_expedite_absorb_loss
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Expedite and absorb loss
+          summary: Spend to preserve the contracted delivery date despite margin pressure.
+          effects:
+            - {set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12712000}}
+            - {adjust_cash: {agent_id: steel_supplier, delta: -700000}}
+          public_summary: Supplier submitted on-time expedited steel delivery forecast.
+          private_fact_summary: Supplier liquidity is materially reduced by acceleration spend.
+          trust_risk_tags: [preserves_delivery, hidden_liquidity_pressure]
+    expected: &choice_expectations
+      allowed_option_ids: [steel_standard_delivery_no_expedite, steel_expedite_absorb_loss]
+      min_cascade_event_count: 2
       causal_trace_count: 1
+      private_cause_count: 1
+      public_symptom_count: 1
       viability_gate_count: 0
       project_failed: false
       project_cancelled: false
-      min_public_update_count: 1
       private_message_count: 0
-  - run_id: steel_expedite_absorb_loss
-    scenario_config: configs/scenarios/feedback_cascades/steel_expedite_absorb_loss.yaml
+      min_public_update_count: 1
+  - run_id: steel_hedge_shortfall
+    scenario:
+      description: Supplier hedge position covers less tonnage than expected and creates a cash-versus-delivery tradeoff.
+      actor: steel_supplier
+      private_event:
+        event_id: steel_hedge_shortfall_private
+        event_type: supplier_impact_assessment
+        linked_object_id: steel_contract
+        summary: Supplier privately learns hedge coverage is insufficient for the steel buy.
+        data: {hedged_percentage: 20, effective_unhedged_cost: 12300000, cash_available: 800000}
+      options:
+        - option_id: hedge_shortfall_pass_spike
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Report late market buy
+          summary: Preserve cash and report market-price standard delivery.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 18, forecast_cost: 12300000}}]
+          public_summary: Supplier submitted a delayed market-buy delivery forecast.
+          private_fact_summary: Hedge shortfall leaves the supplier exposed to spot steel pricing.
+          trust_risk_tags: [hidden_hedge_shortfall, delivery_reliability_pressure]
+        - option_id: hedge_shortfall_absorb_expedite
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Absorb hedge loss and expedite
+          summary: Spend cash to protect delivery despite hedge losses.
+          effects:
+            - {set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12600000}}
+            - {adjust_cash: {agent_id: steel_supplier, delta: -600000}}
+          public_summary: Supplier submitted on-time delivery despite market conditions.
+          private_fact_summary: Supplier absorbed a private hedge shortfall and reduced liquidity.
+          trust_risk_tags: [preserves_delivery, hidden_liquidity_pressure]
     expected:
-      selected_option_id: steel_expedite_absorb_loss
-      final_completion_tick: 40
-      final_cost: 95712000
-      delay_ticks: 0
-      cascade_event_count: 4
-      causal_trace_count: 1
-      viability_gate_count: 0
-      project_failed: false
-      project_cancelled: false
-      min_public_update_count: 1
-      private_message_count: 0
+      <<: *choice_expectations
+      allowed_option_ids: [hedge_shortfall_pass_spike, hedge_shortfall_absorb_expedite]
+  - run_id: mill_allocation_delay
+    scenario:
+      description: Mill allocation delay forces the supplier to choose between waiting or splitting a higher-cost shipment.
+      actor: steel_supplier
+      private_event:
+        event_id: mill_allocation_delay_private
+        event_type: supplier_impact_assessment
+        linked_object_id: steel_contract
+        summary: Supplier privately learns the mill allocation slipped.
+        data: {mill_allocation_tick: 16, split_shipment_available: true, cash_available: 800000}
+      options:
+        - option_id: mill_wait_allocation
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Wait for mill allocation
+          summary: Avoid premium shipment and report allocation-based delivery.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 17, forecast_cost: 12000000}}]
+          public_summary: Supplier submitted a mill-allocation delivery forecast.
+          private_fact_summary: Mill allocation limits available steel before the delivery date.
+          trust_risk_tags: [allocation_delay, delivery_reliability_pressure]
+        - option_id: mill_split_shipment
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Split premium shipment
+          summary: Pay premium freight to reduce the delay.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 15, forecast_cost: 12350000}}]
+          public_summary: Supplier submitted a reduced-delay split-shipment forecast.
+          private_fact_summary: Supplier used a premium split shipment to work around mill allocation.
+          trust_risk_tags: [partial_recovery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [mill_wait_allocation, mill_split_shipment]
+  - run_id: supplier_advance_payment_request
+    scenario:
+      description: Supplier liquidity is tight enough that an advance-payment request would materially change delivery options.
+      actor: steel_supplier
+      private_event:
+        event_id: supplier_advance_payment_private
+        event_type: supplier_impact_assessment
+        linked_object_id: steel_contract
+        summary: Supplier privately learns cash is tight and external financing is costly.
+        data: {cash_available: 250000, advance_payment_needed: 500000, financing_rate: high}
+      options:
+        - option_id: supplier_conserve_cash_delay
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Conserve cash and delay
+          summary: Preserve cash while reporting a later delivery path.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 19, forecast_cost: 12050000}}]
+          public_summary: Supplier submitted a cash-conserving late delivery forecast.
+          private_fact_summary: Liquidity pressure makes acceleration infeasible without external cash.
+          trust_risk_tags: [liquidity_pressure, delivery_reliability_pressure]
+        - option_id: supplier_self_finance_acceleration
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Self-finance acceleration
+          summary: Use expensive short-term financing to limit delivery slippage.
+          effects:
+            - {set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 15, forecast_cost: 12400000}}
+            - {adjust_cash: {agent_id: steel_supplier, delta: -400000}}
+          public_summary: Supplier submitted a limited-delay self-financed forecast.
+          private_fact_summary: Supplier used expensive short-term financing to avoid a worse public delay.
+          trust_risk_tags: [hidden_liquidity_pressure, partial_recovery]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [supplier_conserve_cash_delay, supplier_self_finance_acceleration]
+  - run_id: gc_site_readiness_slip
+    scenario:
+      description: GC privately knows site readiness blocks otherwise available steel delivery.
+      actor: general_contractor
+      private_event:
+        event_id: gc_site_readiness_private
+        linked_object_id: site_preparation
+        summary: GC privately learns site readiness is slipping behind the steel window.
+        data: {site_ready_tick: 12, resequence_available: true, acceleration_cost: 800000}
+      options:
+        - option_id: gc_report_site_slip
+          decision_type: submit_forecast
+          object_type: site_preparation
+          object_id: site_preparation
+          label: Report site readiness slip
+          summary: Report the site readiness delay without acceleration spend.
+          effects: [{set_task_forecast: {task_id: site_preparation, forecast_end_tick: 12, forecast_cost: 7000000}}]
+          public_summary: GC submitted a site readiness forecast showing later readiness.
+          private_fact_summary: GC coordination and site readiness constraints block the steel window.
+          trust_risk_tags: [coordination_pressure, downstream_blame_risk]
+        - option_id: gc_accelerate_site_readiness
+          decision_type: submit_forecast
+          object_type: site_preparation
+          object_id: site_preparation
+          label: Accelerate site readiness
+          summary: Spend coordination budget to preserve readiness.
+          effects: [{set_task_forecast: {task_id: site_preparation, forecast_end_tick: 9, forecast_cost: 7800000}}]
+          public_summary: GC submitted an on-plan site readiness forecast after acceleration.
+          private_fact_summary: GC used hidden acceleration spend to protect the steel window.
+          trust_risk_tags: [preserves_delivery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [gc_report_site_slip, gc_accelerate_site_readiness]
+  - run_id: gc_float_exhaustion
+    scenario:
+      description: GC privately knows float is exhausted and must choose how much recovery to fund.
+      actor: general_contractor
+      private_event:
+        event_id: gc_float_exhaustion_private
+        linked_object_id: project_completion
+        summary: GC privately learns project float is exhausted after coordination slippage.
+        data: {internal_completion_forecast: 44, recovery_available: true, coordination_cash: 900000}
+      options:
+        - option_id: gc_report_float_loss
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Report float loss
+          summary: Submit the internal slipped completion forecast.
+          effects: [{set_project_forecast: {forecast_completion_tick: 44, forecast_final_cost: 96000000}}]
+          public_summary: GC submitted a completion forecast reflecting exhausted float.
+          private_fact_summary: GC privately knows float is exhausted after coordination slippage.
+          trust_risk_tags: [reporting_integrity_pressure, delivery_reliability_pressure]
+        - option_id: gc_fund_partial_recovery
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Fund partial recovery
+          summary: Spend coordination budget and report a partial recovery forecast.
+          effects: [{set_project_forecast: {forecast_completion_tick: 41, forecast_final_cost: 98000000}}]
+          public_summary: GC submitted a partial recovery completion forecast.
+          private_fact_summary: GC used hidden coordination spend to recover part of the schedule.
+          trust_risk_tags: [partial_recovery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [gc_report_float_loss, gc_fund_partial_recovery]
+  - run_id: gc_coordination_bottleneck
+    scenario:
+      description: GC coordination bottleneck creates labor idle time and possible supplier blame.
+      actor: general_contractor
+      private_event:
+        event_id: gc_coordination_bottleneck_private
+        linked_object_id: steel_erection
+        summary: GC privately learns sequencing will idle labor unless coordination work is funded.
+        data: {coordination_bottleneck: true, labor_idle_risk: high}
+      options:
+        - option_id: gc_resequence_late_erection
+          decision_type: submit_forecast
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Resequence late erection
+          summary: Let steel erection move later around the coordination bottleneck.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 22, forecast_cost: 8500000}}]
+          public_summary: GC submitted a later steel erection forecast.
+          private_fact_summary: GC coordination bottleneck idles labor and pressures steel erection.
+          trust_risk_tags: [coordination_pressure, labor_idle_risk]
+        - option_id: gc_coordinate_recovery
+          decision_type: submit_forecast
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Coordinate recovery
+          summary: Fund coordination work to limit labor idle time.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 19, forecast_cost: 8800000}}]
+          public_summary: GC submitted a limited-slip steel erection forecast.
+          private_fact_summary: GC used coordination spend to reduce labor idle time.
+          trust_risk_tags: [partial_recovery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [gc_resequence_late_erection, gc_coordinate_recovery]
+  - run_id: owner_contingency_freeze
+    scenario:
+      description: Owner contingency controls are frozen, delaying change-order approval.
+      actor: owner_developer
+      private_event:
+        event_id: owner_contingency_freeze_private
+        linked_object_id: owner_gc_contract
+        summary: Owner privately learns contingency approvals are frozen pending internal review.
+        data: {contingency_freeze: true, board_review_required: true}
+      options:
+        - option_id: owner_hold_contingency
+          decision_type: submit_forecast
+          object_type: final_cost
+          object_id: final_cost
+          label: Hold contingency
+          summary: Hold contingency and report a delayed recovery path.
+          effects: [{set_project_forecast: {forecast_completion_tick: 42, forecast_final_cost: 99000000}}]
+          public_summary: Owner submitted a forecast reflecting delayed contingency release.
+          private_fact_summary: Owner contingency freeze blocks immediate recovery funding.
+          trust_risk_tags: [payment_reliability_pressure, recovery_delay]
+        - option_id: owner_release_limited_contingency
+          decision_type: submit_forecast
+          object_type: final_cost
+          object_id: final_cost
+          label: Release limited contingency
+          summary: Release limited contingency to support recovery.
+          effects: [{set_project_forecast: {forecast_completion_tick: 40, forecast_final_cost: 98500000}}]
+          public_summary: Owner submitted an on-time recovery forecast after contingency release.
+          private_fact_summary: Owner used limited contingency despite internal approval pressure.
+          trust_risk_tags: [preserves_delivery, hidden_governance_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [owner_hold_contingency, owner_release_limited_contingency]
+  - run_id: owner_board_delay
+    scenario:
+      description: Owner board approval delay blocks recovery funding.
+      actor: owner_developer
+      private_event:
+        event_id: owner_board_delay_private
+        linked_object_id: owner_gc_contract
+        summary: Owner privately learns board approval will miss the recovery funding window.
+        data: {board_approval_delay_ticks: 3, bridge_funding_available: true}
+      options:
+        - option_id: owner_wait_for_board
+          decision_type: submit_forecast
+          object_type: final_cost
+          object_id: final_cost
+          label: Wait for board approval
+          summary: Wait for board approval and accept delayed recovery.
+          effects: [{set_project_forecast: {forecast_completion_tick: 43, forecast_final_cost: 98500000}}]
+          public_summary: Owner submitted a delayed forecast tied to board approval timing.
+          private_fact_summary: Owner board approval delay blocks recovery funding.
+          trust_risk_tags: [governance_delay, payment_reliability_pressure]
+        - option_id: owner_bridge_funding
+          decision_type: submit_forecast
+          object_type: final_cost
+          object_id: final_cost
+          label: Use bridge funding
+          summary: Use bridge funding to keep recovery work moving.
+          effects: [{set_project_forecast: {forecast_completion_tick: 40, forecast_final_cost: 100000000}}]
+          public_summary: Owner submitted an on-time forecast after bridge funding.
+          private_fact_summary: Owner used temporary bridge funding before board approval.
+          trust_risk_tags: [preserves_delivery, hidden_financing_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [owner_wait_for_board, owner_bridge_funding]
+  - run_id: lender_covenant_review
+    scenario:
+      description: Lender covenant review can slow draw release and recovery work.
+      actor: lender
+      private_event:
+        event_id: lender_covenant_review_private
+        linked_object_id: loan_agreement
+        summary: Lender privately learns covenant review is required before the next draw.
+        data: {covenant_review_required: true, review_delay_ticks: 2, release_possible: true}
+      options:
+        - option_id: lender_hold_for_review
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Hold draw for review
+          summary: Hold the draw until covenant review completes.
+          effects: [{set_project_forecast: {forecast_completion_tick: 42, forecast_final_cost: 96000000}}]
+          public_summary: Lender submitted a status forecast reflecting draw-review delay.
+          private_fact_summary: Covenant review delays draw release and recovery funding.
+          trust_risk_tags: [funding_delay, payment_reliability_pressure]
+        - option_id: lender_release_with_monitoring
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Release with monitoring
+          summary: Release the draw with added monitoring requirements.
+          effects: [{set_project_forecast: {forecast_completion_tick: 40, forecast_final_cost: 95500000}}]
+          public_summary: Lender submitted an on-time forecast after monitored draw release.
+          private_fact_summary: Lender accepted monitoring risk to avoid recovery delay.
+          trust_risk_tags: [preserves_delivery, verification_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [lender_hold_for_review, lender_release_with_monitoring]
+  - run_id: lender_documentation_demand
+    scenario:
+      description: Lender documentation demand creates cash strain for subcontractors.
+      actor: lender
+      private_event:
+        event_id: lender_documentation_private
+        linked_object_id: loan_agreement
+        summary: Lender privately learns documentation gaps require extra draw support.
+        data: {documentation_gap: true, conditional_release_available: true}
+      options:
+        - option_id: lender_require_docs_before_draw
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Require documents before draw
+          summary: Hold draw until documentation is complete.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 16, forecast_cost: 12000000}}]
+          public_summary: Lender submitted a draw status that slows steel funding.
+          private_fact_summary: Documentation demand creates subcontractor cash strain.
+          trust_risk_tags: [documentation_pressure, funding_delay]
+        - option_id: lender_conditional_draw_release
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Conditional draw release
+          summary: Release conditionally while documentation is cured.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12100000}}]
+          public_summary: Lender submitted conditional draw support for on-time steel delivery.
+          private_fact_summary: Lender accepted conditional documentation risk to avoid cash strain.
+          trust_risk_tags: [preserves_delivery, verification_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [lender_require_docs_before_draw, lender_conditional_draw_release]
+  - run_id: labor_crew_reassigned
+    scenario:
+      description: Labor crew is privately reassigned after steel uncertainty, causing remobilization conflict.
+      actor: labor_subcontractor
+      private_event:
+        event_id: labor_crew_reassigned_private
+        linked_object_id: steel_erection
+        summary: Labor subcontractor privately learns the planned steel crew was reassigned.
+        data: {crew_reassigned: true, remobilization_tick: 19, reserve_crew_available: true}
+      options:
+        - option_id: labor_remobilize_late
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Remobilize late
+          summary: Accept remobilization conflict and report later steel erection.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 23, forecast_cost: 8000000}}]
+          public_summary: Labor submitted a late steel erection schedule after remobilization conflict.
+          private_fact_summary: Crew reassignment makes the original steel erection window unavailable.
+          trust_risk_tags: [capacity_pressure, delivery_reliability_pressure]
+        - option_id: labor_reserve_replacement_crew
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Reserve replacement crew
+          summary: Pay to reserve a replacement crew and preserve schedule.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 18, forecast_cost: 8500000}}]
+          public_summary: Labor submitted an on-plan steel erection schedule with replacement crew.
+          private_fact_summary: Labor used replacement crew capacity to avoid remobilization delay.
+          trust_risk_tags: [preserves_delivery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [labor_remobilize_late, labor_reserve_replacement_crew]
+  - run_id: labor_overtime_quality_risk
+    scenario:
+      description: Labor overtime can recover schedule but creates hidden quality and rework risk.
+      actor: labor_subcontractor
+      private_event:
+        event_id: labor_overtime_quality_private
+        linked_object_id: steel_erection
+        summary: Labor privately learns overtime recovery creates quality/rework exposure.
+        data: {overtime_available: true, quality_risk: elevated, rework_exposure: 500000}
+      options:
+        - option_id: labor_overtime_recovery
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Use overtime recovery
+          summary: Use overtime to preserve steel erection schedule.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 18, forecast_cost: 9000000}}]
+          public_summary: Labor submitted an on-plan steel erection schedule using overtime.
+          private_fact_summary: Overtime recovery creates hidden quality and rework risk.
+          trust_risk_tags: [preserves_delivery, quality_risk]
+        - option_id: labor_avoid_overtime_delay
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Avoid overtime
+          summary: Avoid quality risk and accept schedule delay.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 22, forecast_cost: 8000000}}]
+          public_summary: Labor submitted a later steel erection schedule avoiding overtime.
+          private_fact_summary: Labor avoided overtime because quality risk was too high.
+          trust_risk_tags: [quality_protection, delivery_reliability_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [labor_overtime_recovery, labor_avoid_overtime_delay]
+  - run_id: inspector_capacity_backlog
+    scenario:
+      description: Inspector capacity backlog can delay closeout despite completed work.
+      actor: inspector
+      private_event:
+        event_id: inspector_capacity_backlog_private
+        linked_object_id: final_inspection
+        summary: Inspector privately learns capacity backlog blocks the planned closeout slot.
+        data: {inspection_capacity_backlog: true, third_party_available: true}
+      options:
+        - option_id: inspector_wait_backlog
+          decision_type: inspect
+          object_type: final_inspection
+          object_id: final_inspection
+          label: Wait for internal capacity
+          summary: Wait for internal inspector capacity and report later final inspection.
+          effects: [{set_task_forecast: {task_id: final_inspection, forecast_end_tick: 42, forecast_cost: 1000000}}]
+          public_summary: Inspector submitted a delayed final inspection forecast due to backlog.
+          private_fact_summary: Inspector capacity backlog blocks closeout timing.
+          trust_risk_tags: [capacity_pressure, closeout_delay]
+        - option_id: inspector_use_third_party_review
+          decision_type: inspect
+          object_type: final_inspection
+          object_id: final_inspection
+          label: Use third-party review
+          summary: Use third-party review to protect closeout timing.
+          effects: [{set_task_forecast: {task_id: final_inspection, forecast_end_tick: 39, forecast_cost: 1400000}}]
+          public_summary: Inspector submitted an on-plan final inspection forecast with third-party review.
+          private_fact_summary: Inspector used third-party review to work around internal backlog.
+          trust_risk_tags: [preserves_delivery, verification_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [inspector_wait_backlog, inspector_use_third_party_review]
+  - run_id: inspector_documentation_rework
+    scenario:
+      description: Inspector finds incomplete submittals and can require rework or approve conditionally.
+      actor: inspector
+      private_event:
+        event_id: inspector_docs_rework_private
+        linked_object_id: final_inspection
+        summary: Inspector privately learns closeout documentation is incomplete.
+        data: {documentation_incomplete: true, conditional_approval_available: true}
+      options:
+        - option_id: inspector_require_document_rework
+          decision_type: inspect
+          object_type: final_inspection
+          object_id: final_inspection
+          label: Require documentation rework
+          summary: Require documentation rework before final inspection clears.
+          effects: [{set_task_forecast: {task_id: final_inspection, forecast_end_tick: 43, forecast_cost: 1200000}}]
+          public_summary: Inspector submitted a final inspection forecast requiring documentation rework.
+          private_fact_summary: Incomplete submittals require documentation rework before closeout.
+          trust_risk_tags: [process_reliability_pressure, closeout_delay]
+        - option_id: inspector_conditional_approval
+          decision_type: inspect
+          object_type: final_inspection
+          object_id: final_inspection
+          label: Conditional approval
+          summary: Approve conditionally while documentation is cured.
+          effects: [{set_task_forecast: {task_id: final_inspection, forecast_end_tick: 40, forecast_cost: 1300000}}]
+          public_summary: Inspector submitted a conditional final inspection forecast.
+          private_fact_summary: Inspector accepted documentation cure risk to limit closeout delay.
+          trust_risk_tags: [partial_recovery, verification_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [inspector_require_document_rework, inspector_conditional_approval]
+  - run_id: hidden_foundation_condition
+    scenario:
+      description: GC discovers a hidden foundation condition that shifts the steel erection path.
+      actor: general_contractor
+      private_event:
+        event_id: hidden_foundation_condition_private
+        linked_object_id: foundation_work
+        summary: GC privately learns a hidden foundation condition affects the erection path.
+        data: {foundation_condition: hidden_obstruction, remediation_available: true}
+      options:
+        - option_id: gc_foundation_resequence
+          decision_type: submit_forecast
+          object_type: foundation_work
+          object_id: foundation_work
+          label: Resequence foundation path
+          summary: Resequence around the hidden condition and accept delay.
+          effects: [{set_task_forecast: {task_id: foundation_work, forecast_end_tick: 17, forecast_cost: 13000000}}]
+          public_summary: GC submitted a foundation forecast reflecting hidden condition delay.
+          private_fact_summary: Hidden foundation condition shifts the steel erection path.
+          trust_risk_tags: [site_condition_pressure, downstream_blame_risk]
+        - option_id: gc_prompt_foundation_remediation
+          decision_type: submit_forecast
+          object_type: foundation_work
+          object_id: foundation_work
+          label: Prompt remediation
+          summary: Fund prompt remediation to protect steel erection.
+          effects: [{set_task_forecast: {task_id: foundation_work, forecast_end_tick: 14, forecast_cost: 14500000}}]
+          public_summary: GC submitted a remediated foundation forecast.
+          private_fact_summary: GC paid for prompt remediation of the hidden foundation condition.
+          trust_risk_tags: [preserves_delivery, hidden_cost_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [gc_foundation_resequence, gc_prompt_foundation_remediation]
+  - run_id: design_rfi_steel_spec
+    scenario:
+      description: Design clarification changes steel specification after procurement.
+      actor: owner_developer
+      private_event:
+        event_id: design_rfi_steel_spec_private
+        linked_object_id: steel_fabrication
+        summary: Owner privately learns an RFI response changes the steel specification.
+        data: {rfi_pending: true, steel_spec_change: true, substitute_available: true}
+      options:
+        - option_id: owner_wait_for_spec_clarification
+          decision_type: submit_forecast
+          object_type: steel_fabrication
+          object_id: steel_fabrication
+          label: Wait for clarification
+          summary: Wait for full specification clarification before fabrication.
+          effects: [{set_task_forecast: {task_id: steel_fabrication, forecast_end_tick: 16, forecast_cost: 0}}]
+          public_summary: Owner submitted a steel fabrication forecast reflecting RFI delay.
+          private_fact_summary: Design clarification changes steel specification after procurement.
+          trust_risk_tags: [design_process_pressure, delivery_reliability_pressure]
+        - option_id: owner_approve_substitute_steel
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Approve substitute steel
+          summary: Approve substitute steel to preserve delivery.
+          effects:
+            - {set_task_forecast: {task_id: steel_fabrication, forecast_end_tick: 13, forecast_cost: 0}}
+            - {set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12400000}}
+          public_summary: Owner submitted an on-time steel forecast using an approved substitute.
+          private_fact_summary: Owner approved substitute steel to avoid RFI-driven delay.
+          trust_risk_tags: [preserves_delivery, spec_change_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [owner_wait_for_spec_clarification, owner_approve_substitute_steel]
+  - run_id: retainage_payment_dispute
+    scenario:
+      description: Retainage dispute makes supplier acceleration commercially unattractive.
+      actor: steel_supplier
+      private_event:
+        event_id: retainage_payment_dispute_private
+        event_type: supplier_impact_assessment
+        linked_object_id: steel_contract
+        summary: Supplier privately learns retainage dispute blocks acceleration funding.
+        data: {retainage_dispute: true, acceleration_refusal_risk: high, cash_available: 500000}
+      options:
+        - option_id: supplier_refuse_acceleration
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Refuse acceleration
+          summary: Refuse acceleration while retainage remains disputed.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 19, forecast_cost: 12000000}}]
+          public_summary: Supplier submitted a late delivery forecast after refusing acceleration.
+          private_fact_summary: Retainage dispute makes acceleration commercially unattractive.
+          trust_risk_tags: [payment_dispute, delivery_reliability_pressure]
+        - option_id: supplier_accept_standstill_acceleration
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Accept standstill acceleration
+          summary: Accept acceleration under standstill while reserving payment rights.
+          effects:
+            - {set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12600000}}
+            - {adjust_cash: {agent_id: steel_supplier, delta: -600000}}
+          public_summary: Supplier submitted on-time delivery under a payment standstill.
+          private_fact_summary: Supplier accelerated despite retainage dispute and reduced liquidity.
+          trust_risk_tags: [preserves_delivery, hidden_payment_pressure]
+        - option_id: supplier_continue_under_dispute
+          decision_type: submit_forecast
+          object_type: steel_delivery
+          object_id: steel_delivery
+          label: Continue under dispute
+          summary: Continue baseline delivery while reserving retainage rights.
+          effects: [{set_task_forecast: {task_id: steel_delivery, forecast_end_tick: 14, forecast_cost: 12000000}}]
+          public_summary: Supplier submitted on-time baseline delivery while retainage remained disputed.
+          private_fact_summary: Supplier continued delivery while privately reserving payment-dispute rights.
+          trust_risk_tags: [payment_dispute, preserves_delivery]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [supplier_refuse_acceleration, supplier_accept_standstill_acceleration, supplier_continue_under_dispute]
+  - run_id: auditor_finding_unsupported_forecast
+    scenario:
+      description: Auditor finding exposes that a prior optimistic completion forecast lacks support.
+      actor: general_contractor
+      private_event:
+        event_id: auditor_finding_private
+        linked_object_id: project_completion
+        summary: GC privately learns an auditor can challenge the unsupported optimistic forecast.
+        data: {unsupported_forecast: true, remediation_plan_available: true}
+      options:
+        - option_id: gc_correct_unsupported_forecast
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Correct forecast
+          summary: Correct the unsupported forecast and absorb trust pressure.
+          effects: [{set_project_forecast: {forecast_completion_tick: 45, forecast_final_cost: 99000000}}]
+          public_summary: GC submitted a corrected completion forecast after audit pressure.
+          private_fact_summary: GC privately knows the prior optimistic forecast lacked support.
+          trust_risk_tags: [reporting_integrity_pressure, auditor_exposure]
+        - option_id: gc_remediation_plan_forecast
+          decision_type: submit_forecast
+          object_type: project_completion
+          object_id: project_completion
+          label: Submit remediation plan
+          summary: Submit a remediation plan and partial recovery forecast.
+          effects: [{set_project_forecast: {forecast_completion_tick: 41, forecast_final_cost: 98500000}}]
+          public_summary: GC submitted a remediation-backed completion forecast.
+          private_fact_summary: GC used a remediation plan to support a less severe forecast correction.
+          trust_risk_tags: [partial_recovery, reporting_integrity_pressure]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [gc_correct_unsupported_forecast, gc_remediation_plan_forecast]
+  - run_id: prompt_remediation_public_breach
+    scenario:
+      description: Prompt remediation fixes the physical issue but leaves public breach pressure.
+      actor: labor_subcontractor
+      private_event:
+        event_id: prompt_remediation_private
+        linked_object_id: steel_erection
+        summary: Labor privately learns prompt remediation can fix the physical problem but at cost.
+        data: {physical_issue: true, prompt_remediation_available: true, public_breach_record_risk: high}
+      options:
+        - option_id: labor_prompt_remediation
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Prompt remediation
+          summary: Remediate promptly and preserve the physical schedule.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 18, forecast_cost: 9000000}}]
+          public_summary: Labor submitted an on-plan steel erection schedule after prompt remediation.
+          private_fact_summary: Prompt remediation fixed the physical issue but did not erase public breach pressure.
+          trust_risk_tags: [remediation_reliability, public_breach_pressure]
+        - option_id: labor_slow_rework
+          decision_type: schedule
+          object_type: steel_erection
+          object_id: steel_erection
+          label: Slow rework
+          summary: Avoid expensive prompt remediation and accept rework delay.
+          effects: [{set_task_forecast: {task_id: steel_erection, forecast_end_tick: 21, forecast_cost: 8300000}}]
+          public_summary: Labor submitted a delayed steel erection schedule after rework.
+          private_fact_summary: Labor avoided prompt remediation cost and accepted schedule delay.
+          trust_risk_tags: [delivery_reliability_pressure, cost_preservation]
+    expected:
+      <<: *choice_expectations
+      allowed_option_ids: [labor_prompt_remediation, labor_slow_rework]

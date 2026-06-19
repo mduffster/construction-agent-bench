@@ -192,6 +192,36 @@ def test_llm_policy_normalizes_exact_menu_effect_match_to_option_id() -> None:
     ).valid
 
 
+def test_llm_policy_normalizes_unique_menu_target_without_params() -> None:
+    state = _state()
+    option = _steel_delay_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    policy = LLMPolicy(adapter=_FakeAdapter(submission), settings=ModelSettings(model_id="fake"))
+
+    normalized = policy.decide(observation)
+
+    assert normalized.decision.parameters["option_id"] == option.option_id
+    assert SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
+        normalized,
+        state,
+        observation,
+    ).valid
+
+
 def test_llm_policy_normalizes_stale_menu_option_id_when_effects_match() -> None:
     state = _state()
     option = _steel_expedite_option()
@@ -251,6 +281,37 @@ def test_llm_policy_strips_option_id_when_no_menu_options_are_visible() -> None:
     assert normalized.decision.parameters["start_tick"] == 14
     assert SubmissionValidator().validate(
         AgentRole.LABOR_SUBCONTRACTOR.value,
+        normalized,
+        state,
+        observation,
+    ).valid
+
+
+def test_llm_policy_normalizes_visible_menu_option_object_fields() -> None:
+    state = _state()
+    option = _steel_expedite_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="task",
+            object_id="steel_delivery",
+            parameters={"option_id": option.option_id},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    policy = LLMPolicy(adapter=_FakeAdapter(submission), settings=ModelSettings(model_id="fake"))
+
+    normalized = policy.decide(observation)
+
+    assert normalized.decision.object_type == option.object_type
+    assert normalized.decision.object_id == option.object_id
+    assert SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
         normalized,
         state,
         observation,

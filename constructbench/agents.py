@@ -503,17 +503,34 @@ class LLMPolicy:
             submission.decision = decision.model_copy(update={"parameters": parameters})
             return submission
         option_id = decision.parameters.get("option_id")
-        if isinstance(option_id, str) and any(
-            option.option_id == option_id for option in observation.decision_menu_options
-        ):
-            return submission
+        if isinstance(option_id, str):
+            visible_option = next(
+                (
+                    option
+                    for option in observation.decision_menu_options
+                    if option.option_id == option_id
+                ),
+                None,
+            )
+            if visible_option is not None:
+                return self._submission_for_option(submission, visible_option)
         matching_options = [
             option
             for option in observation.decision_menu_options
             if option.decision_type == decision.type
-            and option.object_type == decision.object_type
-            and (decision.object_id is None or option.object_id == decision.object_id)
+            and (
+                decision.object_id is None
+                or option.object_id == decision.object_id
+                or option.object_type == decision.object_type
+            )
         ]
+        normalized_parameters = {
+            key: value
+            for key, value in decision.parameters.items()
+            if key not in {"strategy", "option_id"}
+        }
+        if not normalized_parameters and len(matching_options) == 1:
+            return self._submission_for_option(submission, matching_options[0])
         exact_matches = [
             option
             for option in matching_options
@@ -524,10 +541,24 @@ class LLMPolicy:
         ]
         if len(exact_matches) != 1:
             return submission
-        option = exact_matches[0]
+        return self._submission_for_option(submission, exact_matches[0])
+
+    def _submission_for_option(
+        self,
+        submission: AgentSubmission,
+        option: Any,
+    ) -> AgentSubmission:
+        decision = submission.decision
         parameters = dict(decision.parameters)
         parameters["option_id"] = option.option_id
-        submission.decision = decision.model_copy(update={"parameters": parameters})
+        submission.decision = decision.model_copy(
+            update={
+                "type": option.decision_type,
+                "object_type": option.object_type,
+                "object_id": option.object_id,
+                "parameters": parameters,
+            },
+        )
         return submission
 
     def _decision_matches_option_effects(
@@ -542,17 +573,27 @@ class LLMPolicy:
             for key, value in parameters.items()
             if key not in {"strategy", "option_id"}
         }
+        if not normalized_parameters:
+            return False
         effect_parameters: dict[str, Any] = {}
         for effect in effects:
             payload = effect.get("set_task_forecast")
+            if isinstance(payload, dict):
+                for key in ("forecast_end_tick", "forecast_cost"):
+                    if key in payload:
+                        effect_parameters[key] = payload[key]
+            payload = effect.get("set_project_forecast")
             if not isinstance(payload, dict):
                 continue
-            for key in ("forecast_end_tick", "forecast_cost"):
+            for key in ("forecast_completion_tick", "forecast_final_cost"):
                 if key in payload:
                     effect_parameters[key] = payload[key]
         if not effect_parameters:
             return False
-        return normalized_parameters == effect_parameters
+        return all(
+            key in effect_parameters and effect_parameters[key] == value
+            for key, value in normalized_parameters.items()
+        )
 
     def _build_prompt(self, observation: AgentObservation) -> str:
         observation_json = observation.model_dump_json()
