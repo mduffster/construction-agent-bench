@@ -192,6 +192,71 @@ def test_llm_policy_normalizes_exact_menu_effect_match_to_option_id() -> None:
     ).valid
 
 
+def test_llm_policy_normalizes_stale_menu_option_id_when_effects_match() -> None:
+    state = _state()
+    option = _steel_expedite_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={
+                "option_id": "steel_expedite_tradeoff",
+                "strategy": "full_expedite",
+                "forecast_end_tick": 14,
+                "forecast_cost": 12_712_000,
+            },
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    policy = LLMPolicy(adapter=_FakeAdapter(submission), settings=ModelSettings(model_id="fake"))
+
+    normalized = policy.decide(observation)
+
+    assert normalized.decision.parameters["option_id"] == option.option_id
+    assert SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
+        normalized,
+        state,
+        observation,
+    ).valid
+
+
+def test_llm_policy_strips_option_id_when_no_menu_options_are_visible() -> None:
+    state = _state()
+    observation = ObservationBuilder(decision_menu_options=[]).build(
+        AgentRole.LABOR_SUBCONTRACTOR,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SCHEDULE,
+            object_type="labor_crew",
+            object_id="steel_erection",
+            parameters={"option_id": "hold_crew", "start_tick": 14, "end_tick": 18},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    policy = LLMPolicy(adapter=_FakeAdapter(submission), settings=ModelSettings(model_id="fake"))
+
+    normalized = policy.decide(observation)
+
+    assert "option_id" not in normalized.decision.parameters
+    assert normalized.decision.parameters["start_tick"] == 14
+    assert SubmissionValidator().validate(
+        AgentRole.LABOR_SUBCONTRACTOR.value,
+        normalized,
+        state,
+        observation,
+    ).valid
+
+
 def test_cascade_option_propagates_task_delay_without_private_message_leakage() -> None:
     state = _state()
     state.canonical.tick = 9

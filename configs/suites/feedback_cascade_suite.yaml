@@ -1,0 +1,32 @@
+suite_id: feedback_cascade_suite
+description: Current runnable feedback-cascade agent suite. This is not the legacy 100-run perturbation suite.
+default_max_tick: 11
+runs:
+  - run_id: steel_standard_delivery
+    scenario_config: configs/scenarios/feedback_cascades/steel_standard_delivery.yaml
+    expected:
+      selected_option_id: steel_standard_delivery_no_expedite
+      final_completion_tick: 44
+      final_cost: 95012000
+      delay_ticks: 4
+      cascade_event_count: 11
+      causal_trace_count: 1
+      viability_gate_count: 0
+      project_failed: false
+      project_cancelled: false
+      min_public_update_count: 1
+      private_message_count: 0
+  - run_id: steel_expedite_absorb_loss
+    scenario_config: configs/scenarios/feedback_cascades/steel_expedite_absorb_loss.yaml
+    expected:
+      selected_option_id: steel_expedite_absorb_loss
+      final_completion_tick: 40
+      final_cost: 95712000
+      delay_ticks: 0
+      cascade_event_count: 4
+      causal_trace_count: 1
+      viability_gate_count: 0
+      project_failed: false
+      project_cancelled: false
+      min_public_update_count: 1
+      private_message_count: 0

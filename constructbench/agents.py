@@ -494,10 +494,18 @@ class LLMPolicy:
         observation: AgentObservation,
         submission: AgentSubmission,
     ) -> AgentSubmission:
-        if not observation.decision_menu_options:
-            return submission
         decision = submission.decision
-        if "option_id" in decision.parameters:
+        if not observation.decision_menu_options:
+            if "option_id" not in decision.parameters:
+                return submission
+            parameters = dict(decision.parameters)
+            parameters.pop("option_id", None)
+            submission.decision = decision.model_copy(update={"parameters": parameters})
+            return submission
+        option_id = decision.parameters.get("option_id")
+        if isinstance(option_id, str) and any(
+            option.option_id == option_id for option in observation.decision_menu_options
+        ):
             return submission
         matching_options = [
             option
@@ -564,6 +572,8 @@ class LLMPolicy:
             "If decision_menu_options is non-empty, immediate project actions must select exactly "
             "one visible fixed option by putting its option_id in decision.parameters.option_id; "
             "do not invent numeric parameters to override the option's deterministic effects. "
+            "If decision_menu_options is empty, do not put option_id in decision.parameters; "
+            "option_id is reserved only for visible fixed decision_menu_options. "
             "Communication remains a separate choice: only include a communication if your "
             "organization chooses to disclose, forward, request, or publish information. "
             "The project includes counterparties: the other organizations referenced in "
@@ -587,7 +597,8 @@ class LLMPolicy:
             "affect trust, oversight, contractual exposure, and later commercial options. "
             "economic_decision_options describe concrete strategies, numeric parameters, costs, "
             "known effects, and risks you may use. If you take one of those strategies, put the "
-            "chosen strategy and numbers in decision.parameters. "
+            "chosen strategy and numbers in decision.parameters, but do not use option_id for "
+            "economic_decision_options. "
             f"{assessment_instruction} "
             "Return only valid JSON matching this shape; the values are examples only: "
             f"{submission_example}. "
