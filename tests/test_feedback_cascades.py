@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from constructbench.agents import LLMPolicy
 from constructbench.cascade import CascadeEngine, ViabilityGateEngine
 from constructbench.config import load_agent_configs, load_project_config
 from constructbench.enums import (
@@ -17,6 +18,7 @@ from constructbench.models import (
     DecisionMenuOption,
     DecisionSubmission,
     EvidenceVisibility,
+    ModelSettings,
     ScenarioConfig,
     StateStore,
     ValidationResult,
@@ -118,6 +120,36 @@ def test_menu_governed_decision_requires_visible_option_id() -> None:
     assert valid.valid is True
 
 
+def test_llm_policy_normalizes_exact_menu_effect_match_to_option_id() -> None:
+    state = _state()
+    option = _steel_delay_option()
+    observation = ObservationBuilder(decision_menu_options=[option]).build(
+        AgentRole.STEEL_SUPPLIER,
+        state,
+    )
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={"forecast_end_tick": 18, "forecast_cost": 13_000_000},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    policy = LLMPolicy(adapter=_FakeAdapter(submission), settings=ModelSettings(model_id="fake"))
+
+    normalized = policy.decide(observation)
+
+    assert normalized.decision.parameters["option_id"] == option.option_id
+    assert SubmissionValidator().validate(
+        AgentRole.STEEL_SUPPLIER.value,
+        normalized,
+        state,
+        observation,
+    ).valid
+
+
 def test_cascade_option_propagates_task_delay_without_private_message_leakage() -> None:
     state = _state()
     state.canonical.tick = 9
@@ -163,6 +195,57 @@ def test_cascade_option_propagates_task_delay_without_private_message_leakage() 
     assert private_facts[0]["evidence_id"] == "supplier_low_inventory_private_fact"
     assert result.causal_traces[0].private_cause_owner == AgentRole.STEEL_SUPPLIER
     assert "steel_delivery" in result.causal_traces[0].affected_objects
+
+
+def test_applied_cascade_menu_option_is_not_visible_again() -> None:
+    state = _state()
+    state.canonical.tick = 9
+    option = _steel_delay_option()
+    sibling_option = option.model_copy(
+        update={
+            "option_id": "steel_expedite_absorb_loss",
+            "label": "Expedite and absorb loss",
+        },
+    )
+    builder = ObservationBuilder(decision_menu_options=[option, sibling_option])
+    observation = builder.build(AgentRole.STEEL_SUPPLIER, state)
+    submission = AgentSubmission(
+        decision=DecisionSubmission(
+            type=DecisionType.SUBMIT_FORECAST,
+            object_type="steel_delivery",
+            object_id="steel_delivery",
+            parameters={"option_id": option.option_id},
+        ),
+        communication=None,
+        belief_update=observation.current_beliefs,
+    )
+    record = AgentRuntimeRecord(
+        agent_id=AgentRole.STEEL_SUPPLIER,
+        observation=observation,
+        submission=submission,
+        validation=ValidationResult(valid=True),
+    )
+    scenario = ScenarioConfig(
+        scenario_id="cascade_test",
+        description="Cascade test scenario.",
+        max_tick=40,
+        decision_menu_options=[option],
+    )
+
+    CascadeEngine(scenario).apply(AgentTurnResult(tick=9, records=[record]), state)
+    next_observation = builder.build(AgentRole.STEEL_SUPPLIER, state)
+
+    assert next_observation.decision_menu_options == []
+
+
+class _FakeAdapter:
+    def __init__(self, submission: AgentSubmission) -> None:
+        self.submission = submission
+
+    def generate(self, prompt: str, settings: ModelSettings) -> str:
+        _ = prompt
+        _ = settings
+        return self.submission.model_dump_json()
 
 
 def test_viability_gate_opens_review_then_expires_to_project_cancellation() -> None:

@@ -276,13 +276,17 @@ class TransitionResolver:
             forecast_cost = self._first_int(params, ("forecast_cost", "expected_cost"))
             if forecast_cost is not None:
                 parameters_used["forecast_cost"] = forecast_cost
-            if forecast_tick is not None:
+            task_locked = self._task_locked_by_cascade(
+                task_id,
+                state,
+            ) and not self._uses_menu_option(record)
+            if forecast_tick is not None and not task_locked:
                 task.forecast_end_tick = forecast_tick
-            if forecast_cost is not None and forecast_cost >= 0:
+            if forecast_cost is not None and forecast_cost >= 0 and not task_locked:
                 task.forecast_cost = forecast_cost
             if parameters_used:
                 record.submission.decision_parameters_used.update(parameters_used)
-            if forecast_tick is not None or forecast_cost is not None:
+            if (forecast_tick is not None or forecast_cost is not None) and not task_locked:
                 result.applied.append(
                     AppliedTransition(
                         agent_id=record.agent_id,
@@ -490,15 +494,22 @@ class TransitionResolver:
             ("forecast_final_cost", "expected_final_cost", "final_cost"),
         )
 
+        project_locked = self._project_forecast_locked_by_cascade(
+            state,
+        ) and not self._uses_menu_option(record)
         changed = False
-        if completion_tick is not None:
+        if completion_tick is not None and not project_locked:
             state.canonical.forecast_completion_tick = completion_tick
             record.submission.decision_parameters_used["forecast_completion_tick"] = completion_tick
             changed = True
-        if final_cost is not None:
+        if final_cost is not None and not project_locked:
             state.canonical.forecast_final_cost = final_cost
             record.submission.decision_parameters_used["forecast_final_cost"] = final_cost
             changed = True
+        if completion_tick is not None and project_locked:
+            record.submission.decision_parameters_used["forecast_completion_tick"] = completion_tick
+        if final_cost is not None and project_locked:
+            record.submission.decision_parameters_used["forecast_final_cost"] = final_cost
         if changed:
             result.applied.append(
                 AppliedTransition(
@@ -559,6 +570,22 @@ class TransitionResolver:
             linked_object_id=linked_object_id,
             data=data,
             claims=claims,
+        )
+
+    def _uses_menu_option(self, record: AgentRuntimeRecord) -> bool:
+        return isinstance(record.submission.decision.parameters.get("option_id"), str)
+
+    def _task_locked_by_cascade(self, task_id: str, state: StateStore) -> bool:
+        return any(
+            event.linked_object_id == task_id
+            and event.event_type in {"task_forecast_set", "task_delay_propagated"}
+            for event in state.cascade_events
+        )
+
+    def _project_forecast_locked_by_cascade(self, state: StateStore) -> bool:
+        return any(
+            event.event_type in {"project_completion_propagated", "task_forecast_set"}
+            for event in state.cascade_events
         )
 
     def _task_id_from_decision(

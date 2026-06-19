@@ -8,6 +8,7 @@ from constructbench.config import (
 from constructbench.enums import AgentRole, LedgerEntryType, ScheduledEventType
 from constructbench.models import (
     PrivateMessageEventConfig,
+    PublicLedgerEntry,
     ScenarioConfig,
     ScheduledEventConfig,
 )
@@ -83,6 +84,31 @@ def test_private_supplier_assessment_is_only_delivered_to_supplier_at_tick_9() -
     assert "current_expected_input_cost" not in runner.state.private_by_agent[
         AgentRole.OWNER_DEVELOPER
     ].data
+
+
+def test_prior_tick_public_entries_activate_all_agents_once() -> None:
+    runner = _runner()
+
+    runner.run_until(9)
+    generated_entry = PublicLedgerEntry(
+        entry_id="generated_public_supplier_forecast",
+        tick=9,
+        source="steel_supplier",
+        entry_type=LedgerEntryType.PROJECT_FORECAST,
+        linked_object_id="steel_delivery",
+        data={
+            "cascade_source": "steel_standard_delivery_no_expedite",
+            "forecast_end_tick": 18,
+        },
+    )
+    runner.state.public.ledger.append(generated_entry)
+
+    tick_10 = runner.advance_tick()
+    tick_11 = runner.advance_tick()
+
+    assert tick_10.delivered.public_entries == [generated_entry]
+    assert set(tick_10.active_agents) == set(AgentRole)
+    assert tick_11.delivered.public_entries == []
 
 
 def test_private_events_do_not_relax_strained_initial_constraints() -> None:

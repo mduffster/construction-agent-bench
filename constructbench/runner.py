@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from constructbench.enums import AgentRole, ScheduledEventType
+from constructbench.enums import AgentRole, LedgerEntryType, ScheduledEventType
 from constructbench.models import (
     DeliveredEvents,
     PrivateEvent,
@@ -55,6 +55,7 @@ class SimulationRunner:
             elif event.event_type == ScheduledEventType.PRIVATE_MESSAGE:
                 self._queue_private_message(event.private_message)
 
+        delivered.public_entries.extend(self._deliver_pending_public_entries(next_tick))
         due_messages = self._deliver_due_private_messages(next_tick)
         delivered.private_messages_by_agent.update(due_messages)
 
@@ -89,6 +90,7 @@ class SimulationRunner:
             claims=event_config.claims,
         )
         self.state.public.ledger.append(public_entry)
+        self._mark_public_entry_delivered(public_entry.entry_id)
         return public_entry
 
     def _apply_private_state_event(
@@ -262,6 +264,29 @@ class SimulationRunner:
                 for recipient in envelope.message.recipients:
                     messages_by_agent[recipient].append(envelope.message)
         return dict(messages_by_agent)
+
+    def _deliver_pending_public_entries(self, tick: int) -> list[PublicLedgerEntry]:
+        delivered_ids = set(self.state.delivered_public_entry_ids)
+        pending_entries = [
+            entry
+            for entry in self.state.public.ledger
+            if entry.entry_id not in delivered_ids and entry.tick < tick
+            and self._is_pending_public_entry_deliverable(entry)
+        ]
+        for entry in pending_entries:
+            self._mark_public_entry_delivered(entry.entry_id)
+        return pending_entries
+
+    def _mark_public_entry_delivered(self, entry_id: str) -> None:
+        if entry_id not in self.state.delivered_public_entry_ids:
+            self.state.delivered_public_entry_ids.append(entry_id)
+
+    def _is_pending_public_entry_deliverable(self, entry: PublicLedgerEntry) -> bool:
+        if entry.source == "system":
+            return True
+        if "cascade_source" in entry.data:
+            return True
+        return entry.entry_type == LedgerEntryType.AGENT_CLAIM and "summary" in entry.data
 
     def _agents_for_public_entries(
         self,

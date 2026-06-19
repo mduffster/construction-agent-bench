@@ -97,10 +97,29 @@ class ObservationBuilder:
         agent_id: AgentRole,
         state: StateStore,
     ) -> list[DecisionMenuOption]:
+        used_option_ids = {
+            option_id
+            for trace in state.causal_traces
+            for option_id in trace.agent_decision_option_ids
+        }
+        used_option_scopes = {
+            (option.actor, option.decision_type, option.object_type, option.object_id)
+            for option in self.decision_menu_options
+            if option.option_id in used_option_ids
+        }
         return [
             option.model_copy(deep=True)
             for option in self.decision_menu_options
-            if option.actor == agent_id and self._prerequisites_met(option, state)
+            if option.actor == agent_id
+            and option.option_id not in used_option_ids
+            and (
+                option.actor,
+                option.decision_type,
+                option.object_type,
+                option.object_id,
+            )
+            not in used_option_scopes
+            and self._prerequisites_met(option, state)
         ]
 
     def _prerequisites_met(self, option: DecisionMenuOption, state: StateStore) -> bool:

@@ -632,6 +632,7 @@ class StateStore(StrictModel):
     viability_gates: list[ViabilityGate] = Field(default_factory=list)
     private_events_by_agent: dict[AgentRole, list[PrivateEvent]] = Field(default_factory=dict)
     private_messages: list[PrivateMessageEnvelope] = Field(default_factory=list)
+    delivered_public_entry_ids: list[SnakeId] = Field(default_factory=list)
 
     def to_snapshot(self) -> dict[str, Any]:
         return self.model_dump(mode="json")

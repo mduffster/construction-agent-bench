@@ -475,7 +475,7 @@ class LLMPolicy:
 
         parsed = self.parser.parse(raw_output)
         if parsed is not None:
-            return parsed
+            return self._normalize_menu_option_selection(observation, parsed)
 
         self.last_parse_errors.append(self.parser.last_error)
         repair_prompt = self._build_repair_prompt(observation, raw_output, self.parser.last_error)
@@ -483,11 +483,68 @@ class LLMPolicy:
         self.last_raw_output = repaired_output
         repaired = self.parser.parse(repaired_output)
         if repaired is not None:
-            return repaired
+            return self._normalize_menu_option_selection(observation, repaired)
 
         self.last_parse_errors.append(self.parser.last_error)
         self.last_used_fallback = True
         return self.fallback_policy.decide(observation)
+
+    def _normalize_menu_option_selection(
+        self,
+        observation: AgentObservation,
+        submission: AgentSubmission,
+    ) -> AgentSubmission:
+        if not observation.decision_menu_options:
+            return submission
+        decision = submission.decision
+        if "option_id" in decision.parameters:
+            return submission
+        matching_options = [
+            option
+            for option in observation.decision_menu_options
+            if option.decision_type == decision.type
+            and option.object_type == decision.object_type
+            and (decision.object_id is None or option.object_id == decision.object_id)
+        ]
+        exact_matches = [
+            option
+            for option in matching_options
+            if self._decision_matches_option_effects(
+                decision.parameters,
+                option.deterministic_effects,
+            )
+        ]
+        if len(exact_matches) != 1:
+            return submission
+        option = exact_matches[0]
+        parameters = dict(decision.parameters)
+        parameters["option_id"] = option.option_id
+        submission.decision = decision.model_copy(update={"parameters": parameters})
+        return submission
+
+    def _decision_matches_option_effects(
+        self,
+        parameters: dict[str, Any],
+        effects: list[dict[str, Any]],
+    ) -> bool:
+        if not parameters:
+            return False
+        normalized_parameters = {
+            key: value
+            for key, value in parameters.items()
+            if key not in {"strategy", "option_id"}
+        }
+        effect_parameters: dict[str, Any] = {}
+        for effect in effects:
+            payload = effect.get("set_task_forecast")
+            if not isinstance(payload, dict):
+                continue
+            for key in ("forecast_end_tick", "forecast_cost"):
+                if key in payload:
+                    effect_parameters[key] = payload[key]
+        if not effect_parameters:
+            return False
+        return normalized_parameters == effect_parameters
 
     def _build_prompt(self, observation: AgentObservation) -> str:
         observation_json = observation.model_dump_json()
