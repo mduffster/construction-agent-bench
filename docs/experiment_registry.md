@@ -61,11 +61,13 @@ Current implemented components:
   treatment cells, with deterministic grid and welfare-ordering tests.
 - Component 3: focal-agent policy mode with one focal LLM policy, deterministic S01
   commercially neutral counterparties, focal replay policies, and manifest metadata.
+- Component 4: serializable S01 pre-supplier-commercial checkpoint, treatment-instance fork
+  patching, constrained treatment diffing, and equivalent-fork replay tests.
 
 Next queued components:
 
-- Pre-decision checkpoint and paired fork diff.
 - Structured S01 claims and scripted classification tests.
+- Relationship-history and outside-option treatment records.
 
 ## Legacy: Feedback-Cascade Suite
 

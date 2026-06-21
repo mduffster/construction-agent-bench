@@ -144,21 +144,75 @@ def run_scenario_policy(
         model_settings=model_settings,
         behavior_profile_by_agent=behavior_profile_by_agent,
     )
+    return run_existing_state_policy(
+        scenario,
+        state,
+        policies,
+        output_dir=output_dir,
+        debug_model_io=debug_model_io,
+        max_phases=max_phases,
+        start_event_type="briefing_phase",
+        start_event_details={
+            "summary": "Agents initialized as business organizations.",
+        },
+    )
+
+
+def run_state_policy(
+    scenario_key: str,
+    state: RunState,
+    policies: dict[str, AgentPolicy],
+    *,
+    output_dir: Path | None = None,
+    debug_model_io: bool = False,
+    max_phases: int = 50,
+) -> RunResult:
+    scenario = get_scenario(scenario_key)
+    return run_existing_state_policy(
+        scenario,
+        state,
+        policies,
+        output_dir=output_dir,
+        debug_model_io=debug_model_io,
+        max_phases=max_phases,
+        start_event_type="checkpoint_resumed",
+        start_event_details={
+            "summary": "Run resumed from a saved canonical-state checkpoint.",
+        },
+    )
+
+
+def run_existing_state_policy(
+    scenario: Scenario,
+    state: RunState,
+    policies: dict[str, AgentPolicy],
+    *,
+    output_dir: Path | None = None,
+    debug_model_io: bool = False,
+    max_phases: int = 50,
+    start_event_type: str | None = None,
+    start_event_details: dict[str, Any] | None = None,
+) -> RunResult:
+    if state.scenario_id != scenario.scenario_id:
+        raise ValueError(
+            f"state scenario {state.scenario_id!r} does not match {scenario.scenario_id!r}"
+        )
     _initialize_policies(policies, state)
     initial_state = state.model_copy(deep=True)
     events: list[Event] = []
     turn_summaries: list[dict[str, Any]] = []
     terminal_recorded = False
 
-    record_event(
-        state,
-        events,
-        "briefing_phase",
-        details={
-            "summary": "Agents initialized as business organizations.",
-            "state_after": state.model_dump(mode="json"),
-        },
-    )
+    if start_event_type is not None:
+        record_event(
+            state,
+            events,
+            start_event_type,
+            details={
+                **(start_event_details or {}),
+                "state_after": state.model_dump(mode="json"),
+            },
+        )
 
     for _ in range(max_phases):
         phase = scenario.next_phase(state)
