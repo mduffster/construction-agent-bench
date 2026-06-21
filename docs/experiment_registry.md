@@ -1,129 +1,124 @@
 # Experiment Registry
 
-This registry separates legacy experiment infrastructure from the current feedback-cascade
-agent-behavior experiment. Do not use a legacy runner as evidence for the current cascade
-experiment unless it is explicitly listed under the current suite.
+This registry identifies the runnable experiment infrastructure that matches the current
+stateful ConstructBench harness. The previous feedback-cascade suite is legacy and should not be
+used as the current experiment source.
 
-## Current Experiment: Feedback-Cascade Agent Suite
+## Current Baseline: Stateful Five-Scenario Harness
 
-Status: **CURRENT**
+Status: **CURRENT / DETERMINISTIC ACCEPTANCE**
 
-Purpose: evaluate agent behavior under constraints in a multi-firm construction workflow where
-hidden material constraints create public symptoms, downstream consequences, and directed
-counterparty assessment pressure.
+Purpose: validate the stateful multi-firm construction-project harness with public/private state,
+required business decisions, optional communications, directed assessments, checkpoint cascades,
+replayable outputs, and deterministic scenario consequences.
 
-Primary design document:
+Primary design documents:
 
-- `docs/feedback_cascade_design.md`
+- `docs/constructbench_stateful_build_plan_with_5_scenarios.md`
+- `docs/constructbench_low_budget_transition_plan.md`
 
-Runnable suite manifest:
+Runnable scenarios:
+
+- `S00_BASE_PROJECT_NO_PERTURBATION`
+- `S01_STEEL_MARKET_SHOCK`
+- `S02_CRANE_FAILURE_WEATHER`
+- `S03_OWNER_LIQUIDITY_SHORTFALL`
+- `S04_WELD_INSPECTION_FAILURE`
+- `S05_LABOR_SHORTAGE_INSPECTION_WINDOW`
+
+Primary commands:
+
+- `uv run pytest -q`
+- `uv run ruff check .`
+- `uv run python scripts/audit_choice_consequences.py --output outputs/choice_consequence_audit.json`
+- `uv run python scripts/run_one.py --scenario S01 --variant normal --policy fixture`
+- `uv run python scripts/run_batch.py --policy fixture`
+- `uv run python scripts/run_combined.py`
+
+Output contract:
+
+- Normal scenario outputs go under `outputs/`.
+- Normal runs write exactly `run_config.json`, `events.jsonl`, `turn_summaries.jsonl`, and
+  `run_summary.json`.
+- Debug model I/O is written only when explicitly requested.
+
+## Current Experiment Direction: S01 Low-Budget Transition
+
+Status: **IN DEVELOPMENT**
+
+Purpose: turn the S01 steel-market shock into a controlled focal-agent experiment on supplier
+disclosure, bargaining, relationship history, outside options, utility, and project welfare.
+
+Planning source:
+
+- `docs/constructbench_low_budget_transition_plan.md`
+
+Current implemented components:
+
+- Component 0: run manifests embedded in `run_config.json` and `run_summary.json`.
+- Component 1: harness-scored S01 payoff ledger and project-welfare accounting.
+
+Next queued components:
+
+- S01 parameter file and deterministic parameter-grid tests.
+- Focal-agent policy mode with scripted counterparties.
+- Pre-decision checkpoint and paired fork diff.
+- Structured S01 claims and scripted classification tests.
+
+## Legacy: Feedback-Cascade Suite
+
+Status: **LEGACY / SUPERSEDED**
+
+Former files:
 
 - `configs/suites/feedback_cascade_suite.yaml`
-
-Runnable scenario definitions:
-
-- The 20 current feedback-cascade scenarios are defined in
-  `configs/suites/feedback_cascade_suite.yaml`.
-- `scripts/run_feedback_cascade_suite.py` materializes those definitions into generated scenario
-  YAML files under each suite output directory before running them.
-
-Runner:
-
 - `scripts/run_feedback_cascade_suite.py`
+- generated feedback-cascade scenario YAMLs
 
-Default policy mode: `ollama`.
+Purpose: earlier cascade-oriented experiment infrastructure. It has been superseded by the
+stateful five-scenario harness and should not be used as current evidence.
 
-Scripted mode is allowed only as a deterministic harness regression check. It is not the
-behavioral experiment.
+## Legacy: Forced Cascade Fixtures
 
-Current scope:
+Status: **LEGACY / SUPERSEDED**
 
-- The current runnable suite covers the twenty feedback-cascade cards from the design direction.
-- Each scenario exposes multiple fixed options to the relevant actor. The suite does not require
-  a specific option; it verifies that the agent selected one valid visible option and that the
-  deterministic cascade artifacts were produced.
-- The scenario catalog is still toy-scale and should be expanded for richer construction market
-  coverage, but it is now a runnable non-forced agent-behavior suite.
-
-Validation expectations:
-
-- Agent submissions must validate without transition rejections.
-- Agent submissions must not fall back.
-- The selected fixed option must be one of the visible options for that scenario.
-- Each run must produce cascade events, one causal trace, one private cause, and one public symptom.
-- Private causes must appear in causal traces and closely held private state, not as automatic
-  agent-to-agent private messages.
-
-## Regression Fixtures: Forced Cascade Branches
-
-Status: **REGRESSION ONLY / NOT THE BEHAVIOR EXPERIMENT**
-
-Files:
+Former files:
 
 - `configs/scenarios/regression/steel_standard_delivery_forced.yaml`
 - `configs/scenarios/regression/steel_expedite_absorb_loss_forced.yaml`
 
-Purpose: deterministic branch fixtures for checking cascade propagation math. These files force
-one branch and must not be used as evidence about agent choice behavior.
+Purpose: deterministic branch fixtures for the old cascade propagation math.
 
 ## Legacy: Baseline Steel Shock
 
-Status: **LEGACY / BASELINE CONTROL**
+Status: **LEGACY / SUPERSEDED**
 
-Files:
+Former files:
 
 - `configs/scenarios/steel_shock.yaml`
 - `scripts/run_simulation.py`
 
-Purpose: original single steel-market shock scenario with public market movement and supplier
-private impact. Useful as a baseline control and regression fixture.
+Purpose: original single steel-market shock simulation. It has been replaced by
+`S01_STEEL_MARKET_SHOCK`.
 
-Not the current cascade suite.
+## Legacy: Perturbation And Behavioral Suites
 
-## Legacy: Perturbation Scenario Suite
+Status: **LEGACY / SUPERSEDED**
 
-Status: **LEGACY / DIAGNOSTIC**
-
-Files:
+Former files:
 
 - `scripts/run_full_scenario_suite.py`
+- `scripts/run_behavioral_suite.py`
+- `scripts/run_condition_batch.py`
+- `scripts/run_directed_trust_experiment.py`
 - `constructbench/perturbations.py`
 
-Purpose: generates a designed 100-run perturbation suite from generic owner, GC, steel, labor,
-lender, and inspector perturbation vectors.
-
-Important distinction: this suite is not the feedback-cascade experiment. It can be useful for
-stress-testing broad metrics, but it does not implement the current 20-scenario cascade catalog.
-
-## Legacy: Random Behavioral Suite
-
-Status: **LEGACY / DIAGNOSTIC**
-
-Files:
-
-- `scripts/run_behavioral_suite.py`
-
-Purpose: randomized behavioral simulations over perturbations, local conditions, behavior
-profiles, and oversight modes.
-
-Important distinction: this runner may use LLM agents, but it operates on the legacy perturbation
-generator rather than the current feedback-cascade scenario catalog.
-
-## Legacy: Directed Trust Experiment
-
-Status: **LEGACY / DIAGNOSTIC**
-
-Files:
-
-- `scripts/run_directed_trust_experiment.py`
-
-Purpose: focused experiments around directed counterparty expectation updates.
-
-Important distinction: this is related research infrastructure, not the current cascade-suite
-runner.
+Purpose: earlier broad perturbation, behavioral, and directed-trust experiments. They do not match
+the current harness contract.
 
 ## Operational Rule
 
-When the task is to run or analyze the current cascade experiment, use
-`scripts/run_feedback_cascade_suite.py` and the `configs/suites/feedback_cascade_suite.yaml`
-manifest. Do not substitute `scripts/run_full_scenario_suite.py`.
+For current harness validation, use the deterministic pytest suite, ruff, replay checks, and
+`scripts/audit_choice_consequences.py`. For live model work, use `scripts/run_one.py` or
+`scripts/run_batch.py` with an explicit hosted-provider configuration and preserve generated
+artifacts under `outputs/`.

@@ -1,485 +1,218 @@
-"""Run artifact writing, turn summaries, and analysis packet assembly."""
-
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any
 
-from constructbench.io import append_jsonl
-from constructbench.metrics import calculate_final_metrics
-from constructbench.models import (
-    AgentTurnResult,
-    CascadeTickResult,
-    SafetyTickResult,
-    ScenarioConfig,
-    StateStore,
-    TickResult,
-    TransitionResult,
-    ViabilityTickResult,
-)
-from constructbench.state import export_state_snapshot
+from constructbench.manifest import build_run_manifest, output_hashes
+from constructbench.state import Event, RunState, TrustAssessment
 
 
-class RunLogger:
-    """Write Phase 5 JSON and JSONL artifacts for a run."""
+def run_config_payload(
+    initial_state: RunState,
+    final_state: RunState,
+    *,
+    debug_model_io: bool = False,
+) -> dict[str, Any]:
+    return {
+        "run_id": initial_state.run_id,
+        "scenario_id": initial_state.scenario_id,
+        "variant": initial_state.variant,
+        "seed": initial_state.seed,
+        "model_settings": initial_state.model_settings,
+        "behavior_profile_by_agent": initial_state.behavior_profile_by_agent,
+        "goal_profile_by_agent": {
+            agent_id: profile.model_dump(mode="json")
+            for agent_id, profile in initial_state.goal_profile_by_agent.items()
+        },
+        "run_manifest": build_run_manifest(
+            initial_state=initial_state,
+            final_state=final_state,
+            debug_model_io=debug_model_io,
+        ),
+        "initial_state": initial_state.model_dump(mode="json"),
+    }
 
-    JSONL_ARTIFACTS = (
-        "state_snapshots.jsonl",
-        "public_ledger.jsonl",
-        "private_messages.jsonl",
-        "agent_observations.jsonl",
-        "agent_submissions.jsonl",
-        "agent_beliefs.jsonl",
-        "agent_decision_reports.jsonl",
-        "contract_breaches.jsonl",
-        "oversight_findings.jsonl",
-        "trust_updates.jsonl",
-        "agent_trust_assessments.jsonl",
-        "counterparty_expectation_updates.jsonl",
-        "decision_menu_options.jsonl",
-        "cascade_events.jsonl",
-        "causal_traces.jsonl",
-        "viability_gates.jsonl",
-        "disclosure_assessments.jsonl",
-        "turn_summaries.jsonl",
+
+def run_summary_payload(
+    final_state: RunState,
+    *,
+    initial_state: RunState | None = None,
+    debug_model_io: bool = False,
+    manifest_output_hashes: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    project = final_state.canonical_state["project"]
+    initial_state = initial_state or final_state
+    return {
+        "run_id": final_state.run_id,
+        "scenario_id": final_state.scenario_id,
+        "variant": final_state.variant,
+        "run_valid": final_state.run_valid,
+        "terminal_status": final_state.terminal_status,
+        "terminal_reason": final_state.terminal_reason,
+        "final_project_cost": project["project_cost"],
+        "completion_tick": project["completion_tick"],
+        "scenario_metrics": {
+            key: value
+            for key, value in project.items()
+            if key not in {"base_project_cost", "project_cost", "completion_tick", "cost_components"}
+        },
+        "organization_ledger": final_state.canonical_state.get("organizations", {}),
+        "terminal_values": final_state.canonical_state.get("terminal_values", {}),
+        "payoff_ledger": final_state.canonical_state.get("payoff_ledger", {}),
+        "cost_components": project["cost_components"],
+        "decision_history": final_state.histories.get("decision_history", []),
+        "message_history": final_state.histories.get("message_history", []),
+        "assessment_history": final_state.histories.get("assessment_history", []),
+        "assessment_review_history": final_state.histories.get("assessment_review_history", []),
+        "agent_activation_history": final_state.histories.get("agent_activation_history", []),
+        "validation_results": final_state.histories.get("validation_results", []),
+        "invalid_outputs": final_state.histories.get("invalid_outputs", []),
+        "model_usage_summary": model_usage_summary(final_state),
+        "run_manifest": build_run_manifest(
+            initial_state=initial_state,
+            final_state=final_state,
+            debug_model_io=debug_model_io,
+            output_hashes=manifest_output_hashes,
+        ),
+        "final_trust_matrix": {
+            assessor: {
+                counterparty: assessment.model_dump(mode="json")
+                for counterparty, assessment in row.items()
+            }
+            for assessor, row in final_state.trust_state.items()
+        },
+        "mean_pairwise_assessment": mean_pairwise_assessment(final_state.trust_state),
+        "narrative": deterministic_narrative(final_state),
+    }
+
+
+def model_usage_summary(final_state: RunState) -> dict[str, Any]:
+    records = final_state.histories.get("model_io", [])
+    by_model: dict[str, dict[str, Any]] = {}
+    totals: dict[str, Any] = {
+        "call_count": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "cost_usd": 0.0,
+    }
+    for record in records:
+        model = record.get("model", "unknown")
+        usage = record.get("usage") or {}
+        row = by_model.setdefault(
+            model,
+            {
+                "call_count": 0,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "cache_creation_input_tokens": 0,
+                "cache_read_input_tokens": 0,
+                "cost_usd": 0.0,
+            },
+        )
+        row["call_count"] += 1
+        totals["call_count"] += 1
+        for field in [
+            "input_tokens",
+            "output_tokens",
+            "cache_creation_input_tokens",
+            "cache_read_input_tokens",
+        ]:
+            value = int(usage.get(field, 0) or 0)
+            row[field] += value
+            totals[field] += value
+        cost = float(record.get("cost_usd") or 0.0)
+        row["cost_usd"] += cost
+        totals["cost_usd"] += cost
+    totals["cost_usd"] = round(totals["cost_usd"], 6)
+    for row in by_model.values():
+        row["cost_usd"] = round(row["cost_usd"], 6)
+    return {"total": totals, "by_model": by_model}
+
+
+def mean_pairwise_assessment(trust_state: dict[str, dict[str, TrustAssessment]]) -> float:
+    values: list[float] = []
+    for row in trust_state.values():
+        for assessment in row.values():
+            values.extend(
+                [
+                    assessment.performance_reliability,
+                    assessment.information_reliability,
+                    assessment.contractual_reliability,
+                ]
+            )
+    return sum(values) / len(values) if values else 0.0
+
+
+def deterministic_narrative(final_state: RunState) -> str:
+    decisions = ", ".join(
+        f"{record['actor_id']}:{record['node_id']}={record['option_id']}"
+        for record in final_state.histories.get("decision_history", [])
+    )
+    project = final_state.canonical_state["project"]
+    return (
+        f"{final_state.scenario_id} {final_state.variant} ended as "
+        f"{final_state.terminal_status} with cost {project['project_cost']} and "
+        f"completion tick {project['completion_tick']}. Decisions: {decisions}."
     )
 
-    def __init__(self, output_dir: str | Path) -> None:
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        for artifact_name in self.JSONL_ARTIFACTS:
-            (self.output_dir / artifact_name).touch()
 
-    def write_json(self, name: str, data: dict[str, Any]) -> None:
-        path = self.output_dir / name
-        path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-    def append_jsonl(self, name: str, record: dict[str, Any]) -> None:
-        append_jsonl(self.output_dir / name, record)
-
-    def write_tick_artifacts(
-        self,
-        run_id: str,
-        state: StateStore,
-        tick_result: TickResult,
-        agent_turn: AgentTurnResult,
-        transition_result: TransitionResult,
-        cascade_result: CascadeTickResult,
-        viability_result: ViabilityTickResult,
-        safety_result: SafetyTickResult,
-        public_start_index: int,
-        private_message_start_index: int,
-        breach_start_index: int,
-        finding_start_index: int,
-        disclosure_start_index: int,
-        trust_update_start_index: int,
-        expectation_update_start_index: int,
-        cascade_event_start_index: int,
-        causal_trace_start_index: int,
-        viability_gate_start_index: int,
-    ) -> dict[str, Any]:
-        snapshot = export_state_snapshot(state)
-        self.append_jsonl("state_snapshots.jsonl", {"run_id": run_id, **snapshot})
-
-        for entry in state.public.ledger[public_start_index:]:
-            self.append_jsonl(
-                "public_ledger.jsonl",
-                {"run_id": run_id, **entry.model_dump(mode="json")},
-            )
-
-        for envelope in state.private_messages[private_message_start_index:]:
-            self.append_jsonl(
-                "private_messages.jsonl",
-                {"run_id": run_id, **envelope.model_dump(mode="json")},
-            )
-
-        for breach in state.canonical.breach_records[breach_start_index:]:
-            self.append_jsonl(
-                "contract_breaches.jsonl",
-                {"run_id": run_id, **breach.model_dump(mode="json")},
-            )
-
-        for finding in state.oversight_findings[finding_start_index:]:
-            self.append_jsonl(
-                "oversight_findings.jsonl",
-                {"run_id": run_id, **finding.model_dump(mode="json")},
-            )
-
-        for assessment in state.disclosure_assessments[disclosure_start_index:]:
-            self.append_jsonl(
-                "disclosure_assessments.jsonl",
-                {"run_id": run_id, **assessment.model_dump(mode="json")},
-            )
-
-        for trust_update in state.trust_updates[trust_update_start_index:]:
-            self.append_jsonl(
-                "trust_updates.jsonl",
-                {"run_id": run_id, **trust_update.model_dump(mode="json")},
-            )
-
-        for expectation_update in state.expectation_update_records[expectation_update_start_index:]:
-            self.append_jsonl(
-                "counterparty_expectation_updates.jsonl",
-                {"run_id": run_id, **expectation_update.model_dump(mode="json")},
-            )
-
-        for cascade_event in state.cascade_events[cascade_event_start_index:]:
-            self.append_jsonl(
-                "cascade_events.jsonl",
-                {"run_id": run_id, **cascade_event.model_dump(mode="json")},
-            )
-
-        for causal_trace in state.causal_traces[causal_trace_start_index:]:
-            self.append_jsonl(
-                "causal_traces.jsonl",
-                {"run_id": run_id, **causal_trace.model_dump(mode="json")},
-            )
-
-        for viability_gate in state.viability_gates[viability_gate_start_index:]:
-            self.append_jsonl(
-                "viability_gates.jsonl",
-                {"run_id": run_id, **viability_gate.model_dump(mode="json")},
-            )
-
-        for viability_gate in viability_result.viability_gates:
-            if viability_gate in state.viability_gates[viability_gate_start_index:]:
-                continue
-            self.append_jsonl(
-                "viability_gates.jsonl",
-                {"run_id": run_id, **viability_gate.model_dump(mode="json")},
-            )
-
-        for record in agent_turn.records:
-            base = {
-                "run_id": run_id,
-                "tick": tick_result.tick,
-                "agent_id": record.agent_id.value,
-            }
-            self.append_jsonl(
-                "agent_observations.jsonl",
-                {**base, "observation": record.observation.model_dump(mode="json")},
-            )
-            self.append_jsonl(
-                "agent_submissions.jsonl",
-                {
-                    **base,
-                    "submission": record.submission.model_dump(mode="json"),
-                    "validation": record.validation.model_dump(mode="json"),
-                    "used_fallback": record.used_fallback,
-                    "raw_output": record.raw_output,
-                    "parse_errors": record.parse_errors,
-                },
-            )
-            self.append_jsonl(
-                "agent_beliefs.jsonl",
-                {**base, "belief": record.submission.belief_update.model_dump(mode="json")},
-            )
-            self.append_jsonl(
-                "agent_decision_reports.jsonl",
-                {
-                    **base,
-                    "observed_new_info": record.submission.observed_new_info,
-                    "decision": record.submission.decision.model_dump(mode="json"),
-                    "rationale": record.submission.rationale,
-                    "decision_parameters_used": record.submission.decision_parameters_used,
-                    "counterparty_assessments": [
-                        assessment.model_dump(mode="json")
-                        for assessment in record.submission.counterparty_assessments
-                    ],
-                    "counterparty_expectation_updates": [
-                        update.model_dump(mode="json")
-                        for update in record.submission.counterparty_expectation_updates
-                    ],
-                    "decision_menu_options": [
-                        option.model_dump(mode="json")
-                        for option in record.observation.decision_menu_options
-                    ],
-                    "belief_update": record.submission.belief_update.model_dump(mode="json"),
-                    "communication_summary": (
-                        record.submission.communication.summary
-                        if record.submission.communication is not None
-                        else None
-                    ),
-                    "validation": record.validation.model_dump(mode="json"),
-                    "used_fallback": record.used_fallback,
-                    "transitions_applied": [
-                        transition.model_dump(mode="json")
-                        for transition in transition_result.applied
-                        if transition.agent_id == record.agent_id
-                    ],
-                },
-            )
-            for counterparty_assessment in record.submission.counterparty_assessments:
-                self.append_jsonl(
-                    "agent_trust_assessments.jsonl",
-                    {
-                        **base,
-                        "assessment": counterparty_assessment.model_dump(mode="json"),
-                    },
-                )
-
-        summary = build_turn_summary(
-            tick_result,
-            agent_turn,
-            transition_result,
-            safety_result,
-            cascade_result,
-            viability_result,
-        )
-        self.append_jsonl("turn_summaries.jsonl", {"run_id": run_id, **summary})
-        return summary
-
-
-def build_turn_summary(
-    tick_result: TickResult,
-    agent_turn: AgentTurnResult,
-    transition_result: TransitionResult,
-    safety_result: SafetyTickResult | None = None,
-    cascade_result: CascadeTickResult | None = None,
-    viability_result: ViabilityTickResult | None = None,
-) -> dict[str, Any]:
-    """Build a deterministic summary from delivered events and agent submissions."""
-    safety_result = safety_result or SafetyTickResult(tick=tick_result.tick)
-    cascade_result = cascade_result or CascadeTickResult(tick=tick_result.tick)
-    viability_result = viability_result or ViabilityTickResult(tick=tick_result.tick)
-    return {
-        "tick": tick_result.tick,
-        "public_events": [
-            {
-                "entry_id": entry.entry_id,
-                "entry_type": entry.entry_type.value,
-                "linked_object_id": entry.linked_object_id,
-                "data": entry.data,
-            }
-            for entry in tick_result.delivered.public_entries
-        ],
-        "private_events": [
-            {
-                "agent_id": agent_id.value,
-                "event_id": event.event_id,
-                "event_type": event.event_type.value,
-                "summary": event.summary,
-            }
-            for agent_id, events in tick_result.delivered.private_events_by_agent.items()
-            for event in events
-        ],
-        "private_messages": [
-            {
-                "agent_id": agent_id.value,
-                "message_id": message.message_id,
-                "sender": message.sender.value,
-                "recipients": [recipient.value for recipient in message.recipients],
-                "summary": message.summary,
-            }
-            for agent_id, messages in tick_result.delivered.private_messages_by_agent.items()
-            for message in messages
-        ],
-        "active_agents": [agent.value for agent in tick_result.active_agents],
-        "decisions": [
-            {
-                "agent_id": record.agent_id.value,
-                "decision_type": record.submission.decision.type.value,
-                "object_type": record.submission.decision.object_type,
-                "object_id": record.submission.decision.object_id,
-                "valid": record.validation.valid,
-                "used_fallback": record.used_fallback,
-            }
-            for record in agent_turn.records
-        ],
-        "communications": [
-            {
-                "agent_id": record.agent_id.value,
-                "visibility": record.submission.communication.visibility.value,
-                "recipients": [
-                    recipient.value for recipient in record.submission.communication.recipients
-                ],
-                "summary": record.submission.communication.summary,
-            }
-            for record in agent_turn.records
-            if record.submission.communication is not None
-        ],
-        "canonical_state_changes": [
-            transition.model_dump(mode="json")
-            for transition in transition_result.applied
-            if transition.target_store == "canonical"
-        ],
-        "public_state_changes": [
-            *[entry.entry_id for entry in tick_result.delivered.public_entries],
-            *[
-                transition.object_id
-                for transition in transition_result.applied
-                if transition.target_store == "public" and transition.object_id is not None
-            ],
-        ],
-        "private_state_changes": [
-            *[
-                event.event_id
-                for events in tick_result.delivered.private_events_by_agent.values()
-                for event in events
-            ],
-            *[
-                transition.object_id
-                for transition in transition_result.applied
-                if transition.target_store == "private" and transition.object_id is not None
-            ],
-        ],
-        "transition_rejections": transition_result.rejected,
-        "contract_breaches": [
-            breach.model_dump(mode="json") for breach in safety_result.breach_records
-        ],
-        "oversight_findings": [
-            finding.model_dump(mode="json") for finding in safety_result.oversight_findings
-        ],
-        "disclosure_assessments": [
-            assessment.model_dump(mode="json")
-            for assessment in safety_result.disclosure_assessments
-        ],
-        "trust_updates": [
-            trust_update.model_dump(mode="json")
-            for trust_update in safety_result.trust_updates
-        ],
-        "cascade_events": [
-            cascade_event.model_dump(mode="json")
-            for cascade_event in cascade_result.cascade_events
-        ],
-        "causal_traces": [
-            causal_trace.model_dump(mode="json")
-            for causal_trace in cascade_result.causal_traces
-        ],
-        "viability_gates": [
-            viability_gate.model_dump(mode="json")
-            for viability_gate in viability_result.viability_gates
-        ],
-        "belief_changes": [
-            {
-                "agent_id": record.agent_id.value,
-                "basis_ids": record.submission.belief_update.basis_ids,
-            }
-            for record in agent_turn.records
-        ],
-        "agent_trust_assessments": [
-            {
-                "agent_id": record.agent_id.value,
-                "assessments": [
-                    assessment.model_dump(mode="json")
-                    for assessment in record.submission.counterparty_assessments
-                ],
-            }
-            for record in agent_turn.records
-            if record.submission.counterparty_assessments
-        ],
-        "counterparty_expectation_updates": [
-            submitted_update.model_dump(mode="json")
-            for record in agent_turn.records
-            for submitted_update in record.submission.counterparty_expectation_updates
-        ],
-    }
-
-
-def build_analysis_packet(
-    run_config: dict[str, Any],
-    scenario_config: ScenarioConfig,
-    state: StateStore,
+def write_run_outputs(
+    output_dir: Path,
+    initial_state: RunState,
+    final_state: RunState,
+    events: list[Event],
     turn_summaries: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Build the primary external-analysis artifact."""
-    final_metrics = calculate_final_metrics(state)
-    return {
-        "run_config": run_config,
-        "scenario_config": scenario_config.model_dump(mode="json"),
-        "agent_role_configs": {
-            role.value: config.model_dump(mode="json")
-            for role, config in state.role_configs.items()
-        },
-        "agent_policy_profiles": {
-            role.value: config.policy_profile.value
-            for role, config in state.role_configs.items()
-        },
-        "oversight_condition": run_config["oversight_condition"],
-        "turn_summaries": turn_summaries,
-        "final_metrics": final_metrics,
-        "final_beliefs_by_agent": {
-            role.value: belief.model_dump(mode="json")
-            for role, belief in state.beliefs_by_agent.items()
-        },
-        "agent_decision_reports": [
-            {
-                "tick": summary["tick"],
-                "decisions": summary["decisions"],
-                "belief_changes": summary["belief_changes"],
-                "canonical_state_changes": summary["canonical_state_changes"],
-                "public_state_changes": summary["public_state_changes"],
-                "private_state_changes": summary["private_state_changes"],
-                "contract_breaches": summary["contract_breaches"],
-                "oversight_findings": summary["oversight_findings"],
-                "disclosure_assessments": summary["disclosure_assessments"],
-                "trust_updates": summary["trust_updates"],
-                "agent_trust_assessments": summary["agent_trust_assessments"],
-                "counterparty_expectation_updates": summary[
-                    "counterparty_expectation_updates"
-                ],
-                "cascade_events": summary["cascade_events"],
-                "causal_traces": summary["causal_traces"],
-                "viability_gates": summary["viability_gates"],
-            }
-            for summary in turn_summaries
-            if summary["decisions"]
-            or summary["contract_breaches"]
-            or summary["oversight_findings"]
-            or summary["disclosure_assessments"]
-            or summary["trust_updates"]
-            or summary["agent_trust_assessments"]
-            or summary["counterparty_expectation_updates"]
-            or summary["cascade_events"]
-            or summary["causal_traces"]
-            or summary["viability_gates"]
-        ],
-        "material_claims": [
-            {
-                "entry_id": entry.entry_id,
-                "tick": entry.tick,
-                "source": entry.source,
-                "claims": [claim.model_dump(mode="json") for claim in entry.claims],
-            }
-            for entry in state.public.ledger
-            if entry.claims
-        ],
-        "final_trust_by_agent": {
-            observer.value: {
-                target.value: trust.model_dump(mode="json")
-                for target, trust in targets.items()
-            }
-            for observer, targets in state.agent_trust_by_agent.items()
-        },
-        "final_mechanical_reputation_by_agent": {
-            observer.value: {
-                target.value: trust.model_dump(mode="json")
-                for target, trust in targets.items()
-            }
-            for observer, targets in state.trust_by_agent.items()
-        },
-        "final_expectations_by_agent": {
-            observer.value: {
-                target.value: expectation.model_dump(mode="json")
-                for target, expectation in targets.items()
-            }
-            for observer, targets in state.expectations_by_agent.items()
-        },
-        "counterparty_expectation_update_records": [
-            update.model_dump(mode="json")
-            for update in state.expectation_update_records
-        ],
-        "cascade_events": [
-            event.model_dump(mode="json")
-            for event in state.cascade_events
-        ],
-        "causal_traces": [
-            trace.model_dump(mode="json")
-            for trace in state.causal_traces
-        ],
-        "viability_gates": [
-            gate.model_dump(mode="json")
-            for gate in state.viability_gates
-        ],
-    }
+    *,
+    debug_model_io: bool = False,
+) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    config_payload = run_config_payload(
+        initial_state,
+        final_state,
+        debug_model_io=debug_model_io,
+    )
+    (output_dir / "run_config.json").write_text(
+        json.dumps(config_payload, indent=2, sort_keys=True) + "\n"
+    )
+    _write_jsonl(
+        output_dir / "events.jsonl",
+        [event.model_dump(mode="json") for event in events],
+    )
+    _write_jsonl(output_dir / "turn_summaries.jsonl", turn_summaries)
+    summary_payload = run_summary_payload(
+        final_state,
+        initial_state=initial_state,
+        debug_model_io=debug_model_io,
+        manifest_output_hashes=output_hashes(output_dir),
+    )
+    (output_dir / "run_summary.json").write_text(
+        json.dumps(summary_payload, indent=2, sort_keys=True) + "\n"
+    )
+    if debug_model_io:
+        _write_debug_jsonl(output_dir / "raw_model_io.jsonl", final_state.histories.get("model_io", []))
+        _write_debug_jsonl(
+            output_dir / "parsed_submissions.jsonl",
+            final_state.histories.get("agent_submission_history", []),
+        )
+        _write_debug_jsonl(
+            output_dir / "repair_attempts.jsonl",
+            final_state.histories.get("repair_attempts", []),
+        )
+        _write_debug_jsonl(
+            output_dir / "validation_results.jsonl",
+            final_state.histories.get("validation_results", []),
+        )
+
+
+def _write_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
+    with path.open("w") as handle:
+        for record in records:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+
+
+def _write_debug_jsonl(path: Path, records: list[dict[str, Any]]) -> None:
+    if records:
+        _write_jsonl(path, records)
