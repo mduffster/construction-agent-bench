@@ -83,6 +83,7 @@ permitted_decisions:
       - enclosure
       - mep
       - final
+      - final_inspection
   - decision_type: declare_status
     object_types:
       - inspection_status

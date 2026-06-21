@@ -109,6 +109,9 @@ permitted_decisions:
   - decision_type: submit_forecast
     object_types:
       - project_completion
+      - site_preparation
+      - steel_erection
+      - foundation_work
   - decision_type: declare_status
     object_types:
       - task_complete

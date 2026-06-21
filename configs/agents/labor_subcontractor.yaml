@@ -91,6 +91,7 @@ permitted_decisions:
   - decision_type: schedule
     object_types:
       - labor_crew
+      - steel_erection
   - decision_type: submit_request
     object_types:
       - invoice
