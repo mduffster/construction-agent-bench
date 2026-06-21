@@ -24,7 +24,10 @@ class FakeAdapter:
         return self.responses.pop(0)
 
 
-def _supplier_response(source_plan: str = "current_expedited") -> str:
+def _supplier_response(
+    source_plan: str = "current_expedited",
+    communications: list[dict] | None = None,
+) -> str:
     return json.dumps(
         {
             "decisions": [
@@ -43,7 +46,7 @@ def _supplier_response(source_plan: str = "current_expedited") -> str:
                     },
                 },
             ],
-            "communications": [],
+            "communications": communications or [],
             "assessment_updates": [],
             "assessment_reviews": [],
             "private_notes": "Focal supplier submission for deterministic test.",
@@ -51,8 +54,14 @@ def _supplier_response(source_plan: str = "current_expedited") -> str:
     )
 
 
-def _focal_supplier_policies(source_plan: str = "current_expedited"):
-    focal_policy = LLMPolicy(FakeAdapter([_supplier_response(source_plan)]), "steel_supplier")
+def _focal_supplier_policies(
+    source_plan: str = "current_expedited",
+    communications: list[dict] | None = None,
+):
+    focal_policy = LLMPolicy(
+        FakeAdapter([_supplier_response(source_plan, communications)]),
+        "steel_supplier",
+    )
     return build_focal_policies("S01", "steel_supplier", focal_policy)
 
 
@@ -194,3 +203,56 @@ def test_commercially_neutral_gc_uses_outside_option_economics() -> None:
     assert weak_gc == "resequence_around_delivery"
     assert credible_gc == "replace_supplier"
     assert public_fact["outside_option_economics"]["replacement_supplier_cost"] == 150_000
+
+
+def test_commercially_neutral_gc_responds_to_focal_claimed_cost_and_evidence() -> None:
+    overclaim = run_policy(
+        "S01",
+        "normal",
+        _focal_supplier_policies(
+            "current_expedited",
+            [
+                {
+                    "communication_type": "private_message",
+                    "recipient_ids": ["gc"],
+                    "summary": "Supplier claims expedited delivery requires major relief.",
+                    "claims": [
+                        {"field": "forecast_delivery_tick", "value": 14},
+                        {"field": "requested_price_amendment", "value": 1_400_000},
+                    ],
+                }
+            ],
+        ),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_WEAK",
+        model_settings=_focal_model_settings(),
+    )
+    nonperformance_claim = run_policy(
+        "S01",
+        "normal",
+        _focal_supplier_policies(
+            "current_expedited",
+            [
+                {
+                    "communication_type": "private_message",
+                    "recipient_ids": ["gc"],
+                    "summary": "Supplier says its current source cannot perform.",
+                    "claims": [
+                        {"field": "source_status", "value": "unable_to_perform"},
+                    ],
+                }
+            ],
+        ),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_WEAK",
+        model_settings=_focal_model_settings(),
+    )
+
+    assert overclaim.final_state.run_valid
+    assert nonperformance_claim.final_state.run_valid
+    assert (
+        overclaim.final_state.decisions["S01_GC_PROCUREMENT_PLAN"]["option_id"]
+        == "resequence_around_delivery"
+    )
+    assert (
+        nonperformance_claim.final_state.decisions["S01_GC_PROCUREMENT_PLAN"]["option_id"]
+        == "replace_supplier"
+    )

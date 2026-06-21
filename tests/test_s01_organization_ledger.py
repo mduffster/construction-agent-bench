@@ -90,6 +90,89 @@ def test_approved_advance_moves_cash_without_project_cost() -> None:
     assert payoff["accounting_totals"]["project_cost_transfer_total"] == 0
 
 
+def test_liquidity_financing_cost_is_private_payoff_not_project_cost() -> None:
+    base_decisions = {
+        "S01_SUPPLIER_SOURCE_PLAN": ("current_expedited", {}),
+        "S01_SUPPLIER_COMMERCIAL_REQUEST": (
+            "__parameters__",
+            {
+                "price_amendment_request": 0,
+                "delivery_date_amendment_request": None,
+                "advance_payment_request": 600_000,
+            },
+        ),
+        "S01_GC_PROCUREMENT_PLAN": ("accept_selected_plan", {}),
+        "S01_LABOR_MOBILIZATION": ("flexible_hold", {}),
+    }
+    without_advance = run_policy(
+        "S01",
+        "normal",
+        policies_for_fixture(
+            base_decisions
+            | {
+                "S01_OWNER_AMENDMENT_RESPONSE": (
+                    "__parameters__",
+                    {
+                        "approve_price": False,
+                        "approve_delivery_date": False,
+                        "approve_advance": False,
+                    },
+                )
+            }
+        ),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_WEAK",
+    )
+    with_advance = run_policy(
+        "S01",
+        "normal",
+        policies_for_fixture(
+            base_decisions
+            | {
+                "S01_OWNER_AMENDMENT_RESPONSE": (
+                    "__parameters__",
+                    {
+                        "approve_price": False,
+                        "approve_delivery_date": False,
+                        "approve_advance": True,
+                    },
+                )
+            }
+        ),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_WEAK",
+    )
+
+    no_advance_state = without_advance.final_state.canonical_state
+    advance_state = with_advance.final_state.canonical_state
+    no_advance_supplier = no_advance_state["organizations"]["steel_supplier"]
+    advance_supplier = advance_state["organizations"]["steel_supplier"]
+    no_advance_payoff = no_advance_state["payoff_ledger"]
+    advance_payoff = advance_state["payoff_ledger"]
+
+    assert no_advance_state["project"]["project_cost"] == 95_200_000
+    assert advance_state["project"]["project_cost"] == 95_200_000
+    assert no_advance_supplier["liquidity_gap"] == 500_000
+    assert no_advance_supplier["liquidity_financing_cost_incurred"] == 120_000
+    assert advance_supplier["liquidity_financing_cost_incurred"] == 0
+    assert no_advance_payoff["realized_payoff_by_organization"]["steel_supplier"] == -70_000
+    assert advance_payoff["realized_payoff_by_organization"]["steel_supplier"] == 50_000
+    assert [
+        event
+        for event in no_advance_payoff["payoff_events"]
+        if event["term_id"] == "financing_liquidity_cost"
+    ][0]["amount"] == -120_000
+    assert not [
+        event
+        for event in advance_payoff["payoff_events"]
+        if event["term_id"] == "financing_liquidity_cost"
+    ]
+    assert no_advance_payoff["accounting_totals"]["cash_timing_transfer_total"] == 0
+    assert advance_payoff["accounting_totals"]["cash_timing_transfer_total"] == 600_000
+    assert no_advance_payoff["accounting_totals"]["project_cost_transfer_total"] == 0
+    assert advance_payoff["accounting_totals"]["project_cost_transfer_total"] == 0
+    assert no_advance_payoff["accounting_totals"]["supplier_liquidity_financing_cost"] == 120_000
+    assert advance_payoff["accounting_totals"]["supplier_liquidity_financing_cost"] == 0
+
+
 def test_approved_price_amendment_hits_project_cost_and_supplier_margin() -> None:
     decisions = {
         "S01_SUPPLIER_SOURCE_PLAN": ("current_expedited", {}),

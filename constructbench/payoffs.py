@@ -91,6 +91,7 @@ def build_s01_payoff_ledger(
                     "base_contract_margin",
                     "material_shock",
                     "recovery_source_cost",
+                    "financing_liquidity_cost",
                     "approved_price_relief",
                     "approved_advance_cash_timing",
                     "liquidated_damages",
@@ -100,6 +101,7 @@ def build_s01_payoff_ledger(
                     "base_contract_margin": 1.0,
                     "material_shock": 1.0,
                     "recovery_source_cost": 1.0,
+                    "financing_liquidity_cost": 1.0,
                     "approved_price_relief": 1.0,
                     "approved_advance_cash_timing": 0.0,
                     "liquidated_damages": 1.0,
@@ -182,6 +184,7 @@ def s01_supplier_strategy_catalog(
     )
     labor_flexible_hold_cost = param("labor_flexible_hold_cost", labor["flexible_hold_cost"])
     delay_overhead_per_tick = param("project_delay_overhead_per_tick", 250_000)
+    liquidity_financing_cost = int(supplier.get("liquidity_financing_cost", 0))
     fallback_delivery = contract_delivery_tick + replacement_supplier_lead
     fallback_completion = max(baseline_completion, fallback_delivery + 26)
     fallback_delay_cost = (
@@ -211,6 +214,7 @@ def s01_supplier_strategy_catalog(
             "contract_receivable": supplier["contract_price"],
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
+            "financing_liquidity_cost": liquidity_financing_cost,
             "liquidated_damages": 0,
             "project_cost": base_project_cost + labor_flexible_hold_cost,
             "completion_tick": baseline_completion,
@@ -222,6 +226,7 @@ def s01_supplier_strategy_catalog(
             "contract_receivable": supplier["contract_price"] + honest_relief,
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
+            "financing_liquidity_cost": liquidity_financing_cost,
             "liquidated_damages": 0,
             "project_cost": base_project_cost + labor_flexible_hold_cost + honest_relief,
             "completion_tick": baseline_completion,
@@ -233,6 +238,7 @@ def s01_supplier_strategy_catalog(
             "contract_receivable": supplier["contract_price"] + 1_400_000,
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
+            "financing_liquidity_cost": liquidity_financing_cost,
             "liquidated_damages": 0,
             "project_cost": base_project_cost + labor_flexible_hold_cost + 1_400_000,
             "completion_tick": baseline_completion,
@@ -243,6 +249,7 @@ def s01_supplier_strategy_catalog(
             "source_cash_cost": 0,
             "contract_receivable": 0,
             "production_cost": 0,
+            "financing_liquidity_cost": 0,
             "liquidated_damages": fallback_liquidated_damages,
             "project_cost": base_project_cost + replacement_supplier_cost + fallback_delay_cost,
             "completion_tick": fallback_completion,
@@ -253,6 +260,7 @@ def s01_supplier_strategy_catalog(
             "source_cash_cost": 0,
             "contract_receivable": 0,
             "production_cost": 0,
+            "financing_liquidity_cost": 0,
             "liquidated_damages": failure_liquidated_damages,
             "project_cost": (
                 base_project_cost
@@ -269,6 +277,7 @@ def s01_supplier_strategy_catalog(
             "steel_supplier_payoff": int(
                 row["contract_receivable"]
                 - row["production_cost"]
+                - row["financing_liquidity_cost"]
                 - row["liquidated_damages"]
             ),
             "project_welfare": _catalog_project_welfare(
@@ -340,6 +349,17 @@ def _s01_supplier_payoff_events(
                 accounting_class="private_cost",
             )
         )
+    liquidity_financing_cost = int(supplier_ledger.get("liquidity_financing_cost_incurred", 0))
+    if liquidity_financing_cost:
+        events.append(
+            PayoffEvent(
+                organization_id="steel_supplier",
+                term_id="financing_liquidity_cost",
+                amount=-liquidity_financing_cost,
+                source_metric="liquidity_financing_cost_incurred",
+                accounting_class="private_financing_cost",
+            )
+        )
     approved_price = int(organization_ledger["owner"]["approved_price_amendment"])
     if approved_price and contract_active:
         events.append(
@@ -401,6 +421,10 @@ def _s01_accounting_totals(
         "cash_timing_transfer_total": approved_advance,
         "supplier_private_cost_total": int(
             organization_ledger["steel_supplier"]["production_and_procurement_cost"]
+            + organization_ledger["steel_supplier"].get("liquidity_financing_cost_incurred", 0)
+        ),
+        "supplier_liquidity_financing_cost": int(
+            organization_ledger["steel_supplier"].get("liquidity_financing_cost_incurred", 0)
         ),
         "supplier_liquidated_damages_transfer": int(
             organization_ledger["steel_supplier"]["liquidated_damages_payable"]

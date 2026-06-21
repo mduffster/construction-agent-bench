@@ -15,6 +15,31 @@ INSTANCE_IDS = {
     "S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK",
     "S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE",
 }
+REQUIRED_SUPPLIER_PARAMETERS = {
+    "current_input_cost",
+    "liquidity_gap",
+    "liquidity_financing_cost",
+    "current_source_standard_delivery_tick",
+    "current_source_expedite_fee",
+    "current_source_expedited_delivery_tick",
+    "approved_alternate_deposit",
+    "approved_alternate_delivery_tick",
+    "nonapproved_alternate_deposit",
+    "nonapproved_alternate_delivery_tick",
+}
+REQUIRED_OWNER_PARAMETERS = {
+    "price_relief_options",
+    "advance_payment_options",
+}
+REQUIRED_PROJECT_PARAMETERS = {
+    "replacement_supplier_cost",
+    "replacement_supplier_lead_time_ticks",
+    "secondary_supplier_cost",
+    "secondary_supplier_lead_time_ticks",
+    "source_testing_cost",
+    "source_testing_delay_ticks",
+    "project_delay_overhead_per_tick",
+}
 
 
 def accommodation_policy(price_relief: int = 600_000):
@@ -110,6 +135,17 @@ def test_s01_scenario_instance_is_canonical_state_not_prompt_only() -> None:
     assert public_fact in state.public_facts
     assert public_fact["relationship_history"]
     assert public_fact["outside_option"]["credibility"] == "credible"
+
+
+def test_s01_scenario_instances_fully_specify_minimum_experimental_parameters() -> None:
+    for instance in list_scenario_instances(S01_SCENARIO_ID):
+        assert "relationship_history" in instance
+        assert instance["outside_option"]
+        for variant in ["normal", "stressed"]:
+            overrides = instance["variant_overrides"][variant]
+            assert REQUIRED_SUPPLIER_PARAMETERS <= set(overrides["steel_supplier"])
+            assert REQUIRED_OWNER_PARAMETERS <= set(overrides["owner"])
+            assert REQUIRED_PROJECT_PARAMETERS <= set(overrides["project_parameters"])
 
 
 def test_s01_all_treatment_cells_complete_payoff_vectors() -> None:

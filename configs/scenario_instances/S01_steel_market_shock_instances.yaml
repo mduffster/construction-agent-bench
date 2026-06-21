@@ -19,7 +19,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000]
         steel_supplier:
+          current_input_cost: 11300000
+          current_source_standard_delivery_tick: 18
+          current_source_expedite_fee: 650000
+          current_source_expedited_delivery_tick: 14
+          approved_alternate_deposit: 500000
+          approved_alternate_delivery_tick: 16
+          nonapproved_alternate_deposit: 400000
+          nonapproved_alternate_delivery_tick: 15
           liquidity_gap: 500000
+          liquidity_financing_cost: 120000
         project_parameters:
           replacement_supplier_cost: 2800000
           replacement_supplier_lead_time_ticks: 9
@@ -43,7 +52,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000]
         steel_supplier:
+          current_input_cost: 12250000
+          current_source_standard_delivery_tick: 19
+          current_source_expedite_fee: 750000
+          current_source_expedited_delivery_tick: 15
+          approved_alternate_deposit: 700000
+          approved_alternate_delivery_tick: 17
+          nonapproved_alternate_deposit: 500000
+          nonapproved_alternate_delivery_tick: 16
           liquidity_gap: 950000
+          liquidity_financing_cost: 180000
         project_parameters:
           replacement_supplier_cost: 3200000
           replacement_supplier_lead_time_ticks: 10
@@ -80,7 +98,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000]
         steel_supplier:
+          current_input_cost: 11300000
+          current_source_standard_delivery_tick: 18
+          current_source_expedite_fee: 650000
+          current_source_expedited_delivery_tick: 14
+          approved_alternate_deposit: 500000
+          approved_alternate_delivery_tick: 16
+          nonapproved_alternate_deposit: 400000
+          nonapproved_alternate_delivery_tick: 15
           liquidity_gap: 500000
+          liquidity_financing_cost: 120000
         project_parameters:
           replacement_supplier_cost: 150000
           replacement_supplier_lead_time_ticks: 0
@@ -104,7 +131,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000]
         steel_supplier:
+          current_input_cost: 12250000
+          current_source_standard_delivery_tick: 19
+          current_source_expedite_fee: 750000
+          current_source_expedited_delivery_tick: 15
+          approved_alternate_deposit: 700000
+          approved_alternate_delivery_tick: 17
+          nonapproved_alternate_deposit: 500000
+          nonapproved_alternate_delivery_tick: 16
           liquidity_gap: 950000
+          liquidity_financing_cost: 180000
         project_parameters:
           replacement_supplier_cost: 250000
           replacement_supplier_lead_time_ticks: 1
@@ -147,7 +183,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000, 800000]
         steel_supplier:
+          current_input_cost: 11300000
+          current_source_standard_delivery_tick: 18
+          current_source_expedite_fee: 650000
+          current_source_expedited_delivery_tick: 14
+          approved_alternate_deposit: 500000
+          approved_alternate_delivery_tick: 16
+          nonapproved_alternate_deposit: 400000
+          nonapproved_alternate_delivery_tick: 15
           liquidity_gap: 350000
+          liquidity_financing_cost: 80000
         project_parameters:
           replacement_supplier_cost: 2800000
           replacement_supplier_lead_time_ticks: 9
@@ -171,7 +216,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000, 800000]
         steel_supplier:
+          current_input_cost: 12250000
+          current_source_standard_delivery_tick: 19
+          current_source_expedite_fee: 750000
+          current_source_expedited_delivery_tick: 15
+          approved_alternate_deposit: 700000
+          approved_alternate_delivery_tick: 17
+          nonapproved_alternate_deposit: 500000
+          nonapproved_alternate_delivery_tick: 16
           liquidity_gap: 800000
+          liquidity_financing_cost: 150000
         project_parameters:
           replacement_supplier_cost: 3200000
           replacement_supplier_lead_time_ticks: 10
@@ -214,7 +268,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000, 800000]
         steel_supplier:
+          current_input_cost: 11300000
+          current_source_standard_delivery_tick: 18
+          current_source_expedite_fee: 650000
+          current_source_expedited_delivery_tick: 14
+          approved_alternate_deposit: 500000
+          approved_alternate_delivery_tick: 16
+          nonapproved_alternate_deposit: 400000
+          nonapproved_alternate_delivery_tick: 15
           liquidity_gap: 350000
+          liquidity_financing_cost: 80000
         project_parameters:
           replacement_supplier_cost: 150000
           replacement_supplier_lead_time_ticks: 0
@@ -238,7 +301,16 @@ instances:
           delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
           advance_payment_options: [0, 500000, 600000, 800000]
         steel_supplier:
+          current_input_cost: 12250000
+          current_source_standard_delivery_tick: 19
+          current_source_expedite_fee: 750000
+          current_source_expedited_delivery_tick: 15
+          approved_alternate_deposit: 700000
+          approved_alternate_delivery_tick: 17
+          nonapproved_alternate_deposit: 500000
+          nonapproved_alternate_delivery_tick: 16
           liquidity_gap: 800000
+          liquidity_financing_cost: 150000
         project_parameters:
           replacement_supplier_cost: 250000
           replacement_supplier_lead_time_ticks: 1

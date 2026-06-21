@@ -90,9 +90,13 @@ class S01CommerciallyNeutralPolicy:
 
     def _gc_procurement_response(self, observation: AgentObservation) -> str:
         source = _supplier_source_plan(observation)
-        delivery = _expected_delivery_tick(observation)
+        source_status = _claim_str(observation, "source_status")
+        delivery = _claimed_delivery_tick(observation) or _expected_delivery_tick(observation)
         commercial = _commercial_request(observation)
-        price = int(commercial.get("price_amendment_request") or 0)
+        price = max(
+            int(commercial.get("price_amendment_request") or 0),
+            _claim_int(observation, "requested_price_amendment") or 0,
+        )
         outside = _outside_option(observation)
         relationship = _relationship_condition(observation)
         credible = _outside_option_is_credible(observation)
@@ -100,7 +104,12 @@ class S01CommerciallyNeutralPolicy:
         replacement_delivery = int(outside.get("replacement_supplier_delivery_tick") or 999)
         relief_limit = _relief_limit(relationship=relationship, credible=credible)
 
-        if source == "declare_nonperformance":
+        if source == "declare_nonperformance" or source_status in {
+            "default",
+            "nonperformance",
+            "unable_to_perform",
+            "unavailable",
+        }:
             return "replace_supplier"
         if credible and replacement_delivery <= (delivery or 999) and (
             price > relief_limit or replacement_cost <= max(price, 250_000)
@@ -116,10 +125,17 @@ class S01CommerciallyNeutralPolicy:
 
     def _owner_amendment_response(self, observation: AgentObservation) -> dict[str, bool]:
         commercial = _commercial_request(observation)
-        price = int(commercial.get("price_amendment_request") or 0)
+        price = max(
+            int(commercial.get("price_amendment_request") or 0),
+            _claim_int(observation, "requested_price_amendment") or 0,
+        )
         advance = int(commercial.get("advance_payment_request") or 0)
         requested_delivery = commercial.get("delivery_date_amendment_request")
-        delivery = requested_delivery or _expected_delivery_tick(observation)
+        delivery = (
+            requested_delivery
+            or _claimed_delivery_tick(observation)
+            or _expected_delivery_tick(observation)
+        )
         credible = _outside_option_is_credible(observation)
         outside = _outside_option(observation)
         relationship = _relationship_condition(observation)
@@ -222,6 +238,34 @@ def _expected_delivery_tick(observation: AgentObservation) -> int | None:
 def _commercial_request(observation: AgentObservation) -> dict[str, Any]:
     fact = _known_fact(observation, "S01_SUPPLIER_COMMERCIAL_REQUEST_RECORD")
     return dict(fact.get("parameters", {})) if fact else {}
+
+
+def _claimed_delivery_tick(observation: AgentObservation) -> int | None:
+    return _claim_int(observation, "forecast_delivery_tick") or _claim_int(
+        observation,
+        "requested_delivery_tick",
+    )
+
+
+def _claim_int(observation: AgentObservation, field: str) -> int | None:
+    value = _claim_value(observation, field)
+    return int(value) if isinstance(value, int) else None
+
+
+def _claim_str(observation: AgentObservation, field: str) -> str | None:
+    value = _claim_value(observation, field)
+    return str(value) if isinstance(value, str) else None
+
+
+def _claim_value(observation: AgentObservation, field: str) -> Any:
+    for record in [*observation.received_messages, *observation.known_facts]:
+        claims = record.get("claims")
+        if not isinstance(claims, list):
+            continue
+        for claim in claims:
+            if isinstance(claim, dict) and claim.get("field") == field:
+                return claim.get("value")
+    return None
 
 
 def _outside_option(observation: AgentObservation) -> dict[str, Any]:

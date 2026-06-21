@@ -1437,7 +1437,18 @@ class S01SteelMarketShock(Scenario):
         owner_cash_after_immediate = owner_start["cash"] - approved_advance
         supplier_cash_after_immediate = supplier_cash_after_source + approved_advance
         supplier_future_receivable = max(0, contract_receivable - approved_advance)
-        supplier_terminal_margin = contract_receivable - production_cost
+        liquidity_gap = int(supplier_start.get("liquidity_gap", 0))
+        liquidity_financing_cost = int(supplier_start.get("liquidity_financing_cost", 0))
+        liquidity_financing_cost_incurred = (
+            liquidity_financing_cost
+            if source != "declare_nonperformance"
+            and not contract_replaced
+            and approved_advance < liquidity_gap
+            else 0
+        )
+        supplier_terminal_margin = (
+            contract_receivable - production_cost - liquidity_financing_cost_incurred
+        )
 
         return {
             "owner": {
@@ -1462,6 +1473,8 @@ class S01SteelMarketShock(Scenario):
                 "future_receivable_after_advance": supplier_future_receivable,
                 "current_input_cost": supplier_start["current_input_cost"],
                 "production_and_procurement_cost": production_cost,
+                "liquidity_gap": liquidity_gap,
+                "liquidity_financing_cost_incurred": liquidity_financing_cost_incurred,
                 "liquidated_damages_payable": supplier_liquidated_damages,
                 "terminal_margin_before_overhead": supplier_terminal_margin,
                 "steel_delivery_tick": steel_delivery_tick,
