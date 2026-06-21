@@ -70,18 +70,23 @@ def run_fixture(
     *,
     output_dir: Path | None = None,
     seed: int = 0,
+    scenario_instance_id: str | None = None,
     behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
 ) -> RunResult:
     scenario = get_scenario(scenario_key)
     fixture = scenario.fixtures[fixture_name]
+    model_settings = {"policy": "scripted_fixture", "fixture": fixture_name}
+    if scenario_instance_id is not None:
+        model_settings["scenario_instance_id"] = scenario_instance_id
     return run_policy(
         scenario_key,
         fixture["variant"],
         policies_for_fixture(fixture["decisions"]),
         output_dir=output_dir,
         seed=seed,
+        scenario_instance_id=scenario_instance_id,
         behavior_profile_by_agent=behavior_profile_by_agent,
-        model_settings={"policy": "scripted_fixture", "fixture": fixture_name},
+        model_settings=model_settings,
     )
 
 
@@ -94,6 +99,7 @@ def run_policy(
     seed: int = 0,
     run_id: str | None = None,
     model_settings: dict[str, Any] | None = None,
+    scenario_instance_id: str | None = None,
     behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
     debug_model_io: bool = False,
     max_phases: int = 50,
@@ -107,6 +113,7 @@ def run_policy(
         seed=seed,
         run_id=run_id,
         model_settings=model_settings,
+        scenario_instance_id=scenario_instance_id,
         behavior_profile_by_agent=behavior_profile_by_agent,
         debug_model_io=debug_model_io,
         max_phases=max_phases,
@@ -122,15 +129,19 @@ def run_scenario_policy(
     seed: int = 0,
     run_id: str | None = None,
     model_settings: dict[str, Any] | None = None,
+    scenario_instance_id: str | None = None,
     behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
     debug_model_io: bool = False,
     max_phases: int = 50,
 ) -> RunResult:
+    model_settings = dict(model_settings or {})
+    if scenario_instance_id is not None:
+        model_settings["scenario_instance_id"] = scenario_instance_id
     state = scenario.create_state(
         run_id=run_id or f"run_{uuid4().hex[:12]}",
         variant=variant,  # type: ignore[arg-type]
         seed=seed,
-        model_settings=model_settings or {},
+        model_settings=model_settings,
         behavior_profile_by_agent=behavior_profile_by_agent,
     )
     _initialize_policies(policies, state)

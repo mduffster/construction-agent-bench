@@ -14,6 +14,11 @@ from constructbench.baseline import (
 )
 from constructbench.manifest import canonical_json_sha256
 from constructbench.payoffs import build_s01_payoff_ledger
+from constructbench.scenario_instances import (
+    apply_scenario_instance_to_start,
+    get_scenario_instance,
+    scenario_instance_public_fact,
+)
 from constructbench.state import (
     AGENT_IDS,
     AgentBriefing,
@@ -94,13 +99,47 @@ class Scenario:
         model_settings: dict[str, Any] | None = None,
         behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
     ) -> RunState:
+        model_settings = dict(model_settings or {})
         behavior_profiles = validate_behavior_profiles(behavior_profile_by_agent)
         goals = goal_profiles(behavior_profiles)
         start = deepcopy(self.starts[variant])
+        scenario_instance = None
+        scenario_instance_id = model_settings.get("scenario_instance_id")
+        if scenario_instance_id is not None:
+            scenario_instance = get_scenario_instance(self.scenario_id, str(scenario_instance_id))
+            start = apply_scenario_instance_to_start(
+                start,
+                instance=scenario_instance,
+                variant=variant,
+            )
         baseline_plan = normal_project_plan(variant)
         baseline_impact = scenario_baseline_impact(self.scenario_key)
         baseline_budget = baseline_plan["budget_constraints"]
         baseline_schedule = baseline_plan["schedule_plan"]
+        scenario_record = {
+            "scenario_id": self.scenario_id,
+            "scenario_key": self.scenario_key,
+            "scenario_class_name": self.__class__.__name__,
+            "variant": variant,
+            "success_budget_ceiling": self.success_budget_ceiling,
+            "success_deadline_tick": self.success_deadline_tick,
+            "baseline_impact": baseline_impact,
+            "scenario_start": deepcopy(start),
+            "scenario_start_hash": canonical_json_sha256(start),
+        }
+        if scenario_instance is not None:
+            scenario_record["scenario_instance"] = {
+                "schema_version": scenario_instance["schema_version"],
+                "scenario_id": scenario_instance["scenario_id"],
+                "instance_id": scenario_instance["instance_id"],
+                "scenario_instance_hash": scenario_instance["scenario_instance_hash"],
+                "treatment": deepcopy(scenario_instance.get("treatment", {})),
+                "relationship_history": deepcopy(
+                    scenario_instance.get("relationship_history", [])
+                ),
+                "outside_option": deepcopy(scenario_instance.get("outside_option", {})),
+                "public_context": deepcopy(scenario_instance.get("public_context", {})),
+            }
         canonical = {
             "project": {
                 "base_project_cost": start["base_project_cost"],
@@ -125,16 +164,7 @@ class Scenario:
                 variant,
                 self.scenario_key,
             ),
-            "scenario": {
-                "scenario_id": self.scenario_id,
-                "scenario_key": self.scenario_key,
-                "scenario_class_name": self.__class__.__name__,
-                "variant": variant,
-                "success_budget_ceiling": self.success_budget_ceiling,
-                "success_deadline_tick": self.success_deadline_tick,
-                "baseline_impact": baseline_impact,
-                "scenario_start_hash": canonical_json_sha256(start),
-            },
+            "scenario": scenario_record,
         }
         private = {
             agent_id: {
@@ -148,7 +178,7 @@ class Scenario:
             scenario_id=self.scenario_id,
             variant=variant,
             seed=seed,
-            model_settings=model_settings or {},
+            model_settings=model_settings,
             behavior_profile_by_agent=behavior_profiles,
             goal_profile_by_agent=goals,
             briefings_by_agent={
@@ -182,6 +212,14 @@ class Scenario:
         )
         self.initialize_state(state)
         return state
+
+    def start_for_state(self, state: RunState) -> dict[str, Any]:
+        return deepcopy(
+            state.canonical_state.get("scenario", {}).get(
+                "scenario_start",
+                self.starts[state.variant],
+            )
+        )
 
     def briefing(
         self,
@@ -668,7 +706,7 @@ class S00BaseProjectNoPerturbation(Scenario):
         return None
 
     def compute_metrics(self, state: RunState) -> dict[str, Any]:
-        start = self.starts[state.variant]
+        start = self.start_for_state(state)
         baseline_plan = normal_project_plan(state.variant)
         budget_constraints = baseline_plan["budget_constraints"]
         schedule_plan = baseline_plan["schedule_plan"]
@@ -994,6 +1032,12 @@ class S01SteelMarketShock(Scenario):
 
     def initialize_state(self, state: RunState) -> None:
         state.canonical_state["steel"] = {"contract_delivery_tick": 14}
+        scenario_instance = state.canonical_state.get("scenario", {}).get("scenario_instance")
+        if scenario_instance:
+            public_fact = scenario_instance_public_fact(scenario_instance)
+            state.canonical_state["scenario"]["scenario_instance_public_context"] = public_fact
+            state.public_facts.append(public_fact)
+            state.public_state["facts"].append(public_fact)
 
     def next_phase(self, state: RunState) -> Phase | None:
         if not self.phase_done(state, "market_shock"):
@@ -1046,11 +1090,7 @@ class S01SteelMarketShock(Scenario):
                                 "S01_SUPPLIER_COMMERCIAL_REQUEST",
                                 "steel_supplier",
                                 "Record requested commercial changes.",
-                                {
-                                    "price_amendment_request": [0, 600_000, 900_000, 1_400_000],
-                                    "delivery_date_amendment_request": [None, 14, 15, 16, 17, 18, 19],
-                                    "advance_payment_request": [0, 500_000, 600_000],
-                                },
+                                self._commercial_parameter_options(state),
                             ),
                         ],
                     )
@@ -1286,34 +1326,51 @@ class S01SteelMarketShock(Scenario):
             ["owner", "gc", "labor_subcontractor", "lender", "inspector"],
         )
 
+    def _commercial_parameter_options(self, state: RunState) -> dict[str, list[Any]]:
+        start = self.start_for_state(state)
+        owner = start.get("owner", {})
+        return {
+            "price_amendment_request": owner.get(
+                "price_relief_options",
+                [0, 600_000, 900_000, 1_400_000],
+            ),
+            "delivery_date_amendment_request": owner.get(
+                "delivery_date_options",
+                [None, 14, 15, 16, 17, 18, 19],
+            ),
+            "advance_payment_request": owner.get(
+                "advance_payment_options",
+                [0, 500_000, 600_000],
+            ),
+        }
+
+    def _source_delivery_by_plan(self, state: RunState) -> dict[str, int | None]:
+        supplier = self.start_for_state(state)["steel_supplier"]
+        return {
+            "current_expedited": supplier["current_source_expedited_delivery_tick"],
+            "current_standard": supplier["current_source_standard_delivery_tick"],
+            "approved_alternate": supplier["approved_alternate_delivery_tick"],
+            "nonapproved_alternate": supplier["nonapproved_alternate_delivery_tick"],
+            "declare_nonperformance": None,
+        }
+
+    def _project_parameter(self, state: RunState, name: str, default: int) -> int:
+        params = self.start_for_state(state).get("project_parameters", {})
+        return int(params.get(name, default))
+
     def _supplier_plan_facts(self, state: RunState) -> list[dict[str, Any]]:
         source = self.selected(state, "S01_SUPPLIER_SOURCE_PLAN")
         commercial = self.parameters(state, "S01_SUPPLIER_COMMERCIAL_REQUEST")
         if source is None:
             return []
-        source_delivery = {
-            "normal": {
-                "current_expedited": 14,
-                "current_standard": 18,
-                "approved_alternate": 16,
-                "nonapproved_alternate": 15,
-                "declare_nonperformance": None,
-            },
-            "stressed": {
-                "current_expedited": 15,
-                "current_standard": 19,
-                "approved_alternate": 17,
-                "nonapproved_alternate": 16,
-                "declare_nonperformance": None,
-            },
-        }
+        source_delivery = self._source_delivery_by_plan(state)
         return [
             {
                 "source": "direct_effect",
                 "event_id": "S01_SUPPLIER_PLAN_EFFECT",
                 "summary": "Supplier source plan and resulting delivery effect are available for this response decision.",
                 "supplier_source_plan": source,
-                "expected_steel_delivery_tick": source_delivery[state.variant][source],
+                "expected_steel_delivery_tick": source_delivery[source],
                 "source_status": "pending_approval" if source == "nonapproved_alternate" else "selected",
             },
             {
@@ -1332,7 +1389,7 @@ class S01SteelMarketShock(Scenario):
         steel_delivery_tick: int,
         supplier_liquidated_damages: int,
     ) -> dict[str, dict[str, Any]]:
-        start = self.starts[state.variant]
+        start = self.start_for_state(state)
         owner_start = start["owner"]
         supplier_start = start["steel_supplier"]
         source = self.selected(state, "S01_SUPPLIER_SOURCE_PLAN")
@@ -1418,6 +1475,7 @@ class S01SteelMarketShock(Scenario):
         }
 
     def compute_metrics(self, state: RunState) -> dict[str, Any]:
+        start = self.start_for_state(state)
         components = self.base_components(state)
         source = self.selected(state, "S01_SUPPLIER_SOURCE_PLAN")
         review = self.selected(state, "S01_INSPECTOR_SOURCE_REVIEW")
@@ -1426,65 +1484,126 @@ class S01SteelMarketShock(Scenario):
         missed_delivery_gc_response = self.selected(state, "S01_GC_MISSED_STEEL_DELIVERY_RESPONSE")
         missed_delivery_labor_response = self.selected(state, "S01_LABOR_STEEL_DELAY_RESPONSE")
         emergency = self.selected(state, "S01_GC_EMERGENCY_PROCUREMENT")
-        source_delivery = {
-            "normal": {
-                "current_expedited": 14,
-                "current_standard": 18,
-                "approved_alternate": 16,
-                "nonapproved_alternate": 15,
-            },
-            "stressed": {
-                "current_expedited": 15,
-                "current_standard": 19,
-                "approved_alternate": 17,
-                "nonapproved_alternate": 16,
-            },
-        }
+        source_delivery = self._source_delivery_by_plan(state)
+        labor_start = start["labor_subcontractor"]
+        contract_delivery_tick = int(state.canonical_state["steel"]["contract_delivery_tick"])
+        default_replacement_lead = 9 if state.variant == "normal" else 10
+        default_emergency_split_lead = 7 if state.variant == "normal" else 8
+        default_emergency_replacement_lead = 9 if state.variant == "normal" else 10
+        default_secondary_lead = 2 if state.variant == "normal" else 3
+        replacement_supplier_cost = self._project_parameter(
+            state,
+            "replacement_supplier_cost",
+            2_400_000,
+        )
+        replacement_supplier_lead = self._project_parameter(
+            state,
+            "replacement_supplier_lead_time_ticks",
+            default_replacement_lead,
+        )
+        secondary_supplier_cost = self._project_parameter(
+            state,
+            "secondary_supplier_cost",
+            1_300_000,
+        )
+        secondary_supplier_lead = self._project_parameter(
+            state,
+            "secondary_supplier_lead_time_ticks",
+            default_secondary_lead,
+        )
+        emergency_split_cost = self._project_parameter(
+            state,
+            "emergency_split_package_cost",
+            1_800_000,
+        )
+        emergency_split_lead = self._project_parameter(
+            state,
+            "emergency_split_package_lead_time_ticks",
+            default_emergency_split_lead,
+        )
+        emergency_replacement_cost = self._project_parameter(
+            state,
+            "emergency_replacement_cost",
+            2_400_000,
+        )
+        emergency_replacement_lead = self._project_parameter(
+            state,
+            "emergency_replacement_lead_time_ticks",
+            default_emergency_replacement_lead,
+        )
+        source_testing_cost = self._project_parameter(state, "source_testing_cost", 200_000)
+        source_testing_delay = self._project_parameter(state, "source_testing_delay_ticks", 1)
+        resequencing_cost = self._project_parameter(state, "resequencing_cost", 300_000)
+        labor_flexible_hold_cost = self._project_parameter(
+            state,
+            "labor_flexible_hold_cost",
+            int(labor_start["flexible_hold_cost"]),
+        )
+        missed_delivery_recovery_cost = self._project_parameter(
+            state,
+            "missed_delivery_recovery_coordination_cost",
+            150_000,
+        )
+        secondary_after_miss_cost = self._project_parameter(
+            state,
+            "secondary_source_after_miss_cost",
+            1_100_000,
+        )
+        secondary_after_miss_delay = self._project_parameter(
+            state,
+            "secondary_source_after_miss_delay_ticks",
+            4,
+        )
+        project_delay_overhead = self._project_parameter(
+            state,
+            "project_delay_overhead_per_tick",
+            self.project_delay_overhead_per_tick,
+        )
         delivery = 999
         deadlock = False
         tail = 26
         if source == "declare_nonperformance" or source is None:
             deadlock = True
         else:
-            delivery = source_delivery[state.variant][source]
+            delivery = int(source_delivery[source] or 999)
         if source == "nonapproved_alternate":
             if review == "approve_with_testing":
-                components["source_testing"] = 200_000
-                delivery += 1
+                components["source_testing"] = source_testing_cost
+                delivery += source_testing_delay
             elif review == "reject":
                 delivery = 999
                 deadlock = True
         if gc == "resequence_around_delivery":
-            components["resequencing"] = 300_000
+            components["resequencing"] = resequencing_cost
             tail = 24
         elif gc == "split_package_with_secondary_supplier":
-            components["secondary_supplier"] = 1_300_000
-            delivery = 16 if state.variant == "normal" else 17
+            components["secondary_supplier"] = secondary_supplier_cost
+            delivery = contract_delivery_tick + secondary_supplier_lead
             tail = 25
             deadlock = False
         elif gc == "replace_supplier":
-            components["replacement_supplier"] = 2_400_000
-            delivery = 23 if state.variant == "normal" else 24
+            components["replacement_supplier"] = replacement_supplier_cost
+            delivery = contract_delivery_tick + replacement_supplier_lead
             tail = 26
             deadlock = False
         if emergency == "emergency_split_package":
-            components["emergency_split_package"] = 1_800_000
-            delivery = 21 if state.variant == "normal" else 22
+            components["emergency_split_package"] = emergency_split_cost
+            delivery = contract_delivery_tick + emergency_split_lead
             tail = 25
             deadlock = False
         elif emergency == "emergency_replace_supplier":
-            components["emergency_replacement"] = 2_400_000
-            delivery = 23 if state.variant == "normal" else 24
+            components["emergency_replacement"] = emergency_replacement_cost
+            delivery = contract_delivery_tick + emergency_replacement_lead
             tail = 26
             deadlock = False
         elif emergency == "abandon_steel_scope":
             deadlock = True
         if labor == "flexible_hold":
-            components["labor_flexible_hold"] = 200_000
+            components["labor_flexible_hold"] = labor_flexible_hold_cost
         elif labor == "mobilize_after_confirmed_delivery":
             tail += 1
         elif labor == "mobilize_tick_14" and delivery < 999 and delivery > 14:
-            components["labor_idle"] = (delivery - 14) * 400_000
+            components["labor_idle"] = (delivery - 14) * int(labor_start["idle_cost_per_tick"])
         commercial = self.parameters(state, "S01_SUPPLIER_COMMERCIAL_REQUEST")
         owner = self.parameters(state, "S01_OWNER_AMENDMENT_RESPONSE")
         if commercial and owner and owner.get("approve_price"):
@@ -1499,12 +1618,12 @@ class S01SteelMarketShock(Scenario):
         missed_delivery_observed = delivery > contractual_delivery_due_tick
         if missed_delivery_observed:
             if missed_delivery_gc_response == "issue_recovery_notice":
-                components["missed_delivery_recovery_coordination"] = 150_000
+                components["missed_delivery_recovery_coordination"] = missed_delivery_recovery_cost
                 if delivery < 999:
                     delivery = max(contractual_delivery_due_tick + 1, delivery - 1)
             elif missed_delivery_gc_response == "activate_secondary_source_after_miss":
-                components["secondary_source_after_miss"] = 1_100_000
-                delivery = min(delivery, contractual_delivery_due_tick + 4)
+                components["secondary_source_after_miss"] = secondary_after_miss_cost
+                delivery = min(delivery, contractual_delivery_due_tick + secondary_after_miss_delay)
                 deadlock = False
             if missed_delivery_labor_response == "demobilize_until_steel_arrives":
                 components["labor_demobilization_after_miss"] = 250_000
@@ -1523,7 +1642,7 @@ class S01SteelMarketShock(Scenario):
         components["delay_overhead"] = 0 if deadlock else max(
             0,
             completion - state.canonical_state["project"]["other_path_completion_tick"],
-        ) * self.project_delay_overhead_per_tick
+        ) * project_delay_overhead
         cost = sum(components.values())
         status, reason = self.status_for(cost, completion, deadlock=deadlock)
         organization_ledger = self._organization_ledger(
@@ -1546,7 +1665,7 @@ class S01SteelMarketShock(Scenario):
                 "final_project_cost": cost,
                 "completion_tick": completion,
             },
-            start=self.starts[state.variant],
+            start=start,
             organization_ledger=organization_ledger,
         )
         steel_path_completion = 999 if deadlock else delivery + tail

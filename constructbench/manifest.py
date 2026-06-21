@@ -98,6 +98,7 @@ def _code_manifest(repo_root: Path) -> dict[str, Any]:
 
 def _scenario_manifest(final_state: RunState) -> dict[str, Any]:
     scenario = final_state.canonical_state.get("scenario", {})
+    scenario_instance = scenario.get("scenario_instance", {})
     project = final_state.canonical_state.get("project", {})
     baseline_plan = final_state.canonical_state.get("baseline_project_plan", {})
     return {
@@ -108,6 +109,9 @@ def _scenario_manifest(final_state: RunState) -> dict[str, Any]:
         "baseline_plan_hash": canonical_json_sha256(baseline_plan),
         "baseline_impact_hash": canonical_json_sha256(project.get("scenario_baseline_impact", {})),
         "scenario_start_hash": scenario.get("scenario_start_hash"),
+        "scenario_instance_id": scenario_instance.get("instance_id"),
+        "scenario_instance_hash": scenario_instance.get("scenario_instance_hash"),
+        "scenario_instance_treatment": scenario_instance.get("treatment"),
         "fixture_name": final_state.model_settings.get("fixture"),
     }
 

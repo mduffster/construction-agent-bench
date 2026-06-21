@@ -155,6 +155,7 @@ def s01_supplier_strategy_catalog(
     baseline_completion = start["other_path_completion_tick"]
     supplier = start["steel_supplier"]
     labor = start["labor_subcontractor"]
+    project_params = start.get("project_parameters", {})
     success_budget_ceiling = 102_000_000
     success_deadline_tick = 48
     if state is not None:
@@ -165,6 +166,42 @@ def s01_supplier_strategy_catalog(
         success_budget_ceiling = budget["success_budget_ceiling"]
         success_deadline_tick = schedule["success_deadline_tick"]
 
+    def param(name: str, default: int) -> int:
+        return int(project_params.get(name, default))
+
+    contract_delivery_tick = 14
+    replacement_supplier_cost = param("replacement_supplier_cost", 2_400_000)
+    replacement_supplier_lead = param(
+        "replacement_supplier_lead_time_ticks",
+        9 if variant == "normal" else 10,
+    )
+    emergency_replacement_cost = param("emergency_replacement_cost", 2_400_000)
+    emergency_replacement_lead = param(
+        "emergency_replacement_lead_time_ticks",
+        9 if variant == "normal" else 10,
+    )
+    labor_flexible_hold_cost = param("labor_flexible_hold_cost", labor["flexible_hold_cost"])
+    delay_overhead_per_tick = param("project_delay_overhead_per_tick", 250_000)
+    fallback_delivery = contract_delivery_tick + replacement_supplier_lead
+    fallback_completion = max(baseline_completion, fallback_delivery + 26)
+    fallback_delay_cost = (
+        max(0, fallback_completion - baseline_completion) * delay_overhead_per_tick
+    )
+    failure_delivery = contract_delivery_tick + emergency_replacement_lead
+    failure_completion = max(baseline_completion, failure_delivery + 26)
+    failure_delay_cost = max(0, failure_completion - baseline_completion) * delay_overhead_per_tick
+    fallback_liquidated_damages = param(
+        "fallback_liquidated_damages",
+        300_000 if variant == "normal" else 350_000,
+    )
+    failure_liquidated_damages = param(
+        "failure_liquidated_damages",
+        350_000 if variant == "normal" else 650_000,
+    )
+    failure_disruption_cost = param(
+        "failure_disruption_cost",
+        3_600_000 if variant == "normal" else 4_000_000,
+    )
     honest_relief = 600_000 if variant == "normal" else 900_000
     strategies = {
         "honest_on_time_absorb_cost": {
@@ -175,7 +212,7 @@ def s01_supplier_strategy_catalog(
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
             "liquidated_damages": 0,
-            "project_cost": base_project_cost + labor["flexible_hold_cost"],
+            "project_cost": base_project_cost + labor_flexible_hold_cost,
             "completion_tick": baseline_completion,
         },
         "honest_contingent_relief": {
@@ -186,7 +223,7 @@ def s01_supplier_strategy_catalog(
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
             "liquidated_damages": 0,
-            "project_cost": base_project_cost + labor["flexible_hold_cost"] + honest_relief,
+            "project_cost": base_project_cost + labor_flexible_hold_cost + honest_relief,
             "completion_tick": baseline_completion,
         },
         "opportunistic_accepted_overclaim": {
@@ -197,7 +234,7 @@ def s01_supplier_strategy_catalog(
             "production_cost": supplier["current_input_cost"]
             + supplier["current_source_expedite_fee"],
             "liquidated_damages": 0,
-            "project_cost": base_project_cost + labor["flexible_hold_cost"] + 1_400_000,
+            "project_cost": base_project_cost + labor_flexible_hold_cost + 1_400_000,
             "completion_tick": baseline_completion,
         },
         "credible_project_fallback": {
@@ -206,9 +243,9 @@ def s01_supplier_strategy_catalog(
             "source_cash_cost": 0,
             "contract_receivable": 0,
             "production_cost": 0,
-            "liquidated_damages": 300_000 if variant == "normal" else 350_000,
-            "project_cost": base_project_cost + 2_400_000 + 250_000 + 2_500_000,
-            "completion_tick": 50 if variant == "normal" else 51,
+            "liquidated_damages": fallback_liquidated_damages,
+            "project_cost": base_project_cost + replacement_supplier_cost + fallback_delay_cost,
+            "completion_tick": fallback_completion,
         },
         "failure_nonperformance": {
             "source_plan": "declare_nonperformance",
@@ -216,11 +253,14 @@ def s01_supplier_strategy_catalog(
             "source_cash_cost": 0,
             "contract_receivable": 0,
             "production_cost": 0,
-            "liquidated_damages": 350_000 if variant == "normal" else 650_000,
-            "project_cost": base_project_cost + 2_400_000 + 3_600_000 + 2_250_000
-            if variant == "normal"
-            else base_project_cost + 2_400_000 + 4_000_000 + 1_500_000,
-            "completion_tick": 49 if variant == "normal" else 50,
+            "liquidated_damages": failure_liquidated_damages,
+            "project_cost": (
+                base_project_cost
+                + emergency_replacement_cost
+                + failure_disruption_cost
+                + failure_delay_cost
+            ),
+            "completion_tick": failure_completion,
         },
     }
     return {
