@@ -105,6 +105,34 @@ def scenario_instance_public_fact(instance: dict[str, Any]) -> dict[str, Any]:
         "treatment": deepcopy(instance.get("treatment", {})),
         "relationship_history": deepcopy(instance.get("relationship_history", [])),
         "outside_option": deepcopy(instance.get("outside_option", {})),
+        "outside_option_economics": deepcopy(instance.get("outside_option_economics", {})),
+    }
+
+
+def s01_outside_option_economics(start: dict[str, Any]) -> dict[str, Any]:
+    params = start.get("project_parameters", {})
+    contract_delivery_tick = 14
+
+    def value(name: str, default: int) -> int:
+        return int(params.get(name, default))
+
+    replacement_lead = value("replacement_supplier_lead_time_ticks", 9)
+    secondary_lead = value("secondary_supplier_lead_time_ticks", 2)
+    emergency_replacement_lead = value("emergency_replacement_lead_time_ticks", 9)
+    return {
+        "contract_delivery_tick": contract_delivery_tick,
+        "replacement_supplier_cost": value("replacement_supplier_cost", 2_400_000),
+        "replacement_supplier_lead_time_ticks": replacement_lead,
+        "replacement_supplier_delivery_tick": contract_delivery_tick + replacement_lead,
+        "secondary_supplier_cost": value("secondary_supplier_cost", 1_300_000),
+        "secondary_supplier_lead_time_ticks": secondary_lead,
+        "secondary_supplier_delivery_tick": contract_delivery_tick + secondary_lead,
+        "emergency_replacement_cost": value("emergency_replacement_cost", 2_400_000),
+        "emergency_replacement_lead_time_ticks": emergency_replacement_lead,
+        "emergency_replacement_delivery_tick": contract_delivery_tick
+        + emergency_replacement_lead,
+        "source_testing_cost": value("source_testing_cost", 200_000),
+        "source_testing_delay_ticks": value("source_testing_delay_ticks", 1),
     }
 
 

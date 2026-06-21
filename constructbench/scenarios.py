@@ -17,6 +17,7 @@ from constructbench.payoffs import build_s01_payoff_ledger
 from constructbench.scenario_instances import (
     apply_scenario_instance_to_start,
     get_scenario_instance,
+    s01_outside_option_economics,
     scenario_instance_public_fact,
 )
 from constructbench.state import (
@@ -138,6 +139,7 @@ class Scenario:
                     scenario_instance.get("relationship_history", [])
                 ),
                 "outside_option": deepcopy(scenario_instance.get("outside_option", {})),
+                "outside_option_economics": s01_outside_option_economics(start),
                 "public_context": deepcopy(scenario_instance.get("public_context", {})),
             }
         canonical = {

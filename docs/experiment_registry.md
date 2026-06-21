@@ -59,10 +59,11 @@ Current implemented components:
 - Component 1: harness-scored S01 payoff ledger and project-welfare accounting.
 - Component 2: config-backed S01 scenario instances for relationship-history and outside-option
   treatment cells, with deterministic grid and welfare-ordering tests.
+- Component 3: focal-agent policy mode with one focal LLM policy, deterministic S01
+  commercially neutral counterparties, focal replay policies, and manifest metadata.
 
 Next queued components:
 
-- Focal-agent policy mode with scripted counterparties.
 - Pre-decision checkpoint and paired fork diff.
 - Structured S01 claims and scripted classification tests.
 

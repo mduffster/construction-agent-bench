@@ -121,10 +121,18 @@ def _run_manifest(
     final_state: RunState,
     debug_model_io: bool,
 ) -> dict[str, Any]:
+    settings = initial_state.model_settings
+    is_focal = settings.get("policy") == "focal"
     return {
         "run_id": initial_state.run_id,
         "seed": initial_state.seed,
-        "policy_mode": initial_state.model_settings.get("policy"),
+        "policy_mode": settings.get("policy"),
+        "focal_agent_id": settings.get("focal_agent_id"),
+        "counterparty_policy_id": settings.get("counterparty_policy_id"),
+        "focal_policy_provider": settings.get("focal_policy_provider")
+        or (settings.get("provider") if is_focal else None),
+        "focal_policy_model": settings.get("focal_policy_model")
+        or (settings.get("model") if is_focal else None),
         "behavior_profile_by_agent": initial_state.behavior_profile_by_agent,
         "goal_profile_by_agent": {
             agent_id: profile.model_dump(mode="json")

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Protocol
+from collections.abc import Mapping
+from typing import Any, Protocol
 
 from constructbench.state import (
     AgentObservation,
@@ -9,6 +10,7 @@ from constructbench.state import (
     Claim,
     Communication,
     DecisionSelection,
+    RunState,
 )
 
 
@@ -70,6 +72,47 @@ class SingleSubmissionPolicy:
 
     def decide(self, observation: AgentObservation) -> AgentSubmission:
         return self.submission
+
+
+class ReplayPolicy:
+    def __init__(
+        self,
+        submissions_by_phase_agent: Mapping[
+            tuple[str, str],
+            AgentSubmission | dict[str, Any],
+        ],
+    ) -> None:
+        self.submissions_by_phase_agent = {
+            key: (
+                submission.model_copy(deep=True)
+                if isinstance(submission, AgentSubmission)
+                else AgentSubmission.model_validate(submission)
+            )
+            for key, submission in submissions_by_phase_agent.items()
+        }
+
+    def decide(self, observation: AgentObservation) -> AgentSubmission:
+        submission = self.submissions_by_phase_agent.get(
+            (observation.phase_id, observation.agent_id)
+        )
+        if submission is None:
+            return AgentSubmission()
+        return submission.model_copy(deep=True)
+
+
+def replay_submissions_for_agent(
+    state: RunState,
+    agent_id: str,
+) -> dict[tuple[str, str], AgentSubmission]:
+    submissions: dict[tuple[str, str], AgentSubmission] = {}
+    for record in state.histories.get("agent_submission_history", []):
+        if record.get("agent_id") != agent_id:
+            continue
+        key = (str(record["phase_id"]), str(record["agent_id"]))
+        if key in submissions:
+            raise ValueError(f"duplicate replay submission for {key}")
+        submissions[key] = AgentSubmission.model_validate(record["submission"])
+    return submissions
 
 
 def policies_for_fixture(decisions_by_node: dict[str, tuple[str, dict]]) -> dict[str, AgentPolicy]:
