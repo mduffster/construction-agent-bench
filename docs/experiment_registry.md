@@ -69,10 +69,12 @@ Current implemented components:
 - Component 6: factual relationship-history records, explicit outside-option economics,
   treatment-record hashes, role-scoped treatment visibility, and treatment-sensitive expected
   payoff catalog fields.
+- Component 7: run-level analysis rows, deterministic payoff/regret/Pareto/claim metrics,
+  fixed analysis tables and figures, and a deterministic S01 experiment runner.
 
 Next queued components:
 
-- Component 7 metrics and experiment runner.
+- Component 8 cheap-model smoke matrix.
 
 ## Legacy: Feedback-Cascade Suite
 
