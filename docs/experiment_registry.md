@@ -71,10 +71,12 @@ Current implemented components:
   payoff catalog fields.
 - Component 7: run-level analysis rows, deterministic payoff/regret/Pareto/claim metrics,
   fixed analysis tables and figures, and a deterministic S01 experiment runner.
+- Component 8: validity-ladder runner with scripted supplier controls, cheap-model smoke/pilot
+  gates, live-model opt-in guardrails, and deterministic gate reports.
 
 Next queued components:
 
-- Component 8 cheap-model smoke matrix.
+- Component 9 evidence package.
 
 ## Legacy: Feedback-Cascade Suite
 
