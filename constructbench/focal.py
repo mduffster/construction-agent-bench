@@ -269,6 +269,10 @@ def _claim_value(observation: AgentObservation, field: str) -> Any:
 
 
 def _outside_option(observation: AgentObservation) -> dict[str, Any]:
+    for context in _scenario_treatment_contexts(observation):
+        economics = context.get("outside_option_economics")
+        if isinstance(economics, dict):
+            return economics
     for fact in observation.known_facts:
         economics = fact.get("outside_option_economics")
         if isinstance(economics, dict):
@@ -277,6 +281,15 @@ def _outside_option(observation: AgentObservation) -> dict[str, Any]:
 
 
 def _outside_option_is_credible(observation: AgentObservation) -> bool:
+    outside = _outside_option(observation)
+    if outside:
+        return (
+            int(outside.get("switch_cost", outside.get("replacement_supplier_cost", 999_999_999)))
+            <= 500_000
+            and int(outside.get("expected_delay_ticks", outside.get("replacement_supplier_lead_time_ticks", 99)))
+            <= 1
+            and float(outside.get("delivery_risk", 1.0)) <= 0.2
+        )
     for fact in observation.known_facts:
         outside_option = fact.get("outside_option")
         if isinstance(outside_option, dict) and outside_option.get("credibility") == "credible":
@@ -291,11 +304,42 @@ def _outside_option_is_credible(observation: AgentObservation) -> bool:
 
 
 def _relationship_condition(observation: AgentObservation) -> str:
+    for context in _scenario_treatment_contexts(observation):
+        history = context.get("relationship_history")
+        if _history_has_prior_success_with_remediated_issue(history):
+            return "prior_success_with_remediated_issue"
+        if isinstance(history, list):
+            return "no_prior_shared_project_history"
     for fact in observation.known_facts:
         treatment = fact.get("treatment")
         if isinstance(treatment, dict):
             return str(treatment.get("relationship_history_condition", ""))
     return ""
+
+
+def _scenario_treatment_contexts(observation: AgentObservation) -> list[dict[str, Any]]:
+    contexts: list[dict[str, Any]] = []
+    for fact in observation.known_facts:
+        private_facts = fact.get("private_facts")
+        if not isinstance(private_facts, dict):
+            continue
+        context = private_facts.get("scenario_treatment_context")
+        if isinstance(context, dict):
+            contexts.append(context)
+    return contexts
+
+
+def _history_has_prior_success_with_remediated_issue(history: Any) -> bool:
+    if not isinstance(history, list):
+        return False
+    outcomes = {
+        (event.get("type"), event.get("outcome"))
+        for record in history
+        if isinstance(record, dict)
+        for event in record.get("events", [])
+        if isinstance(event, dict) and event.get("verified") is True
+    }
+    return ("delivery", "on_time") in outcomes and ("quality_issue", "remediated") in outcomes
 
 
 def _relief_limit(*, relationship: str, credible: bool) -> int:

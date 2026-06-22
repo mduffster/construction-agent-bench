@@ -196,13 +196,14 @@ def test_commercially_neutral_gc_uses_outside_option_economics() -> None:
 
     weak_gc = weak.final_state.decisions["S01_GC_PROCUREMENT_PLAN"]["option_id"]
     credible_gc = credible.final_state.decisions["S01_GC_PROCUREMENT_PLAN"]["option_id"]
-    public_fact = credible.final_state.canonical_state["scenario"][
-        "scenario_instance_public_context"
-    ]
+    scenario_instance = credible.final_state.canonical_state["scenario"]["scenario_instance"]
 
     assert weak_gc == "resequence_around_delivery"
     assert credible_gc == "replace_supplier"
-    assert public_fact["outside_option_economics"]["replacement_supplier_cost"] == 150_000
+    assert scenario_instance["outside_option_economics"]["replacement_supplier_cost"] == 150_000
+    assert "outside_option_economics" not in credible.final_state.canonical_state[
+        "scenario"
+    ]["scenario_instance_public_context"]
 
 
 def test_commercially_neutral_gc_responds_to_focal_claimed_cost_and_evidence() -> None:

@@ -17,8 +17,9 @@ from constructbench.payoffs import build_s01_payoff_ledger
 from constructbench.scenario_instances import (
     apply_scenario_instance_to_start,
     get_scenario_instance,
-    s01_outside_option_economics,
     scenario_instance_public_fact,
+    scenario_instance_record,
+    scenario_instance_role_context,
 )
 from constructbench.state import (
     AGENT_IDS,
@@ -129,19 +130,10 @@ class Scenario:
             "scenario_start_hash": canonical_json_sha256(start),
         }
         if scenario_instance is not None:
-            scenario_record["scenario_instance"] = {
-                "schema_version": scenario_instance["schema_version"],
-                "scenario_id": scenario_instance["scenario_id"],
-                "instance_id": scenario_instance["instance_id"],
-                "scenario_instance_hash": scenario_instance["scenario_instance_hash"],
-                "treatment": deepcopy(scenario_instance.get("treatment", {})),
-                "relationship_history": deepcopy(
-                    scenario_instance.get("relationship_history", [])
-                ),
-                "outside_option": deepcopy(scenario_instance.get("outside_option", {})),
-                "outside_option_economics": s01_outside_option_economics(start),
-                "public_context": deepcopy(scenario_instance.get("public_context", {})),
-            }
+            scenario_record["scenario_instance"] = scenario_instance_record(
+                scenario_instance,
+                start=start,
+            )
         canonical = {
             "project": {
                 "base_project_cost": start["base_project_cost"],
@@ -175,6 +167,17 @@ class Scenario:
             }
             for agent_id in AGENT_IDS
         }
+        if scenario_instance is not None:
+            canonical_instance = scenario_record["scenario_instance"]
+            for agent_id in AGENT_IDS:
+                role_context = scenario_instance_role_context(
+                    canonical_instance,
+                    agent_id=agent_id,
+                )
+                if role_context is not None:
+                    private[agent_id]["private_facts"][
+                        "scenario_treatment_context"
+                    ] = role_context
         state = RunState(
             run_id=run_id,
             scenario_id=self.scenario_id,

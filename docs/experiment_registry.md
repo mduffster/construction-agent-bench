@@ -66,10 +66,13 @@ Current implemented components:
 - Component 5: S01 structured claim schema and deterministic harness classification for
   incremental cost, liquidity requirement, delivery forecast/on-time probability, and recovery
   commitment claims.
+- Component 6: factual relationship-history records, explicit outside-option economics,
+  treatment-record hashes, role-scoped treatment visibility, and treatment-sensitive expected
+  payoff catalog fields.
 
 Next queued components:
 
-- Relationship-history and outside-option treatment records.
+- Component 7 metrics and experiment runner.
 
 ## Legacy: Feedback-Cascade Suite
 

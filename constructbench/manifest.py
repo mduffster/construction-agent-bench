@@ -111,6 +111,7 @@ def _scenario_manifest(final_state: RunState) -> dict[str, Any]:
         "scenario_start_hash": scenario.get("scenario_start_hash"),
         "scenario_instance_id": scenario_instance.get("instance_id"),
         "scenario_instance_hash": scenario_instance.get("scenario_instance_hash"),
+        "treatment_record_hash": scenario_instance.get("treatment_record_hash"),
         "scenario_instance_treatment": scenario_instance.get("treatment"),
         "fixture_name": final_state.model_settings.get("fixture"),
     }

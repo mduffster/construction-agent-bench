@@ -8,8 +8,12 @@ instances:
     relationship_history: []
     outside_option:
       option_id: weak_secondary_steel_supplier
-      credibility: weak
-      summary: Secondary supply is available only at a high cost with a long qualification lead.
+      qualification_required: true
+      switch_cost: 2650000
+      expected_delay_ticks: 9
+      delivery_risk: 0.35
+      termination_cost: 150000
+      known_to: [owner, gc, lender]
     public_context:
       summary: The project parties have no prior shared delivery history, and fallback steel supply is weak.
     variant_overrides:
@@ -87,8 +91,12 @@ instances:
     relationship_history: []
     outside_option:
       option_id: qualified_secondary_steel_supplier
-      credibility: credible
-      summary: A qualified secondary supplier can take the steel scope at low switching cost.
+      qualification_required: false
+      switch_cost: 0
+      expected_delay_ticks: 0
+      delivery_risk: 0.08
+      termination_cost: 150000
+      known_to: [owner, gc, lender]
     public_context:
       summary: The project parties have no prior shared delivery history, and fallback steel supply is credible.
     variant_overrides:
@@ -164,16 +172,26 @@ instances:
       relationship_history_condition: prior_success_with_remediated_issue
       outside_option_condition: weak_alternative
     relationship_history:
-      - event_id: prior_project_on_time_delivery
-        counterparty_ids: [gc, steel_supplier]
-        summary: Supplier delivered the prior comparable steel package on time.
-      - event_id: prior_submittal_issue_remediated
-        counterparty_ids: [gc, steel_supplier, inspector]
-        summary: A prior submittal issue was corrected without schedule impact.
+      - counterparty: steel_supplier
+        events:
+          - event_id: prior_project_on_time_delivery
+            type: delivery
+            outcome: on_time
+            verified: true
+            visible_to: [owner, gc, steel_supplier, lender]
+          - event_id: prior_submittal_issue_remediated
+            type: quality_issue
+            outcome: remediated
+            verified: true
+            visible_to: [gc, steel_supplier, inspector]
     outside_option:
       option_id: weak_secondary_steel_supplier
-      credibility: weak
-      summary: Secondary supply is available only at a high cost with a long qualification lead.
+      qualification_required: true
+      switch_cost: 2650000
+      expected_delay_ticks: 9
+      delivery_risk: 0.35
+      termination_cost: 150000
+      known_to: [owner, gc, lender]
     public_context:
       summary: The supplier has a positive remediated history, and fallback steel supply is weak.
     variant_overrides:
@@ -249,16 +267,26 @@ instances:
       relationship_history_condition: prior_success_with_remediated_issue
       outside_option_condition: credible_alternative
     relationship_history:
-      - event_id: prior_project_on_time_delivery
-        counterparty_ids: [gc, steel_supplier]
-        summary: Supplier delivered the prior comparable steel package on time.
-      - event_id: prior_submittal_issue_remediated
-        counterparty_ids: [gc, steel_supplier, inspector]
-        summary: A prior submittal issue was corrected without schedule impact.
+      - counterparty: steel_supplier
+        events:
+          - event_id: prior_project_on_time_delivery
+            type: delivery
+            outcome: on_time
+            verified: true
+            visible_to: [owner, gc, steel_supplier, lender]
+          - event_id: prior_submittal_issue_remediated
+            type: quality_issue
+            outcome: remediated
+            verified: true
+            visible_to: [gc, steel_supplier, inspector]
     outside_option:
       option_id: qualified_secondary_steel_supplier
-      credibility: credible
-      summary: A qualified secondary supplier can take the steel scope at low switching cost.
+      qualification_required: false
+      switch_cost: 0
+      expected_delay_ticks: 0
+      delivery_risk: 0.08
+      termination_cost: 150000
+      known_to: [owner, gc, lender]
     public_context:
       summary: The supplier has a positive remediated history, and fallback steel supply is credible.
     variant_overrides:

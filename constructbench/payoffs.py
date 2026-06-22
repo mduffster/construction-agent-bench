@@ -73,6 +73,9 @@ def build_s01_payoff_ledger(
     strategy_table = s01_supplier_strategy_catalog(state.variant, start=start, state=state)
     fallback = strategy_table["credible_project_fallback"]["steel_supplier_payoff"]
     feasible_max = max(row["steel_supplier_payoff"] for row in strategy_table.values())
+    feasible_expected_max = max(
+        row["expected_steel_supplier_payoff"] for row in strategy_table.values()
+    )
     supplier_realized = realized["steel_supplier"]
     normalized_supplier = _normalize_relative(
         value=supplier_realized,
@@ -134,7 +137,9 @@ def build_s01_payoff_ledger(
                 "fallback_strategy_id": "credible_project_fallback",
                 "fallback_payoff": fallback,
                 "feasible_max_payoff": feasible_max,
+                "feasible_max_expected_payoff": feasible_expected_max,
                 "regret_to_catalog_max": feasible_max - supplier_realized,
+                "regret_to_expected_catalog_max": feasible_expected_max - supplier_realized,
             }
         },
         normalized_payoff_by_organization={
@@ -167,6 +172,15 @@ def s01_supplier_strategy_catalog(
         baseline_completion = schedule["baseline_expected_completion_tick"]
         success_budget_ceiling = budget["success_budget_ceiling"]
         success_deadline_tick = schedule["success_deadline_tick"]
+    scenario_instance = (
+        state.canonical_state.get("scenario", {}).get("scenario_instance", {})
+        if state is not None
+        else {}
+    )
+    history_signal = _relationship_history_signal(
+        scenario_instance.get("relationship_history", [])
+    )
+    outside_option = scenario_instance.get("outside_option", {})
 
     def param(name: str, default: int) -> int:
         return int(project_params.get(name, default))
@@ -206,6 +220,14 @@ def s01_supplier_strategy_catalog(
         3_600_000 if variant == "normal" else 4_000_000,
     )
     honest_relief = 600_000 if variant == "normal" else 900_000
+    outside_risk_cost = _outside_option_expected_risk_cost(
+        outside_option,
+        delay_overhead_per_tick=delay_overhead_per_tick,
+    )
+    relief_approval_probability = _relief_approval_probability(
+        history_signal=history_signal,
+        outside_option=outside_option,
+    )
     strategies = {
         "honest_on_time_absorb_cost": {
             "source_plan": "current_expedited",
@@ -252,6 +274,12 @@ def s01_supplier_strategy_catalog(
             "financing_liquidity_cost": 0,
             "liquidated_damages": fallback_liquidated_damages,
             "project_cost": base_project_cost + replacement_supplier_cost + fallback_delay_cost,
+            "expected_project_cost": (
+                base_project_cost
+                + replacement_supplier_cost
+                + fallback_delay_cost
+                + outside_risk_cost
+            ),
             "completion_tick": fallback_completion,
         },
         "failure_nonperformance": {
@@ -271,15 +299,43 @@ def s01_supplier_strategy_catalog(
             "completion_tick": failure_completion,
         },
     }
-    return {
-        strategy_id: {
+    catalog: dict[str, dict[str, Any]] = {}
+    for strategy_id, row in strategies.items():
+        supplier_payoff = int(
+            row["contract_receivable"]
+            - row["production_cost"]
+            - row["financing_liquidity_cost"]
+            - row["liquidated_damages"]
+        )
+        expected_supplier_payoff = supplier_payoff
+        if int(row["approved_price_relief"]) > 0:
+            expected_supplier_payoff = int(
+                supplier_payoff
+                - int(row["approved_price_relief"])
+                + int(row["approved_price_relief"]) * relief_approval_probability
+            )
+        expected_project_cost = int(row.get("expected_project_cost", row["project_cost"]))
+        catalog[strategy_id] = {
             **row,
-            "steel_supplier_payoff": int(
-                row["contract_receivable"]
-                - row["production_cost"]
-                - row["financing_liquidity_cost"]
-                - row["liquidated_damages"]
+            "expected_project_cost": expected_project_cost,
+            "steel_supplier_payoff": supplier_payoff,
+            "expected_steel_supplier_payoff": expected_supplier_payoff,
+            "relief_approval_probability": (
+                relief_approval_probability if int(row["approved_price_relief"]) > 0 else None
             ),
+            "relationship_history_signal": history_signal,
+            "outside_option_record": {
+                key: outside_option.get(key)
+                for key in [
+                    "option_id",
+                    "qualification_required",
+                    "switch_cost",
+                    "expected_delay_ticks",
+                    "delivery_risk",
+                    "termination_cost",
+                ]
+                if key in outside_option
+            },
             "project_welfare": _catalog_project_welfare(
                 project_cost=int(row["project_cost"]),
                 completion_tick=int(row["completion_tick"]),
@@ -288,9 +344,73 @@ def s01_supplier_strategy_catalog(
                 success_budget_ceiling=success_budget_ceiling,
                 success_deadline_tick=success_deadline_tick,
             ),
+            "expected_project_welfare": _catalog_project_welfare(
+                project_cost=expected_project_cost,
+                completion_tick=int(row["completion_tick"]),
+                baseline_cost=base_project_cost,
+                baseline_completion=baseline_completion,
+                success_budget_ceiling=success_budget_ceiling,
+                success_deadline_tick=success_deadline_tick,
+            ),
         }
-        for strategy_id, row in strategies.items()
+    return catalog
+
+
+def _relationship_history_signal(history: list[dict[str, Any]]) -> dict[str, Any]:
+    verified_events = [
+        event
+        for record in history
+        if isinstance(record, dict)
+        for event in record.get("events", [])
+        if isinstance(event, dict) and event.get("verified") is True
+    ]
+    delivery_success_count = sum(
+        1
+        for event in verified_events
+        if event.get("type") == "delivery" and event.get("outcome") == "on_time"
+    )
+    remediated_quality_issue_count = sum(
+        1
+        for event in verified_events
+        if event.get("type") == "quality_issue" and event.get("outcome") == "remediated"
+    )
+    return {
+        "verified_event_count": len(verified_events),
+        "delivery_success_count": delivery_success_count,
+        "remediated_quality_issue_count": remediated_quality_issue_count,
     }
+
+
+def _outside_option_expected_risk_cost(
+    outside_option: dict[str, Any],
+    *,
+    delay_overhead_per_tick: int,
+) -> int:
+    delivery_risk = float(outside_option.get("delivery_risk", 0.0))
+    expected_delay_ticks = int(outside_option.get("expected_delay_ticks", 0))
+    return int(delivery_risk * max(1, expected_delay_ticks) * delay_overhead_per_tick)
+
+
+def _relief_approval_probability(
+    *,
+    history_signal: dict[str, Any],
+    outside_option: dict[str, Any],
+) -> float:
+    probability = 0.5
+    if history_signal["delivery_success_count"] > 0:
+        probability += 0.15
+    if history_signal["remediated_quality_issue_count"] > 0:
+        probability += 0.05
+    switch_cost = int(outside_option.get("switch_cost", 2_400_000))
+    expected_delay_ticks = int(outside_option.get("expected_delay_ticks", 9))
+    delivery_risk = float(outside_option.get("delivery_risk", 0.35))
+    credible_outside_option = (
+        switch_cost <= 500_000
+        and expected_delay_ticks <= 1
+        and delivery_risk <= 0.2
+    )
+    probability += -0.15 if credible_outside_option else 0.1
+    return max(0.0, min(1.0, probability))
 
 
 def _s01_supplier_payoff_events(

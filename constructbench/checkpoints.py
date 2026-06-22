@@ -9,8 +9,9 @@ from constructbench.manifest import canonical_json_sha256
 from constructbench.scenario_instances import (
     apply_scenario_instance_to_start,
     get_scenario_instance,
-    s01_outside_option_economics,
     scenario_instance_public_fact,
+    scenario_instance_record,
+    scenario_instance_role_context,
 )
 from constructbench.scenarios import Scenario, get_scenario
 from constructbench.state import AGENT_IDS, Phase, RunState
@@ -186,17 +187,10 @@ def apply_s01_treatment_patch(
     )
     scenario_record["scenario_start"] = deepcopy(patched_start)
     scenario_record["scenario_start_hash"] = canonical_json_sha256(patched_start)
-    scenario_record["scenario_instance"] = {
-        "schema_version": instance["schema_version"],
-        "scenario_id": instance["scenario_id"],
-        "instance_id": instance["instance_id"],
-        "scenario_instance_hash": instance["scenario_instance_hash"],
-        "treatment": deepcopy(instance.get("treatment", {})),
-        "relationship_history": deepcopy(instance.get("relationship_history", [])),
-        "outside_option": deepcopy(instance.get("outside_option", {})),
-        "outside_option_economics": s01_outside_option_economics(patched_start),
-        "public_context": deepcopy(instance.get("public_context", {})),
-    }
+    scenario_record["scenario_instance"] = scenario_instance_record(
+        instance,
+        start=patched_start,
+    )
     scenario_record["treatment_patch"] = patch.model_dump(mode="json")
     state.model_settings["scenario_instance_id"] = patch.scenario_instance_id
 
@@ -207,14 +201,20 @@ def apply_s01_treatment_patch(
 
     for agent_id in AGENT_IDS:
         patched_private_facts = deepcopy(patched_start.get(agent_id, {}))
-        state.private_state_by_agent[agent_id].setdefault("private_facts", {}).update(
-            patched_private_facts
+        role_context = scenario_instance_role_context(
+            scenario_record["scenario_instance"],
+            agent_id=agent_id,
         )
+        if role_context is not None:
+            patched_private_facts["scenario_treatment_context"] = role_context
+        private_facts = state.private_state_by_agent[agent_id].setdefault("private_facts", {})
+        private_facts.pop("scenario_treatment_context", None)
+        private_facts.update(patched_private_facts)
         state.briefings_by_agent[agent_id] = scenario.briefing(
             agent_id,
             state.behavior_profile_by_agent[agent_id],
             state.goal_profile_by_agent[agent_id],
-            patched_private_facts,
+            private_facts,
         )
 
 

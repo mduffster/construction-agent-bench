@@ -57,6 +57,7 @@ def list_scenario_instances(scenario_id: str) -> list[dict[str, Any]]:
     instances = []
     for raw in pack.instances:
         instance = _compose_instance(pack, raw).model_dump(mode="json")
+        instance["treatment_record_hash"] = scenario_treatment_record_hash(instance)
         instance["scenario_instance_hash"] = scenario_instance_hash(instance)
         instances.append(instance)
     return instances
@@ -69,6 +70,7 @@ def get_scenario_instance(scenario_id: str, instance_id: str) -> dict[str, Any]:
     for raw in pack.instances:
         if raw.get("instance_id") == instance_id:
             instance = _compose_instance(pack, raw).model_dump(mode="json")
+            instance["treatment_record_hash"] = scenario_treatment_record_hash(instance)
             instance["scenario_instance_hash"] = scenario_instance_hash(instance)
             return instance
     raise KeyError(f"unknown scenario instance {instance_id!r} for {scenario_id}")
@@ -76,6 +78,19 @@ def get_scenario_instance(scenario_id: str, instance_id: str) -> dict[str, Any]:
 
 def scenario_instance_hash(instance: dict[str, Any]) -> str:
     payload = {key: value for key, value in instance.items() if key != "scenario_instance_hash"}
+    return canonical_json_sha256(payload)
+
+
+def scenario_treatment_record_hash(instance: dict[str, Any]) -> str:
+    payload = {
+        "schema_version": instance["schema_version"],
+        "scenario_id": instance["scenario_id"],
+        "instance_id": instance["instance_id"],
+        "treatment": instance.get("treatment", {}),
+        "relationship_history": instance.get("relationship_history", []),
+        "outside_option": instance.get("outside_option", {}),
+        "variant_overrides": instance.get("variant_overrides", {}),
+    }
     return canonical_json_sha256(payload)
 
 
@@ -91,35 +106,93 @@ def apply_scenario_instance_to_start(
     return result
 
 
+def scenario_instance_record(
+    instance: dict[str, Any],
+    *,
+    start: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema_version": instance["schema_version"],
+        "scenario_id": instance["scenario_id"],
+        "instance_id": instance["instance_id"],
+        "scenario_instance_hash": instance["scenario_instance_hash"],
+        "treatment_record_hash": instance["treatment_record_hash"],
+        "treatment": deepcopy(instance.get("treatment", {})),
+        "relationship_history": deepcopy(instance.get("relationship_history", [])),
+        "outside_option": deepcopy(instance.get("outside_option", {})),
+        "outside_option_economics": s01_outside_option_economics(
+            start,
+            instance=instance,
+        ),
+        "public_context": deepcopy(instance.get("public_context", {})),
+    }
+
+
 def scenario_instance_public_fact(instance: dict[str, Any]) -> dict[str, Any]:
     return {
         "event_id": "S01_SCENARIO_INSTANCE_TREATMENT",
         "source": "scenario_instance",
-        "summary": instance.get("public_context", {}).get(
-            "summary",
-            "Structured scenario treatment context is active for this run.",
-        ),
+        "summary": "Structured S01 treatment context is active for this run.",
         "schema_version": instance["schema_version"],
         "instance_id": instance["instance_id"],
         "scenario_instance_hash": instance["scenario_instance_hash"],
-        "treatment": deepcopy(instance.get("treatment", {})),
-        "relationship_history": deepcopy(instance.get("relationship_history", [])),
-        "outside_option": deepcopy(instance.get("outside_option", {})),
-        "outside_option_economics": deepcopy(instance.get("outside_option_economics", {})),
+        "treatment_record_hash": instance["treatment_record_hash"],
     }
 
 
-def s01_outside_option_economics(start: dict[str, Any]) -> dict[str, Any]:
+def scenario_instance_role_context(
+    instance: dict[str, Any],
+    *,
+    agent_id: str,
+) -> dict[str, Any] | None:
+    relationship_history = _relationship_history_for_agent(instance, agent_id)
+    outside_option = _outside_option_for_agent(instance, agent_id)
+    outside_option_economics = _outside_option_economics_for_agent(instance, agent_id)
+    if not relationship_history and not outside_option and not outside_option_economics:
+        return None
+    context: dict[str, Any] = {
+        "event_id": "S01_SCENARIO_INSTANCE_ROLE_CONTEXT",
+        "source": "scenario_instance",
+        "schema_version": instance["schema_version"],
+        "instance_id": instance["instance_id"],
+        "treatment_record_hash": instance["treatment_record_hash"],
+    }
+    if relationship_history:
+        context["relationship_history"] = relationship_history
+    if outside_option:
+        context["outside_option"] = outside_option
+    if outside_option_economics:
+        context["outside_option_economics"] = outside_option_economics
+    return context
+
+
+def s01_outside_option_economics(
+    start: dict[str, Any],
+    *,
+    instance: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     params = start.get("project_parameters", {})
     contract_delivery_tick = 14
 
     def value(name: str, default: int) -> int:
         return int(params.get(name, default))
 
+    outside_option = (instance or {}).get("outside_option", {})
     replacement_lead = value("replacement_supplier_lead_time_ticks", 9)
     secondary_lead = value("secondary_supplier_lead_time_ticks", 2)
     emergency_replacement_lead = value("emergency_replacement_lead_time_ticks", 9)
+    switch_cost = int(outside_option.get("switch_cost", value("replacement_supplier_cost", 2_400_000)))
+    expected_delay = int(outside_option.get("expected_delay_ticks", replacement_lead))
+    termination_cost = int(outside_option.get("termination_cost", 0))
+    delivery_risk = float(outside_option.get("delivery_risk", 0.25))
     return {
+        "option_id": outside_option.get("option_id"),
+        "qualification_required": bool(outside_option.get("qualification_required", True)),
+        "switch_cost": switch_cost,
+        "expected_delay_ticks": expected_delay,
+        "delivery_risk": delivery_risk,
+        "termination_cost": termination_cost,
+        "expected_switch_cost": switch_cost + termination_cost,
         "contract_delivery_tick": contract_delivery_tick,
         "replacement_supplier_cost": value("replacement_supplier_cost", 2_400_000),
         "replacement_supplier_lead_time_ticks": replacement_lead,
@@ -144,6 +217,63 @@ def _compose_instance(pack: ScenarioInstancePack, raw: dict[str, Any]) -> Scenar
             **raw,
         }
     )
+
+
+def _relationship_history_for_agent(
+    instance: dict[str, Any],
+    agent_id: str,
+) -> list[dict[str, Any]]:
+    visible_records: list[dict[str, Any]] = []
+    for record in instance.get("relationship_history", []):
+        events = []
+        for event in record.get("events", []):
+            visible_to = set(event.get("visible_to", []))
+            if visible_to and agent_id not in visible_to:
+                continue
+            clean_event = {
+                key: deepcopy(value)
+                for key, value in event.items()
+                if key != "visible_to"
+            }
+            events.append(clean_event)
+        if events:
+            visible_records.append(
+                {
+                    "counterparty": record.get("counterparty"),
+                    "events": events,
+                }
+            )
+    return visible_records
+
+
+def _outside_option_for_agent(
+    instance: dict[str, Any],
+    agent_id: str,
+) -> dict[str, Any]:
+    outside_option = instance.get("outside_option", {})
+    if agent_id not in set(outside_option.get("known_to", [])):
+        if agent_id != "steel_supplier":
+            return {}
+        return {
+            key: deepcopy(outside_option[key])
+            for key in ["option_id", "qualification_required", "expected_delay_ticks", "delivery_risk"]
+            if key in outside_option
+        }
+    return {
+        key: deepcopy(value)
+        for key, value in outside_option.items()
+        if key != "known_to"
+    }
+
+
+def _outside_option_economics_for_agent(
+    instance: dict[str, Any],
+    agent_id: str,
+) -> dict[str, Any]:
+    outside_option = instance.get("outside_option", {})
+    if agent_id not in set(outside_option.get("known_to", [])):
+        return {}
+    return deepcopy(instance.get("outside_option_economics", {}))
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> None:

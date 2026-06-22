@@ -6,6 +6,7 @@ from constructbench.scenario_instances import (
     get_scenario_instance,
     list_scenario_instances,
     scenario_instance_hash,
+    scenario_treatment_record_hash,
 )
 
 S01_SCENARIO_ID = "S01_STEEL_MARKET_SHOCK"
@@ -39,6 +40,14 @@ REQUIRED_PROJECT_PARAMETERS = {
     "source_testing_cost",
     "source_testing_delay_ticks",
     "project_delay_overhead_per_tick",
+}
+REQUIRED_OUTSIDE_OPTION_FIELDS = {
+    "option_id",
+    "qualification_required",
+    "switch_cost",
+    "expected_delay_ticks",
+    "delivery_risk",
+    "termination_cost",
 }
 
 
@@ -133,14 +142,22 @@ def test_s01_scenario_instance_is_canonical_state_not_prompt_only() -> None:
     )["scenario_instance_hash"]
     assert scenario["scenario_start"]["steel_supplier"]["liquidity_gap"] == 350_000
     assert public_fact in state.public_facts
-    assert public_fact["relationship_history"]
-    assert public_fact["outside_option"]["credibility"] == "credible"
+    assert public_fact["treatment_record_hash"] == scenario["scenario_instance"][
+        "treatment_record_hash"
+    ]
+    assert "relationship_history" not in public_fact
+    assert "outside_option" not in public_fact
+    assert scenario["scenario_instance"]["relationship_history"][0]["events"][0][
+        "type"
+    ] == "delivery"
+    assert scenario["scenario_instance"]["outside_option"]["switch_cost"] == 0
 
 
 def test_s01_scenario_instances_fully_specify_minimum_experimental_parameters() -> None:
     for instance in list_scenario_instances(S01_SCENARIO_ID):
         assert "relationship_history" in instance
-        assert instance["outside_option"]
+        assert REQUIRED_OUTSIDE_OPTION_FIELDS <= set(instance["outside_option"])
+        assert instance["treatment_record_hash"] == scenario_treatment_record_hash(instance)
         for variant in ["normal", "stressed"]:
             overrides = instance["variant_overrides"][variant]
             assert REQUIRED_SUPPLIER_PARAMETERS <= set(overrides["steel_supplier"])
@@ -207,3 +224,104 @@ def test_s01_credible_outside_option_favors_switching_over_accommodation() -> No
     assert switching_welfare["normalized_schedule_score"] == accommodation_welfare[
         "normalized_schedule_score"
     ]
+
+
+def test_s01_relationship_history_changes_expected_payoff_table() -> None:
+    no_history = _run("S01_REL_NONE_OUTSIDE_WEAK", accommodation_policy())
+    prior_success = _run("S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK", accommodation_policy())
+    no_history_catalog = no_history.final_state.canonical_state["payoff_ledger"][
+        "expected_payoff_by_organization"
+    ]["steel_supplier"]["strategy_catalog"]
+    prior_success_catalog = prior_success.final_state.canonical_state["payoff_ledger"][
+        "expected_payoff_by_organization"
+    ]["steel_supplier"]["strategy_catalog"]
+
+    no_history_relief = no_history_catalog["honest_contingent_relief"]
+    prior_success_relief = prior_success_catalog["honest_contingent_relief"]
+
+    assert prior_success_relief["relationship_history_signal"][
+        "delivery_success_count"
+    ] == 1
+    assert prior_success_relief["expected_steel_supplier_payoff"] > no_history_relief[
+        "expected_steel_supplier_payoff"
+    ]
+    assert prior_success_relief["relief_approval_probability"] > no_history_relief[
+        "relief_approval_probability"
+    ]
+
+
+def test_s01_outside_option_records_change_expected_fallback_table() -> None:
+    weak = _run("S01_REL_NONE_OUTSIDE_WEAK", accommodation_policy())
+    credible = _run("S01_REL_NONE_OUTSIDE_CREDIBLE", accommodation_policy())
+    weak_fallback = weak.final_state.canonical_state["payoff_ledger"][
+        "expected_payoff_by_organization"
+    ]["steel_supplier"]["strategy_catalog"]["credible_project_fallback"]
+    credible_fallback = credible.final_state.canonical_state["payoff_ledger"][
+        "expected_payoff_by_organization"
+    ]["steel_supplier"]["strategy_catalog"]["credible_project_fallback"]
+
+    assert weak_fallback["outside_option_record"]["switch_cost"] > credible_fallback[
+        "outside_option_record"
+    ]["switch_cost"]
+    assert weak_fallback["expected_project_cost"] > credible_fallback[
+        "expected_project_cost"
+    ]
+
+
+def test_s01_prompt_paraphrase_does_not_change_treatment_record_hash() -> None:
+    instance = get_scenario_instance(S01_SCENARIO_ID, "S01_REL_NONE_OUTSIDE_WEAK")
+    paraphrased = {
+        **instance,
+        "public_context": {
+            "summary": "Different wording for the same treatment cell.",
+        },
+    }
+
+    assert scenario_treatment_record_hash(paraphrased) == instance[
+        "treatment_record_hash"
+    ]
+
+
+def test_s01_treatment_context_visibility_is_role_scoped() -> None:
+    result = _run("S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE", accommodation_policy())
+    observations = result.final_state.histories["agent_observation_history"]
+
+    supplier_context = _private_treatment_context(
+        observations,
+        phase_id="supplier_source_and_commercial",
+        agent_id="steel_supplier",
+    )
+    gc_context = _private_treatment_context(
+        observations,
+        phase_id="source_response",
+        agent_id="gc",
+    )
+    labor_context = _private_treatment_context(
+        observations,
+        phase_id="source_response",
+        agent_id="labor_subcontractor",
+    )
+
+    assert supplier_context["relationship_history"][0]["events"]
+    assert "outside_option_economics" not in supplier_context
+    assert "switch_cost" not in supplier_context["outside_option"]
+    assert gc_context["outside_option_economics"]["switch_cost"] == 0
+    assert gc_context["relationship_history"][0]["events"]
+    assert labor_context is None
+
+
+def _private_treatment_context(
+    observations: list[dict],
+    *,
+    phase_id: str,
+    agent_id: str,
+) -> dict | None:
+    observation = next(
+        record
+        for record in observations
+        if record["phase_id"] == phase_id and record["agent_id"] == agent_id
+    )
+    private_fact = next(
+        fact for fact in observation["known_facts"] if fact.get("source") == "private"
+    )
+    return private_fact["private_facts"].get("scenario_treatment_context")
