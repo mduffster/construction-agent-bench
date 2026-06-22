@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 AGENT_IDS = [
     "owner",
@@ -95,8 +95,28 @@ class DecisionSelection(StrictModel):
 
 class Claim(StrictModel):
     subject_id: str | None = None
-    field: str
+    field: str | None = None
+    claim_id: str | None = None
+    proposition_id: str | None = None
     value: Any
+    unit: str | None = None
+    confidence: float | None = None
+    evidence_ids: list[str] = Field(default_factory=list)
+    audience: list[str] = Field(default_factory=list)
+    response_to_request_id: str | None = None
+
+    @field_validator("confidence")
+    @classmethod
+    def confidence_bounded(cls, value: float | None) -> float | None:
+        if value is not None and not 0.0 <= value <= 1.0:
+            raise ValueError("claim confidence must be in [0.0, 1.0]")
+        return value
+
+    @model_validator(mode="after")
+    def field_or_proposition_required(self) -> Claim:
+        if not self.field and not self.proposition_id:
+            raise ValueError("claim requires either field or proposition_id")
+        return self
 
 
 class Communication(StrictModel):
@@ -104,6 +124,8 @@ class Communication(StrictModel):
     recipient_ids: list[str] = Field(default_factory=list)
     summary: str = ""
     claims: list[Claim] = Field(default_factory=list)
+    required_proposition_ids: list[str] = Field(default_factory=list)
+    withheld_proposition_ids: list[str] = Field(default_factory=list)
     decision_record_id: str | None = None
 
 

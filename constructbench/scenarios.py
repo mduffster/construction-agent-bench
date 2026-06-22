@@ -201,6 +201,7 @@ class Scenario:
                 "phase_history": [],
                 "decision_history": [],
                 "message_history": [],
+                "claim_evaluation_history": [],
                 "assessment_history": [],
                 "assessment_review_history": [],
                 "invalid_outputs": [],

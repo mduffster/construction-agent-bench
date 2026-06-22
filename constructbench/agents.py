@@ -133,19 +133,16 @@ def communication(
     recipient_ids: list[str] | None = None,
     summary: str = "",
     claims: list[dict] | None = None,
+    required_proposition_ids: list[str] | None = None,
+    withheld_proposition_ids: list[str] | None = None,
     decision_record_id: str | None = None,
 ) -> Communication:
     return Communication(
         communication_type=communication_type,  # type: ignore[arg-type]
         recipient_ids=recipient_ids or [],
         summary=summary,
-        claims=[
-            Claim(
-                subject_id=claim.get("subject_id"),
-                field=claim["field"],
-                value=claim["value"],
-            )
-            for claim in (claims or [])
-        ],
+        claims=[Claim.model_validate(claim) for claim in (claims or [])],
+        required_proposition_ids=required_proposition_ids or [],
+        withheld_proposition_ids=withheld_proposition_ids or [],
         decision_record_id=decision_record_id,
     )

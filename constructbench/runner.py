@@ -7,6 +7,11 @@ from typing import Any
 from uuid import uuid4
 
 from constructbench.agents import AgentPolicy, policies_for_fixture
+from constructbench.claims import (
+    evaluate_communication_claims,
+    finalize_claim_evaluations,
+    validate_claim_references,
+)
 from constructbench.events import Event, record_event
 from constructbench.reporting import write_run_outputs
 from constructbench.scenarios import Scenario, get_scenario
@@ -217,6 +222,7 @@ def run_existing_state_policy(
     for _ in range(max_phases):
         phase = scenario.next_phase(state)
         if state.terminal_status != "IN_PROGRESS" and not terminal_recorded:
+            finalize_claim_evaluations(state)
             record_event(
                 state,
                 events,
@@ -523,11 +529,13 @@ def _validate_communication(agent_id: str, communication: Communication) -> list
         if not communication.decision_record_id:
             errors.append("publish_decision requires decision_record_id")
     for claim in communication.claims:
-        expected_type = CLAIM_TYPES.get(claim.field)
-        if expected_type is None:
-            errors.append(f"claim field {claim.field!r} is not in the claim registry")
-        elif not isinstance(claim.value, expected_type):
-            errors.append(f"claim field {claim.field!r} has invalid value type")
+        if claim.field is not None:
+            expected_type = CLAIM_TYPES.get(claim.field)
+            if expected_type is None:
+                errors.append(f"claim field {claim.field!r} is not in the claim registry")
+            elif not isinstance(claim.value, expected_type):
+                errors.append(f"claim field {claim.field!r} has invalid value type")
+    errors.extend(validate_claim_references(communication))
     return errors
 
 
@@ -649,8 +657,20 @@ def _apply_communication(
         "recipient_ids": list(communication.recipient_ids),
         "summary": communication.summary,
         "claims": [claim.model_dump(mode="json") for claim in communication.claims],
+        "required_proposition_ids": list(communication.required_proposition_ids),
+        "withheld_proposition_ids": list(communication.withheld_proposition_ids),
         "decision_record_id": communication.decision_record_id,
     }
+    claim_evaluations = evaluate_communication_claims(
+        state,
+        actor_id,
+        communication,
+        message_id=message_id,
+        phase_index=state.phase_index,
+        phase_id=phase.phase_id,
+    )
+    record["claim_evaluations"] = claim_evaluations
+    state.histories.setdefault("claim_evaluation_history", []).extend(claim_evaluations)
     state.histories["message_history"].append(record)
     if communication.communication_type == "private_message":
         for recipient in communication.recipient_ids:
@@ -800,6 +820,11 @@ def _turn_summary(state: RunState, phase: Phase, active_agents: list[str]) -> di
         for record in state.histories["assessment_review_history"]
         if record["phase_index"] == state.phase_index
     ]
+    phase_claim_evaluations = [
+        record
+        for record in state.histories.get("claim_evaluation_history", [])
+        if record["phase_index"] == state.phase_index
+    ]
     return {
         "phase_index": state.phase_index,
         "phase_id": phase.phase_id,
@@ -810,6 +835,7 @@ def _turn_summary(state: RunState, phase: Phase, active_agents: list[str]) -> di
         "communications": phase_messages,
         "assessment_updates": phase_assessments,
         "assessment_reviews": phase_reviews,
+        "claim_evaluations": phase_claim_evaluations,
         "terminal_status": state.terminal_status,
         "run_valid": state.run_valid,
     }

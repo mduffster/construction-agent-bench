@@ -1023,6 +1023,8 @@ def _normalize_communication(communication: dict[str, Any]) -> dict[str, Any]:
         "recipient_ids",
         "summary",
         "claims",
+        "required_proposition_ids",
+        "withheld_proposition_ids",
         "decision_record_id",
     }
     return {key: value for key, value in normalized.items() if key in allowed}
