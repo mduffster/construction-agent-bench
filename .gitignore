@@ -4,4 +4,10 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 outputs/
-
+output/
+.playwright-cli/
+web/node_modules/
+web/dist/
+web/playwright-report/
+web/test-results/
+*.tsbuildinfo

@@ -21,6 +21,8 @@ Runnable scenarios:
 
 - `S00_BASE_PROJECT_NO_PERTURBATION`
 - `S01_STEEL_MARKET_SHOCK`
+- `S01_V1` alias for `S01_STEEL_MARKET_SHOCK`
+- `S01_V2_OFFSITE_STEEL_DRAW` staged as `S01_V2`
 - `S02_CRANE_FAILURE_WEATHER`
 - `S03_OWNER_LIQUIDITY_SHORTFALL`
 - `S04_WELD_INSPECTION_FAILURE`
@@ -73,6 +75,10 @@ Current implemented components:
   fixed analysis tables and figures, and a deterministic S01 experiment runner.
 - Component 8: validity-ladder runner with scripted supplier controls, cheap-model smoke/pilot
   gates, live-model opt-in guardrails, and deterministic gate reports.
+- S01 V2 marginal update: staged `S01_V2_OFFSITE_STEEL_DRAW` with 18 explicit decisions, three
+  deterministic resolution handlers, explicit communication/assessment abstentions, five
+  deterministic witnesses, V2 payoff/reporting records, and bounded choice-consequence audit
+  sampling. `S01` remains the V1 default until the default switch is made deliberately.
 
 Next queued components:
 

@@ -50,6 +50,14 @@ class ScriptedPolicy:
                 )
             )
         key = (observation.phase_id, observation.agent_id)
+        communications = list(self.communications_by_phase_agent.get(key, []))
+        if observation.submission_contract.require_explicit_communication and not communications:
+            communications = [
+                Communication(
+                    communication_type="no_communication",
+                    summary="Scripted policy chooses not to send a message this turn.",
+                )
+            ]
         reviews = [
             AssessmentReview(
                 evidence_ids=[evidence.evidence_id],
@@ -58,9 +66,20 @@ class ScriptedPolicy:
             )
             for evidence in observation.assessment_evidence
         ]
+        if (
+            observation.submission_contract.require_explicit_assessment_choice
+            and not reviews
+        ):
+            reviews = [
+                AssessmentReview(
+                    evidence_ids=[],
+                    counterparty_ids=[],
+                    reason="Scripted witness records no directed assessment change this turn.",
+                )
+            ]
         return AgentSubmission(
             decisions=selections,
-            communications=list(self.communications_by_phase_agent.get(key, [])),
+            communications=communications,
             assessment_reviews=reviews,
             private_notes=self.private_notes_by_phase_agent.get(key, ""),
         )

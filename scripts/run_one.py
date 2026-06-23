@@ -25,7 +25,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run one ConstructBench scenario.")
     parser.add_argument("--scenario", required=True, choices=sorted(SCENARIOS))
     parser.add_argument("--variant", choices=["normal", "stressed"], default="normal")
-    parser.add_argument("--fixture", choices=["normal_success", "normal_failure", "stressed_success", "stressed_failure"])
+    parser.add_argument("--fixture")
     parser.add_argument("--policy", choices=["fixture", "llm", "focal", "no_decision"], default="fixture")
     parser.add_argument("--provider", choices=["ollama", "anthropic"], default="ollama")
     parser.add_argument("--model", default=None)

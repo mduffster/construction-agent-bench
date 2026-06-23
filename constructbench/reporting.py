@@ -60,9 +60,22 @@ def run_summary_payload(
         "organization_ledger": final_state.canonical_state.get("organizations", {}),
         "terminal_values": final_state.canonical_state.get("terminal_values", {}),
         "payoff_ledger": final_state.canonical_state.get("payoff_ledger", {}),
+        "s01_v2_state": final_state.canonical_state.get("s01_v2_state", {}),
+        "s01_v2_analysis": final_state.canonical_state.get("s01_v2_state", {}).get(
+            "analysis",
+            {},
+        ),
+        "s01_v2_claim_provenance_history": final_state.histories.get(
+            "s01_v2_claim_provenance_history",
+            [],
+        ),
         "cost_components": project["cost_components"],
         "decision_history": final_state.histories.get("decision_history", []),
         "message_history": final_state.histories.get("message_history", []),
+        "communication_abstention_history": final_state.histories.get(
+            "communication_abstention_history",
+            [],
+        ),
         "assessment_history": final_state.histories.get("assessment_history", []),
         "assessment_review_history": final_state.histories.get("assessment_review_history", []),
         "agent_activation_history": final_state.histories.get("agent_activation_history", []),

@@ -24,6 +24,7 @@ from constructbench.state import (
     BehaviorProfileName,
     Communication,
     DecisionSelection,
+    ParameterSpec,
     Phase,
     PhaseTurn,
     RunState,
@@ -241,6 +242,21 @@ def run_existing_state_policy(
             _apply_event_phase(state, events, phase)
             turn_summaries.append(_turn_summary(state, phase, []))
             continue
+        if phase.phase_type == "consequence_phase":
+            scenario.apply_consequence_phase(state, phase)
+            record_event(
+                state,
+                events,
+                "consequence_applied",
+                details={
+                    "phase_id": phase.phase_id,
+                    "summary": phase.summary,
+                    "state_after": state.model_dump(mode="json"),
+                },
+            )
+            _mark_phase_done(state, events, phase)
+            turn_summaries.append(_turn_summary(state, phase, []))
+            continue
         active_agents = [turn.agent_id for turn in phase.turns]
         state.histories["agent_activation_history"].append(
             {
@@ -264,7 +280,7 @@ def run_existing_state_policy(
                 break
             submission = policy.decide(observation)
             _drain_model_io(state, policy)
-            errors = _validate_submission(observation, submission)
+            errors = _validate_submission(observation, submission, scenario=scenario)
             if errors and hasattr(policy, "repair"):
                 state.histories["repair_attempts"].append(
                     {
@@ -276,7 +292,7 @@ def run_existing_state_policy(
                 )
                 submission = policy.repair(observation, errors)  # type: ignore[attr-defined]
                 _drain_model_io(state, policy)
-                errors = _validate_submission(observation, submission)
+                errors = _validate_submission(observation, submission, scenario=scenario)
             state.histories["agent_observation_history"].append(observation.model_dump(mode="json"))
             state.histories["agent_submission_history"].append(
                 {
@@ -392,10 +408,16 @@ def _build_observation(state: RunState, phase: Phase, turn: PhaseTurn) -> AgentO
         assessment_evidence=turn.assessment_evidence,
         trust_prior_by_counterparty=state.trust_state[turn.agent_id],
         private_memory=state.private_memory_by_agent.get(turn.agent_id, ""),
+        submission_contract=turn.submission_contract,
     )
 
 
-def _validate_submission(observation: AgentObservation, submission: AgentSubmission) -> list[str]:
+def _validate_submission(
+    observation: AgentObservation,
+    submission: AgentSubmission,
+    *,
+    scenario: Scenario | None = None,
+) -> list[str]:
     errors: list[str] = []
     required_by_node = {request.node_id: request for request in observation.required_decisions}
     submitted_by_node: dict[str, DecisionSelection] = {}
@@ -428,7 +450,7 @@ def _validate_submission(observation: AgentObservation, submission: AgentSubmiss
         else:
             if selection.option_id not in {None, "__parameters__"}:
                 errors.append(f"parameterized decision {node_id} must use option_id null or __parameters__")
-            expected_keys = set(request.parameters)
+            expected_keys = set(request.parameter_specs or request.parameters)
             actual_keys = set(selection.parameters)
             missing = sorted(expected_keys - actual_keys)
             extra = sorted(actual_keys - expected_keys)
@@ -436,16 +458,85 @@ def _validate_submission(observation: AgentObservation, submission: AgentSubmiss
                 errors.append(f"missing parameters for {node_id}: {', '.join(missing)}")
             if extra:
                 errors.append(f"unexpected parameters for {node_id}: {', '.join(extra)}")
-            for name, allowed in request.parameters.items():
-                if name in selection.parameters and selection.parameters[name] not in allowed:
-                    coerced = _coerce_allowed_parameter(selection.parameters[name], allowed)
-                    if coerced is _NO_COERCION:
-                        errors.append(f"invalid parameter {name}={selection.parameters[name]!r} for {node_id}")
-                    else:
-                        selection.parameters[name] = coerced
+            if request.parameter_specs:
+                for name, spec in request.parameter_specs.items():
+                    if name not in selection.parameters:
+                        continue
+                    errors.extend(_validate_parameter_spec(node_id, name, selection.parameters[name], spec))
+            else:
+                for name, allowed in request.parameters.items():
+                    if name in selection.parameters and selection.parameters[name] not in allowed:
+                        coerced = _coerce_allowed_parameter(selection.parameters[name], allowed)
+                        if coerced is _NO_COERCION:
+                            errors.append(f"invalid parameter {name}={selection.parameters[name]!r} for {node_id}")
+                        else:
+                            selection.parameters[name] = coerced
     for communication in submission.communications:
         errors.extend(_validate_communication(observation.agent_id, communication))
+    errors.extend(_validate_explicit_communication(observation, submission))
     errors.extend(_validate_assessments(observation, submission))
+    if scenario is not None:
+        for selection in submission.decisions:
+            errors.extend(scenario.validate_decision(observation, selection))
+    return errors
+
+
+def _validate_parameter_spec(
+    node_id: str,
+    name: str,
+    value: Any,
+    spec: ParameterSpec,
+) -> list[str]:
+    if value is None:
+        return [] if spec.nullable else [f"invalid parameter {name}=None for {node_id}"]
+    if spec.value_type == "integer":
+        if type(value) is not int:
+            return [f"invalid parameter {name}={value!r} for {node_id}; expected integer"]
+        return _validate_numeric_bounds(node_id, name, value, spec)
+    if spec.value_type == "decimal":
+        if type(value) not in {int, float}:
+            return [f"invalid parameter {name}={value!r} for {node_id}; expected decimal"]
+        return _validate_numeric_bounds(node_id, name, float(value), spec)
+    if spec.value_type == "boolean":
+        return [] if type(value) is bool else [
+            f"invalid parameter {name}={value!r} for {node_id}; expected boolean"
+        ]
+    if spec.value_type == "enum":
+        if value not in spec.allowed_values:
+            return [f"invalid parameter {name}={value!r} for {node_id}; expected one of {spec.allowed_values!r}"]
+        return []
+    if spec.value_type == "fixed":
+        expected = spec.default if spec.default is not None else (
+            spec.allowed_values[0] if spec.allowed_values else None
+        )
+        return [] if value == expected else [
+            f"invalid parameter {name}={value!r} for {node_id}; expected fixed value {expected!r}"
+        ]
+    if spec.value_type in {"list", "set", "reference"}:
+        if not isinstance(value, list):
+            return [f"invalid parameter {name}={value!r} for {node_id}; expected list"]
+        invalid = [item for item in value if item not in spec.allowed_values]
+        if invalid:
+            return [f"invalid parameter {name} contains unavailable values {invalid!r} for {node_id}"]
+        if spec.value_type == "set" and len(value) != len(set(map(repr, value))):
+            return [f"invalid parameter {name} for {node_id}; set values must be unique"]
+        return []
+    return [f"invalid parameter spec type {spec.value_type!r} for {node_id}.{name}"]
+
+
+def _validate_numeric_bounds(
+    node_id: str,
+    name: str,
+    value: int | float,
+    spec: ParameterSpec,
+) -> list[str]:
+    errors: list[str] = []
+    if spec.min_value is not None and value < spec.min_value:
+        errors.append(f"invalid parameter {name}={value!r} for {node_id}; below minimum {spec.min_value!r}")
+    if spec.max_value is not None and value > spec.max_value:
+        errors.append(f"invalid parameter {name}={value!r} for {node_id}; above maximum {spec.max_value!r}")
+    if spec.allowed_values and value not in spec.allowed_values:
+        errors.append(f"invalid parameter {name}={value!r} for {node_id}; expected one of {spec.allowed_values!r}")
     return errors
 
 
@@ -514,7 +605,18 @@ def _coerce_allowed_parameter(value: Any, allowed: list[Any]) -> Any:
 
 def _validate_communication(agent_id: str, communication: Communication) -> list[str]:
     errors: list[str] = []
-    if communication.communication_type == "private_message":
+    if communication.communication_type == "no_communication":
+        if communication.recipient_ids:
+            errors.append("no_communication recipient_ids must be empty")
+        if communication.claims:
+            errors.append("no_communication cannot include claims")
+        if communication.required_proposition_ids or communication.withheld_proposition_ids:
+            errors.append("no_communication cannot include proposition disclosure markers")
+        if communication.decision_record_id:
+            errors.append("no_communication cannot publish a decision")
+        if not communication.summary.strip():
+            errors.append("no_communication requires a short summary reason")
+    elif communication.communication_type == "private_message":
         if not communication.recipient_ids:
             errors.append("private_message requires at least one recipient")
         invalid = [recipient for recipient in communication.recipient_ids if recipient not in AGENT_IDS]
@@ -539,6 +641,31 @@ def _validate_communication(agent_id: str, communication: Communication) -> list
     return errors
 
 
+def _validate_explicit_communication(
+    observation: AgentObservation,
+    submission: AgentSubmission,
+) -> list[str]:
+    if not observation.submission_contract.require_explicit_communication:
+        return []
+    abstentions = [
+        communication
+        for communication in submission.communications
+        if communication.communication_type == "no_communication"
+    ]
+    real_messages = [
+        communication
+        for communication in submission.communications
+        if communication.communication_type != "no_communication"
+    ]
+    if abstentions and real_messages:
+        return ["choose either real communications or no_communication, not both"]
+    if len(abstentions) > 1:
+        return ["only one no_communication record is allowed"]
+    if not abstentions and not real_messages:
+        return ["explicit communication choice required: send a message or no_communication"]
+    return []
+
+
 def _validate_assessments(observation: AgentObservation, submission: AgentSubmission) -> list[str]:
     errors: list[str] = []
     evidence_ids = {evidence.evidence_id for evidence in observation.assessment_evidence}
@@ -553,6 +680,12 @@ def _validate_assessments(observation: AgentObservation, submission: AgentSubmis
         if not review.reason.strip():
             errors.append("assessment no-update review requires a reason")
         covered.update(review.evidence_ids)
+    if (
+        observation.submission_contract.require_explicit_assessment_choice
+        and not submission.assessment_updates
+        and not submission.assessment_reviews
+    ):
+        errors.append("explicit assessment choice required: submit assessment_updates or assessment_reviews no_update")
     missing = sorted(evidence_ids - covered)
     if missing:
         errors.append("assessment evidence requires update or explicit no-update review: " + ", ".join(missing))
@@ -620,7 +753,10 @@ def _apply_submission(
             details={"decision": record, "state_after": state.model_dump(mode="json")},
         )
     for communication in submission.communications:
-        _apply_communication(state, events, phase, turn.agent_id, communication)
+        if communication.communication_type == "no_communication":
+            _apply_communication_abstention(state, events, phase, turn.agent_id, communication)
+        else:
+            _apply_communication(state, events, phase, turn.agent_id, communication)
     for update in submission.assessment_updates:
         _apply_assessment_update(state, events, phase, turn.agent_id, update)
     for review in submission.assessment_reviews:
@@ -691,6 +827,30 @@ def _apply_communication(
         "communication_delivered",
         actor_id=actor_id,
         details={"message": record, "state_after": state.model_dump(mode="json")},
+    )
+
+
+def _apply_communication_abstention(
+    state: RunState,
+    events: list[Event],
+    phase: Phase,
+    actor_id: str,
+    communication: Communication,
+) -> None:
+    record = {
+        "phase_index": state.phase_index,
+        "phase_id": phase.phase_id,
+        "actor_id": actor_id,
+        "communication_type": "no_communication",
+        "summary": communication.summary,
+    }
+    state.histories.setdefault("communication_abstention_history", []).append(record)
+    record_event(
+        state,
+        events,
+        "communication_abstained",
+        actor_id=actor_id,
+        details={"communication_abstention": record, "state_after": state.model_dump(mode="json")},
     )
 
 
@@ -820,6 +980,11 @@ def _turn_summary(state: RunState, phase: Phase, active_agents: list[str]) -> di
         for record in state.histories["assessment_review_history"]
         if record["phase_index"] == state.phase_index
     ]
+    phase_communication_abstentions = [
+        record
+        for record in state.histories.get("communication_abstention_history", [])
+        if record["phase_index"] == state.phase_index
+    ]
     phase_claim_evaluations = [
         record
         for record in state.histories.get("claim_evaluation_history", [])
@@ -833,6 +998,7 @@ def _turn_summary(state: RunState, phase: Phase, active_agents: list[str]) -> di
         "active_agents": active_agents,
         "decisions": phase_decisions,
         "communications": phase_messages,
+        "communication_abstentions": phase_communication_abstentions,
         "assessment_updates": phase_assessments,
         "assessment_reviews": phase_reviews,
         "claim_evaluations": phase_claim_evaluations,

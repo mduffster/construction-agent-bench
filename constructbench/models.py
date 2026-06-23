@@ -94,7 +94,7 @@ class AnthropicModelAdapter:
             raise RuntimeError("ANTHROPIC_API_KEY is not set")
         self._last_usage: dict[str, Any] | None = None
         self.api_version = ANTHROPIC_API_VERSION
-        self.model_parameters = {"temperature": 0, "max_tokens": 2048}
+        self.model_parameters = {"temperature": 0, "max_tokens": 4096}
 
     def chat(self, messages: list[dict[str, str]]) -> str:
         payload = json.dumps(
@@ -293,7 +293,8 @@ def base_system_prompt(prompt_style: PromptStyle = "anthropic_structured") -> st
         "claims, counterparties, or state changes. Return only JSON with keys decisions, "
         "communications, assessment_updates, assessment_reviews, private_notes. Copy option_id "
         "strings exactly; similar wording is invalid. For parameterized decisions, put every "
-        "field inside the parameters object."
+        "field inside the parameters object. Keep communications and private notes concise; long "
+        "narratives can truncate the JSON and make the submission invalid."
     )
 
 
@@ -429,22 +430,28 @@ def _observation_prompt(
         "no_update_assessment_response_shape": _no_update_assessment_response_shape(observation),
         "response_contract": {
             "decisions": "array matching required_decision_output_slots; use one scalar value per parameter, never an allowed-values list",
-            "communications": "[] unless you choose to send a real message; do not copy examples or placeholders",
+            "communications": (
+                "send real messages or, when required by submission_contract, include exactly one no_communication record; keep each summary under 700 characters"
+            ),
             "assessment_updates": "[] unless evidence changes one or more scores",
-            "assessment_reviews": "array matching required_assessment_output_slots when evidence is present and scores stay unchanged",
-            "private_notes": "short internal note for your future turns",
+            "assessment_reviews": "array matching required_assessment_output_slots when no score changes are made",
+            "private_notes": "short internal note for your future turns, under 400 characters",
         },
+        "submission_contract": observation.submission_contract.model_dump(mode="json"),
         "required_output_rules": [
             "If required_decisions is nonempty, decisions must include every required node exactly once.",
             "If required_decisions is empty, decisions must be [].",
-            "For parameterized decisions, each parameter value must be one scalar selected from the allowed list.",
+            "For parameterized decisions, each parameter value must satisfy the listed allowed values or parameter_spec.",
             "Never put the full allowed-values list into a parameter value.",
             "Every decision object must have node_id, option_id, and parameters keys.",
             "Do not abbreviate option IDs or replace them with descriptive phrases.",
             "If assessment_evidence is nonempty, every evidence_id must appear in assessment_updates or assessment_reviews.",
             "Use assessment_reviews, not assessment_updates, when scores stay unchanged.",
+            "If submission_contract.require_explicit_assessment_choice is true, include an assessment_reviews no_update record even when assessment_evidence is empty and scores stay unchanged.",
             "In assessment_phase, empty assessment_updates and empty assessment_reviews together are invalid.",
-            "Use [] for communications when you choose to send no message.",
+            "If submission_contract.require_explicit_communication is true, use a no_communication record with a short summary when you choose to send no message.",
+            "Do not use Markdown reports, tables, long bullet lists, or multi-section memos inside communication summaries.",
+            "Prefer one or two plain sentences for each communication summary.",
             "Return JSON only.",
         ],
     }
@@ -495,15 +502,27 @@ def _gemma_observation_prompt(
                 for request in observation.required_decisions
             },
             "parameters_by_node": {
-                request.node_id: {name: "one allowed scalar value" for name in request.parameters}
+                request.node_id: {
+                    name: "one scalar satisfying the parameter spec"
+                    for name in (request.parameter_specs or request.parameters)
+                }
                 for request in observation.required_decisions
                 if request.selection_mode == "parameterized"
             },
-            "communications": [],
+            "communications": (
+                [{"communication_type": "no_communication", "recipient_ids": [], "summary": "No message this turn."}]
+                if observation.submission_contract.require_explicit_communication
+                else []
+            ),
             "assessment_updates": [],
-            "assessment_reviews": [],
+            "assessment_reviews": (
+                [{"evidence_ids": [], "counterparty_ids": [], "review_result": "no_update", "reason": "No assessment update this turn."}]
+                if observation.submission_contract.require_explicit_assessment_choice
+                else []
+            ),
             "private_notes": "short note for your future turns",
         },
+        "submission_contract": observation.submission_contract.model_dump(mode="json"),
         "assessment_output_help": _gemma_assessment_output_help(observation),
         "exact_output_keys": [
             "decisions_by_node",
@@ -520,9 +539,11 @@ def _gemma_observation_prompt(
             "If required_business_decisions is nonempty, include every listed node_id in decisions_by_node.",
             "For single-choice nodes, decisions_by_node[node_id] must be exactly one listed option_id.",
             "For parameterized nodes, decisions_by_node[node_id] must be __parameters__ and parameters_by_node[node_id] must contain every required parameter.",
-            "Parameter values must be one scalar from the allowed_values list, not the whole list.",
+            "Parameter values must be one scalar satisfying the allowed_values list or parameter_spec, not the whole list/spec.",
             "Use communications only for real business messages you choose to send.",
+            "If explicit communication is required and you send no message, include one no_communication record.",
             "If assessment_evidence is present, cover each evidence_id with either assessment_updates or assessment_reviews.",
+            "If explicit assessment choice is required and scores do not change, include one assessment_reviews no_update record.",
             "Do not include initial_relationship or any evidence_id not listed in assessment_evidence.",
         ],
     }
@@ -588,6 +609,10 @@ def _gemma_decision_request(request) -> dict[str, Any]:
         "parameters": {
             name: {"allowed_values": allowed}
             for name, allowed in request.parameters.items()
+        },
+        "parameter_specs": {
+            name: spec.model_dump(mode="json")
+            for name, spec in request.parameter_specs.items()
         },
     }
 
@@ -698,13 +723,25 @@ def _decision_slots(observation: AgentObservation) -> list[dict[str, Any]]:
                 }
             )
         else:
+            parameter_specs = {
+                name: spec.model_dump(mode="json")
+                for name, spec in request.parameter_specs.items()
+            }
             slots.append(
                 {
                     "node_id": request.node_id,
                     "option_id": None,
                     "parameters": {
-                        name: {"choose_one_scalar": allowed}
-                        for name, allowed in request.parameters.items()
+                        name: (
+                            {"parameter_spec": parameter_specs[name]}
+                            if name in parameter_specs
+                            else {"choose_one_scalar": allowed}
+                        )
+                        for name, allowed in (
+                            request.parameters.items()
+                            if not parameter_specs
+                            else [(name, []) for name in parameter_specs]
+                        )
                     },
                 }
             )
@@ -712,6 +749,18 @@ def _decision_slots(observation: AgentObservation) -> list[dict[str, Any]]:
 
 
 def _assessment_slots(observation: AgentObservation) -> list[dict[str, Any]]:
+    if (
+        not observation.assessment_evidence
+        and observation.submission_contract.require_explicit_assessment_choice
+    ):
+        return [
+            {
+                "evidence_ids": [],
+                "counterparty_ids": [],
+                "review_result": "no_update",
+                "reason": "briefly state why you are not changing any private assessments this turn",
+            }
+        ]
     return [
         {
             "evidence_ids": [evidence.evidence_id],

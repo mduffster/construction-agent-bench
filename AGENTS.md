@@ -157,6 +157,63 @@ Debug model I/O is written only when explicitly requested. Do not add placeholde
 
 All scenario and live-agent run outputs should go under `outputs/`.
 
+## Public Web App
+
+The `web/` directory is a static Vite + React + TypeScript dissemination app.
+It is not the benchmark runtime and must not become a parallel source of
+scenario truth.
+
+The web app currently exposes:
+
+- `/` overview page for ConstructBench
+- `/play` actor selection
+- `/play/s01` playable human version of `S01_V2_OFFSITE_STEEL_DRAW`
+- `/results` comparison page for ideal fixture, Claude Haiku run, and player outcome
+
+The S01 web game is generated from harness content by:
+
+```bash
+uv run python scripts/export_s01_v2_web_game.py
+```
+
+The export writes:
+
+```text
+web/src/game-data/s01_v2_game.json
+```
+
+Do not hand-maintain a separate scenario in the frontend. Scenario facts,
+decision schemas, role briefs, payoff thresholds, witness outcomes, and content
+hashes should come through the export script. Frontend copy may simplify those
+facts for humans, but it should preserve the underlying harness semantics.
+
+The public human game is intentionally smaller than the benchmark simulation:
+
+- humans can play four roles: steel supplier, GC, owner, and labor subcontractor
+- lender and inspector remain system-controlled roles in the web game
+- the benchmark harness still models all six organizations as agents
+
+The web game is static and client-side only. It uses an authored TypeScript
+state engine to mirror the S01 V2 coordination problem. Player choices should
+mutate persistent game facts, including `story_flags`, and deterministic
+counterparty choices should branch from those facts. Avoid click-through flows
+where other actors follow one fixed path regardless of the player's choices.
+
+Trust ratings in the web game are recorded for recap and reflection only; they
+do not alter consequences in the current web version.
+
+Run web checks after frontend or export changes:
+
+```bash
+cd web
+npm run test
+npm run build
+npm run test:browser
+```
+
+Pushing this repository branch is not a deployment. Vercel/static deployment is
+a separate release step.
+
 ## Tests
 
 Run:

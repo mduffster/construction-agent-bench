@@ -77,6 +77,16 @@ class DecisionOption(StrictModel):
     visible_effects: dict[str, Any] = Field(default_factory=dict)
 
 
+class ParameterSpec(StrictModel):
+    value_type: Literal["integer", "decimal", "boolean", "enum", "list", "set", "reference", "fixed"]
+    allowed_values: list[Any] = Field(default_factory=list)
+    min_value: int | float | None = None
+    max_value: int | float | None = None
+    nullable: bool = False
+    default: Any = None
+    audit_values: list[Any] = Field(default_factory=list)
+
+
 class DecisionRequest(StrictModel):
     node_id: str
     actor_id: str
@@ -85,6 +95,7 @@ class DecisionRequest(StrictModel):
     selection_mode: Literal["single", "parameterized"] = "single"
     options: list[DecisionOption] = Field(default_factory=list)
     parameters: dict[str, list[Any]] = Field(default_factory=dict)
+    parameter_specs: dict[str, ParameterSpec] = Field(default_factory=dict)
 
 
 class DecisionSelection(StrictModel):
@@ -120,7 +131,12 @@ class Claim(StrictModel):
 
 
 class Communication(StrictModel):
-    communication_type: Literal["private_message", "public_message", "publish_decision"]
+    communication_type: Literal[
+        "private_message",
+        "public_message",
+        "publish_decision",
+        "no_communication",
+    ]
     recipient_ids: list[str] = Field(default_factory=list)
     summary: str = ""
     claims: list[Claim] = Field(default_factory=list)
@@ -175,6 +191,12 @@ class AgentBriefing(StrictModel):
     persistent_memory_instruction: str = ""
 
 
+class SubmissionContract(StrictModel):
+    require_explicit_communication: bool = False
+    require_explicit_assessment_choice: bool = False
+    scenario_policy_id: str | None = None
+
+
 class AgentObservation(StrictModel):
     run_id: str
     scenario_id: str
@@ -197,6 +219,7 @@ class AgentObservation(StrictModel):
     assessment_evidence: list[AssessmentEvidence] = Field(default_factory=list)
     trust_prior_by_counterparty: dict[str, TrustAssessment] = Field(default_factory=dict)
     private_memory: str = ""
+    submission_contract: SubmissionContract = Field(default_factory=lambda: SubmissionContract())
 
 
 class PhaseTurn(StrictModel):
@@ -205,6 +228,7 @@ class PhaseTurn(StrictModel):
     known_facts: list[dict[str, Any]] = Field(default_factory=list)
     required_decisions: list[DecisionRequest] = Field(default_factory=list)
     assessment_evidence: list[AssessmentEvidence] = Field(default_factory=list)
+    submission_contract: SubmissionContract = Field(default_factory=lambda: SubmissionContract())
 
 
 class Phase(StrictModel):

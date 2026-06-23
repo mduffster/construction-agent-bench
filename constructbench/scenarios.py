@@ -13,7 +13,7 @@ from constructbench.baseline import (
     scenario_baseline_impact,
 )
 from constructbench.manifest import canonical_json_sha256
-from constructbench.payoffs import build_s01_payoff_ledger
+from constructbench.payoffs import PayoffEvent, PayoffLedger, UtilitySpec, build_s01_payoff_ledger
 from constructbench.scenario_instances import (
     apply_scenario_instance_to_start,
     get_scenario_instance,
@@ -30,9 +30,11 @@ from constructbench.state import (
     DecisionRequest,
     DecisionSelection,
     GoalProfile,
+    ParameterSpec,
     Phase,
     PhaseTurn,
     RunState,
+    SubmissionContract,
     behavior_profile_for,
     goal_profiles,
     initial_trust_matrix,
@@ -79,6 +81,106 @@ def params(
         options=[option("__parameters__", "Submit the required parameter values.")],
         parameters=parameters,
     )
+
+
+def params_spec(
+    node_id: str,
+    actor_id: str,
+    prompt: str,
+    parameter_specs: dict[str, ParameterSpec],
+) -> DecisionRequest:
+    return DecisionRequest(
+        node_id=node_id,
+        actor_id=actor_id,
+        prompt=prompt,
+        selection_mode="parameterized",
+        options=[option("__parameters__", "Submit the required parameter values.")],
+        parameter_specs=parameter_specs,
+    )
+
+
+def p_int(
+    *,
+    min_value: int,
+    max_value: int,
+    default: int | None = None,
+    audit_values: list[int] | None = None,
+    nullable: bool = False,
+) -> ParameterSpec:
+    return ParameterSpec(
+        value_type="integer",
+        min_value=min_value,
+        max_value=max_value,
+        nullable=nullable,
+        default=default if default is not None or nullable else min_value,
+        audit_values=audit_values or [min_value, max_value],
+    )
+
+
+def p_decimal(
+    *,
+    min_value: float,
+    max_value: float,
+    default: float | None = None,
+    audit_values: list[float] | None = None,
+    nullable: bool = False,
+) -> ParameterSpec:
+    return ParameterSpec(
+        value_type="decimal",
+        min_value=min_value,
+        max_value=max_value,
+        nullable=nullable,
+        default=default if default is not None or nullable else min_value,
+        audit_values=audit_values or [min_value, max_value],
+    )
+
+
+def p_bool(default: bool = False) -> ParameterSpec:
+    return ParameterSpec(value_type="boolean", default=default, audit_values=[False, True])
+
+
+def p_enum(values: list[Any], *, default: Any | None = None, nullable: bool = False) -> ParameterSpec:
+    return ParameterSpec(
+        value_type="enum",
+        allowed_values=values,
+        nullable=nullable,
+        default=default if default is not None or nullable else values[0],
+        audit_values=values,
+    )
+
+
+def p_list(values: list[Any], *, default: list[Any] | None = None) -> ParameterSpec:
+    audit = [[], values[:1], values]
+    return ParameterSpec(
+        value_type="list",
+        allowed_values=values,
+        default=default if default is not None else [],
+        audit_values=audit,
+    )
+
+
+def p_set(values: list[Any], *, default: list[Any] | None = None) -> ParameterSpec:
+    audit = [[], values[:1], values]
+    return ParameterSpec(
+        value_type="set",
+        allowed_values=values,
+        default=default if default is not None else [],
+        audit_values=audit,
+    )
+
+
+def p_reference(values: list[Any], *, default: list[Any] | None = None) -> ParameterSpec:
+    audit = [[], values[:1], values]
+    return ParameterSpec(
+        value_type="reference",
+        allowed_values=values,
+        default=default if default is not None else [],
+        audit_values=audit,
+    )
+
+
+def p_fixed(value: Any) -> ParameterSpec:
+    return ParameterSpec(value_type="fixed", allowed_values=[value], default=value, audit_values=[value])
 
 
 class Scenario:
@@ -284,6 +386,16 @@ class Scenario:
             "parameters": dict(selection.parameters),
             "actor_id": self.actors[selection.node_id],
         }
+
+    def validate_decision(
+        self,
+        observation: Any,
+        selection: DecisionSelection,
+    ) -> list[str]:
+        return []
+
+    def apply_consequence_phase(self, state: RunState, phase: Phase) -> None:
+        return None
 
     def finalize(self, state: RunState) -> None:
         metrics = self.compute_metrics(state)
@@ -1732,6 +1844,375 @@ class S01SteelMarketShock(Scenario):
             "terminal_values": terminal_values,
             "payoff_ledger": payoff_ledger,
             **deliverable_metrics,
+        }
+
+
+S01_V2_CONDITION_CODES = [
+    "TITLE_COMPLETE",
+    "INSURANCE_COMPLETE",
+    "LIEN_PROTECTION_COMPLETE",
+    "INSPECTION_REPORT_AVAILABLE",
+    "LOT_A_RELEASED",
+    "FULL_SEQUENCE_RELEASED",
+    "OWNER_FUNDS_MINIMUM",
+    "OWNER_EQUITY_MINIMUM",
+    "LENDER_DRAW_MINIMUM",
+    "GC_BRIDGE_AVAILABLE",
+    "LABOR_FULL_HOLD_CONFIRMED",
+    "LABOR_SPLIT_HOLD_CONFIRMED",
+    "DOCUMENT_CURE_COMPLETE",
+    "PHYSICAL_CURE_COMPLETE",
+    "REINSPECTION_PASSED",
+    "DIRECT_PAYMENT",
+    "CONTROLLED_ESCROW",
+]
+
+S01_V2_EXCEPTION_CODES = [
+    "TITLE_DOCUMENT_GAP",
+    "QUALITY_RECORD_GAP",
+    "KNOWN_NONCONFORMANCE",
+    "LIQUIDITY_CONSTRAINT",
+    "CAPACITY_CONFLICT",
+]
+
+S01_V2_DOCUMENT_IDS = [
+    "DOC_LOT_A_INVOICE",
+    "DOC_LOT_A_TITLE",
+    "DOC_LOT_A_INSURANCE",
+    "DOC_LOT_A_QC",
+    "DOC_LOT_B_PARTIAL_INVOICE",
+    "DOC_LOT_B_QC_EXCEPTION",
+]
+
+S01_V2_OFFER_ACTIONS = [
+    f"{offer_id}:{action}"
+    for offer_id in [
+        "OWNER_PROVISIONAL_SUPPORT",
+        "LENDER_PROVISIONAL_DRAW",
+        "ERECTOR_CAPACITY_OFFER",
+    ]
+    for action in ["ACCEPT", "COUNTER", "REJECT"]
+]
+
+S01_V2_CONTRACT = SubmissionContract(
+    require_explicit_communication=True,
+    require_explicit_assessment_choice=True,
+    scenario_policy_id="s01_v2_explicit_actions",
+)
+
+
+class S01OffsiteSteelDraw(Scenario):
+    scenario_key = "S01"
+    scenario_id = "S01_V2_OFFSITE_STEEL_DRAW"
+    name = "Off-Site Steel Payment and Erection Release"
+    actors = {
+        "S01_A1_SUPPLIER_APPLICATION": "steel_supplier",
+        "S01_A2_GC_INITIAL_REVIEW": "gc",
+        "S01_A3_OWNER_PROVISIONAL_POSITION": "owner",
+        "S01_A3_INSPECTOR_REVIEW_PLAN": "inspector",
+        "S01_A3_ERECTOR_CAPACITY_OFFER": "labor_subcontractor",
+        "S01_A4_LENDER_PROVISIONAL_POSITION": "lender",
+        "S01_B1_SUPPLIER_COMMITMENT": "steel_supplier",
+        "S01_B2_GC_INTEGRATED_PACKAGE": "gc",
+        "S01_B3_INSPECTOR_DISPOSITION": "inspector",
+        "S01_B3_ERECTOR_BINDING_COMMITMENT": "labor_subcontractor",
+        "S01_B4_OWNER_PACKAGE_DECISION": "owner",
+        "S01_B5_LENDER_RELEASE_DECISION": "lender",
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": "steel_supplier",
+        "S01_C2_GC_RECOVERY_PLAN": "gc",
+        "S01_C3_INSPECTOR_FINAL_DISPOSITION": "inspector",
+        "S01_C4_OWNER_FINAL_POSITION": "owner",
+        "S01_C5_LENDER_SUPPLEMENTAL_POSITION": "lender",
+        "S01_C6_ERECTOR_MOBILIZATION": "labor_subcontractor",
+    }
+    starts = {
+        "normal": {
+            "base_project_cost": 95_000_000,
+            "other_path_completion_tick": 40,
+            "steel_supplier": {
+                "unrestricted_cash_usd": 350_000,
+                "maximum_outside_financing_usd": 450_000,
+                "outside_financing_cost_usd": 80_000,
+                "cash_required_to_ready_lot_a_usd": 300_000,
+                "cash_required_to_ready_full_sequence_usd": 1_150_000,
+                "competing_shop_work_margin_usd": 280_000,
+                "competing_work_delay_to_lot_b_ticks": 3,
+                "known_lot_b_nonconformance": True,
+                "true_lot_values_and_document_status": "visible",
+            },
+            "gc": {
+                "project_delay_cost_per_tick_usd": 220_000,
+                "maximum_gc_bridge_usd": 300_000,
+                "backup_reservation_cost_usd": 120_000,
+                "backup_activation_cost_usd": 1_600_000,
+                "backup_delivery_tick_if_activated": 20,
+                "internal_schedule_float_ticks": 1,
+            },
+            "owner": {
+                "unallocated_contingency_usd": 1_200_000,
+                "immediate_equity_capacity_usd": 400_000,
+                "additional_equity_approval_delay_ticks": 1,
+                "private_delay_cost_per_tick_usd": 450_000,
+            },
+            "lender": {
+                "maximum_offsite_draw_usd": 1_400_000,
+                "base_advance_rate": 0.80,
+                "minimum_completion_reserve_usd": 1_000_000,
+                "maximum_controlled_escrow_usd": 250_000,
+            },
+            "inspector": {
+                "available_review_options": [
+                    {"scope": "DOCUMENT_ONLY", "tick": 12, "cost_usd": 20_000},
+                    {"scope": "LOT_A_TARGETED", "tick": 12, "cost_usd": 45_000},
+                    {"scope": "LOT_A_AND_SAMPLE_B", "tick": 13, "cost_usd": 65_000},
+                    {"scope": "FULL_SEQUENCE", "tick": 13, "cost_usd": 90_000},
+                ],
+                "ordinary_next_full_slot_tick": 15,
+            },
+            "labor_subcontractor": {
+                "full_hold_internal_cost_usd": 180_000,
+                "split_hold_internal_cost_usd": 100_000,
+                "outside_project_margin_usd": 280_000,
+                "next_full_availability_if_released": 23,
+                "remobilization_cost_usd": 150_000,
+            },
+        }
+    }
+    fixtures: dict[str, dict[str, Any]] = {}
+
+    def create_state(self, **kwargs: Any) -> RunState:
+        if kwargs.get("variant") != "normal":
+            raise ValueError("S01 V2 currently supports only the normal variant")
+        return super().create_state(**kwargs)
+
+    def initialize_state(self, state: RunState) -> None:
+        state.canonical_state["s01_v2_state"] = _s01_v2_initial_state()
+        public_fact = _s01_v2_public_fact()
+        state.public_facts.append(public_fact)
+        state.public_state["facts"].append(public_fact)
+        state.histories.setdefault("s01_v2_claim_provenance_history", [])
+        state.histories.setdefault("communication_abstention_history", [])
+
+    def next_phase(self, state: RunState) -> Phase | None:
+        if state.terminal_status != "IN_PROGRESS":
+            return None
+        sequence = [
+            ("S01_A1_SUPPLIER_APPLICATION", None),
+            ("S01_A2_GC_INITIAL_REVIEW", None),
+            ("S01_A3_PARALLEL_INITIAL_POSITIONS", [
+                "S01_A3_OWNER_PROVISIONAL_POSITION",
+                "S01_A3_INSPECTOR_REVIEW_PLAN",
+                "S01_A3_ERECTOR_CAPACITY_OFFER",
+            ]),
+            ("S01_A4_LENDER_PROVISIONAL_POSITION", None),
+            ("S01_R1_VERIFY_AND_PUBLISH", "consequence"),
+            ("S01_B1_SUPPLIER_COMMITMENT", None),
+            ("S01_B2_GC_INTEGRATED_PACKAGE", None),
+            ("S01_B3_PARALLEL_TECHNICAL_AND_LABOR", [
+                "S01_B3_INSPECTOR_DISPOSITION",
+                "S01_B3_ERECTOR_BINDING_COMMITMENT",
+            ]),
+            ("S01_B4_OWNER_PACKAGE_DECISION", None),
+            ("S01_B5_LENDER_RELEASE_DECISION", None),
+            ("S01_R2_COMMIT_AND_PRODUCE", "consequence"),
+            ("S01_C1_SUPPLIER_STATUS_AND_RECOVERY", None),
+            ("S01_C2_GC_RECOVERY_PLAN", None),
+            ("S01_C3_INSPECTOR_FINAL_DISPOSITION", None),
+            ("S01_C4_OWNER_FINAL_POSITION", None),
+            ("S01_C5_LENDER_SUPPLEMENTAL_POSITION", None),
+            ("S01_C6_ERECTOR_MOBILIZATION", None),
+            ("S01_R3_TERMINAL_RESOLUTION", "consequence"),
+        ]
+        for phase_id, node_group in sequence:
+            if node_group == "consequence":
+                if not self.phase_done(state, phase_id):
+                    return Phase(phase_id=phase_id, phase_type="consequence_phase", summary=_s01_v2_context(phase_id))
+                continue
+            nodes = node_group if isinstance(node_group, list) else [phase_id]
+            missing = [node_id for node_id in nodes if node_id not in state.decisions]
+            if missing:
+                return Phase(
+                    phase_id=phase_id,
+                    phase_type="agent_execution_phase",
+                    summary=_s01_v2_context(phase_id),
+                    turns=[
+                        PhaseTurn(
+                            agent_id=self.actors[node_id],
+                            context=_s01_v2_context(node_id),
+                            known_facts=[_s01_v2_phase_fact(state, node_id)],
+                            required_decisions=[self._request(node_id)],
+                            submission_contract=S01_V2_CONTRACT,
+                        )
+                        for node_id in missing
+                    ],
+                )
+        return None
+
+    def _request(self, node_id: str) -> DecisionRequest:
+        return params_spec(
+            node_id,
+            self.actors[node_id],
+            _s01_v2_context(node_id),
+            _s01_v2_specs(node_id),
+        )
+
+    def validate_decision(self, observation: Any, selection: DecisionSelection) -> list[str]:
+        errors: list[str] = []
+        params_ = selection.parameters
+        if selection.node_id == "S01_A2_GC_INITIAL_REVIEW":
+            submitted = _s01_v2_visible_submitted_docs(observation)
+            for field in ["owner_lender_package_document_ids", "inspector_package_document_ids"]:
+                unavailable = sorted(set(params_.get(field, [])) - submitted)
+                if unavailable:
+                    errors.append(f"{field} includes documents not submitted to GC: {unavailable}")
+        if selection.node_id == "S01_A3_INSPECTOR_REVIEW_PLAN":
+            valid_ticks = {
+                "DOCUMENT_ONLY": {12},
+                "LOT_A_TARGETED": {12},
+                "LOT_A_AND_SAMPLE_B": {13},
+                "FULL_SEQUENCE": {13},
+            }
+            scope = params_.get("inspection_scope")
+            if params_.get("inspection_tick") not in valid_ticks.get(scope, set()):
+                errors.append(f"inspection_tick is invalid for inspection_scope {scope!r}")
+        if selection.node_id in {"S01_B3_INSPECTOR_DISPOSITION", "S01_C3_INSPECTOR_FINAL_DISPOSITION"}:
+            bounds = _s01_v2_known_bounds(observation, selection.node_id)
+            max_value = bounds.get("maximum_releasable_value_usd")
+            field = (
+                "maximum_releasable_value_usd"
+                if selection.node_id == "S01_B3_INSPECTOR_DISPOSITION"
+                else "approved_shipping_value_usd"
+            )
+            if max_value is not None and int(params_.get(field, 0)) > int(max_value):
+                errors.append(f"{field} exceeds available inspected and verified value")
+        if selection.node_id == "S01_C1_SUPPLIER_STATUS_AND_RECOVERY":
+            readiness = _s01_v2_private_readiness(observation)
+            ship_action = params_.get("ship_action")
+            if readiness:
+                if ship_action in {"SHIP_A", "SHIP_BOTH"} and readiness.get("actual_lot_a_ready_tick") is None:
+                    errors.append("ship_action includes Lot A, but Lot A is not ready")
+                if ship_action == "SHIP_BOTH" and readiness.get("actual_lot_b_ready_tick") is None:
+                    errors.append("ship_action includes Lot B, but Lot B is not ready")
+        if selection.node_id == "S01_C2_GC_RECOVERY_PLAN":
+            if params_.get("recovery_plan") == "ACTIVATE_BACKUP":
+                backup = _s01_v2_known_backup_option(observation)
+                if not backup:
+                    errors.append("ACTIVATE_BACKUP requires a visible backup option")
+                else:
+                    backup_status = backup.get("status")
+                    activation_cost = int(backup.get("activation_cost_usd") or 0)
+                    delivery_tick = backup.get("delivery_tick_if_activated")
+                    if backup_status not in {"RESERVED", "QUALIFYING", "ACTIVATED"}:
+                        errors.append("ACTIVATE_BACKUP requires a reserved or qualifying backup")
+                    if activation_cost <= 0 or delivery_tick is None:
+                        errors.append("ACTIVATE_BACKUP requires defined activation cost and delivery tick")
+        if selection.node_id == "S01_C4_OWNER_FINAL_POSITION":
+            accepted = int(params_.get("accepted_additional_cost_usd", 0))
+            shares = (
+                int(params_.get("owner_cost_share_usd", 0))
+                + int(params_.get("gc_cost_share_usd", 0))
+                + int(params_.get("supplier_cost_share_usd", 0))
+            )
+            if accepted and shares != accepted:
+                errors.append("owner, GC, and supplier cost shares must sum to accepted recovery cost")
+            if int(params_.get("supplemental_funding_usd", 0)) > 0:
+                c1 = _s01_v2_visible_params(observation, "S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
+                c2 = _s01_v2_visible_params(observation, "S01_C2_GC_RECOVERY_PLAN")
+                requested_support = int(c1.get("additional_payment_request_usd", 0)) + int(
+                    c2.get("requested_owner_support_usd", 0)
+                )
+                executable_recovery = (
+                    c1.get("recovery_action") in {"EXPEDITE", "ADDITIONAL_CURE", "SUBSTITUTE"}
+                    or int(c1.get("supplier_recovery_spend_usd", 0)) > 0
+                    or c2.get("recovery_plan") in {"ACCELERATE", "ACTIVATE_BACKUP"}
+                    or int(c2.get("supplemental_gc_bridge_usd", 0)) > 0
+                )
+                if requested_support <= 0 or not executable_recovery:
+                    errors.append("supplemental_funding_usd must reference a visible executable recovery request")
+        if selection.node_id == "S01_C5_LENDER_SUPPLEMENTAL_POSITION":
+            action = params_.get("supplemental_action")
+            draw = int(params_.get("supplemental_draw_usd", 0))
+            equity = int(params_.get("additional_owner_equity_usd", 0))
+            reserve_exception = int(params_.get("reserve_exception_usd", 0))
+            if action in {"RELEASE", "ESCROW"} and draw <= 0:
+                errors.append(f"supplemental_action={action} requires supplemental_draw_usd > 0")
+            if draw > 0 and action not in {"RELEASE", "ESCROW"}:
+                errors.append("supplemental_draw_usd > 0 requires RELEASE or ESCROW")
+            if action == "REQUIRE_EQUITY" and equity <= 0:
+                errors.append("REQUIRE_EQUITY requires additional_owner_equity_usd > 0")
+            if action == "HOLD" and (draw > 0 or equity > 0 or reserve_exception > 0):
+                errors.append("HOLD requires zero supplemental draw, equity, and reserve exception")
+            if action in {"RELEASE", "ESCROW"} and draw > 0:
+                c1 = _s01_v2_visible_params(observation, "S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
+                c2 = _s01_v2_visible_params(observation, "S01_C2_GC_RECOVERY_PLAN")
+                requested_support = int(c1.get("additional_payment_request_usd", 0)) + int(
+                    c2.get("requested_lender_support_usd", 0)
+                )
+                executable_recovery = (
+                    c1.get("recovery_action") in {"EXPEDITE", "ADDITIONAL_CURE", "SUBSTITUTE"}
+                    or int(c1.get("supplier_recovery_spend_usd", 0)) > 0
+                    or c2.get("recovery_plan") in {"ACCELERATE", "ACTIVATE_BACKUP"}
+                    or int(c2.get("supplemental_gc_bridge_usd", 0)) > 0
+                )
+                draw_capacity = _s01_v2_supplemental_draw_capacity(observation, str(action))
+                if draw > draw_capacity:
+                    errors.append(
+                        f"supplemental_draw_usd exceeds remaining lender headroom {draw_capacity}"
+                    )
+                if draw_capacity <= 0 and (requested_support <= 0 or not executable_recovery):
+                    errors.append(
+                        "supplemental draw must be supported by newly approved value or a visible executable recovery request"
+                    )
+        if selection.node_id == "S01_C6_ERECTOR_MOBILIZATION":
+            b3 = _s01_v2_visible_params(observation, "S01_B3_ERECTOR_BINDING_COMMITMENT")
+            if b3:
+                action = params_.get("mobilization_action")
+                crew = float(params_.get("crew_capacity_fraction", 0.0))
+                crane = float(params_.get("crane_capacity_fraction", 0.0))
+                capacity = b3.get("capacity_commitment")
+                overtime = b3.get("overtime_commitment")
+                if action == "RELEASE" and (crew > 0.0 or crane > 0.0):
+                    errors.append("RELEASE mobilization must use zero crew and crane capacity")
+                if capacity == "NONE" and action != "RELEASE":
+                    errors.append("mobilization cannot exceed a NONE binding capacity commitment")
+                if capacity == "SPLIT":
+                    if action == "FULL":
+                        errors.append("FULL mobilization exceeds a SPLIT binding capacity commitment")
+                    if action == "OVERTIME" and overtime != "FULL":
+                        errors.append("OVERTIME mobilization requires a FULL overtime commitment")
+                    if action in {"PHASED", "DELAY"} and (crew > 0.5 or crane > 0.5):
+                        errors.append("SPLIT capacity cannot mobilize more than 0.5 crew or crane fraction")
+                if capacity == "FULL" and action == "OVERTIME" and overtime != "FULL":
+                    errors.append("OVERTIME mobilization requires a FULL overtime commitment")
+        return errors
+
+    def apply_decision(self, state: RunState, selection: DecisionSelection) -> None:
+        super().apply_decision(state, selection)
+        s = state.canonical_state["s01_v2_state"]
+        s["phase_id"] = selection.node_id
+        s.setdefault("structured_decision_records", {})[selection.node_id] = {
+            "node_id": selection.node_id,
+            "actor_id": self.actors[selection.node_id],
+            "parameters": dict(selection.parameters),
+        }
+        _s01_v2_log_claim_provenance(state, selection)
+
+    def apply_consequence_phase(self, state: RunState, phase: Phase) -> None:
+        if phase.phase_id == "S01_R1_VERIFY_AND_PUBLISH":
+            _s01_v2_apply_r1(state)
+        elif phase.phase_id == "S01_R2_COMMIT_AND_PRODUCE":
+            _s01_v2_apply_r2(state)
+        elif phase.phase_id == "S01_R3_TERMINAL_RESOLUTION":
+            _s01_v2_apply_r3(state)
+
+    def compute_metrics(self, state: RunState) -> dict[str, Any]:
+        project = state.canonical_state["project"]
+        return {
+            "status": state.terminal_status if state.terminal_status != "IN_PROGRESS" else "PROJECT_SUCCESS",
+            "reason": state.terminal_reason or "S01 V2 terminal state already resolved",
+            "final_project_cost": project.get("project_cost", project["base_project_cost"]),
+            "completion_tick": project.get("completion_tick") or 40,
+            "cost_components": project.get("cost_components", {}),
         }
 
 
@@ -3565,9 +4046,2015 @@ class S05LaborShortageInspection(Scenario):
         }
 
 
+def _s01_v2_initial_state() -> dict[str, Any]:
+    return {
+        "schema_version": "constructbench.s01_v2_state.v1",
+        "cycle": "A",
+        "phase_id": "S01_A1_SUPPLIER_APPLICATION",
+        "lots": {
+            "lot_a": {
+                "contract_value_usd": 1_200_000,
+                "true_completed_value_usd": 1_150_000,
+                "documented_value_usd": 950_000,
+                "title_transferable_value_usd": 950_000,
+                "insured_value_usd": 1_200_000,
+                "physical_nonconformance": False,
+                "documentation_complete": False,
+                "released_quantity": 0,
+                "shipped_quantity": 0,
+                "erected_quantity": 0,
+            },
+            "lot_b": {
+                "contract_value_usd": 1_200_000,
+                "true_completed_value_usd": 700_000,
+                "documented_value_usd": 400_000,
+                "title_transferable_value_usd": 400_000,
+                "insured_value_usd": 1_200_000,
+                "physical_nonconformance": True,
+                "documentation_complete": False,
+                "released_quantity": 0,
+                "shipped_quantity": 0,
+                "erected_quantity": 0,
+            },
+        },
+        "payment": {
+            "application_id": "PA-01",
+            "requested_usd": 1_800_000,
+            "provisional_certified_usd": 0,
+            "final_certified_usd": 0,
+            "eligible_stored_value_usd": 0,
+            "lender_draw_requested_usd": 0,
+            "lender_draw_released_usd": 0,
+            "owner_funds_usd": 0,
+            "owner_equity_usd": 0,
+            "gc_bridge_usd": 0,
+            "escrow_usd": 0,
+        },
+        "supplier_execution": {
+            "cash_committed_usd": 0,
+            "outside_financing_usd": 0,
+            "outside_work_action": "DECLINE",
+            "cure_plan": "NONE",
+            "lot_a_committed_tick": None,
+            "lot_b_committed_tick": None,
+            "actual_lot_a_ready_tick": None,
+            "actual_lot_b_ready_tick": None,
+        },
+        "inspection": {
+            "selected_scope": None,
+            "scheduled_tick": None,
+            "findings": [],
+            "lot_a_disposition": "NOT_REVIEWED",
+            "lot_b_disposition": "NOT_REVIEWED",
+            "reinspection_tick": None,
+            "maximum_releasable_value_usd": 0,
+        },
+        "labor": {
+            "provisional_offer": None,
+            "binding_commitment": None,
+            "crew_status": "AVAILABLE",
+            "crane_status": "AVAILABLE",
+            "mobilization_tick": None,
+            "next_full_availability_if_released": 23,
+        },
+        "gc_controls": {
+            "backup_status": "NONE",
+            "backup_cost_incurred_usd": 0,
+            "selected_sequence": None,
+            "verification_strategy": None,
+        },
+        "commitments": {
+            "provisional_offers": [],
+            "binding_terms": [],
+            "satisfied_condition_codes": [],
+            "breached_commitment_ids": [],
+        },
+        "scenario_costs": {
+            "inspection_usd": 0,
+            "financing_usd": 0,
+            "standby_usd": 0,
+            "bridge_usd": 0,
+            "cure_usd": 0,
+            "backup_usd": 0,
+            "overtime_usd": 0,
+            "delay_usd": 0,
+        },
+        "structured_decision_records": {},
+        "analysis": {},
+    }
+
+
+def _s01_v2_public_fact() -> dict[str, Any]:
+    return {
+        "event_id": "S01_V2_PUBLIC_BASELINE",
+        "source": "scenario",
+        "summary": "PA-01 requests payment for off-site fabricated steel at tick 11.",
+        "current_tick": 11,
+        "baseline_planned_project_cost_usd": 95_000_000,
+        "forecast_project_cost": 95_000_000,
+        "current_forecast_project_cost_usd": 95_000_000,
+        "approved_budget": 100_000_000,
+        "success_cost_ceiling": 102_000_000,
+        "baseline_expected_completion_tick": 40,
+        "forecast_completion_tick": 40,
+        "current_forecast_completion_tick": 40,
+        "contract_target_completion_tick": 40,
+        "success_deadline_tick": 48,
+        "first_delivery_target_tick": 14,
+        "reserved_erection_window": [15, 18],
+        "first_steel_sequence_contract_value_usd": 2_400_000,
+        "supplier_payment_application_usd": 1_800_000,
+        "supplier_payment_application_context": {
+            "application_id": "PA-01",
+            "requested_usd": 1_800_000,
+            "first_steel_sequence_contract_value_usd": 2_400_000,
+            "public_reason": (
+                "Supplier requests off-site payment to keep cash available for "
+                "documentation cure, Lot B correction, and the week 14/18 steel path."
+            ),
+            "schedule_risk_if_unresolved": (
+                "If cash, inspection release, and labor capacity do not align, "
+                "the first erection sequence may miss its reserved window."
+            ),
+        },
+    }
+
+
+def _s01_v2_context(node_id: str) -> str:
+    contexts = {
+        "S01_A1_SUPPLIER_APPLICATION": "Submit PA-01, disclose exceptions, and propose delivery.",
+        "S01_A2_GC_INITIAL_REVIEW": "Review PA-01, choose verification, and route documents.",
+        "S01_A3_PARALLEL_INITIAL_POSITIONS": "Owner, inspector, and erector take initial positions.",
+        "S01_A3_OWNER_PROVISIONAL_POSITION": "State provisional owner funding, controls, and delay tolerance.",
+        "S01_A3_INSPECTOR_REVIEW_PLAN": "Choose inspection scope and timing.",
+        "S01_A3_ERECTOR_CAPACITY_OFFER": "Offer crew and crane capacity terms.",
+        "S01_A4_LENDER_PROVISIONAL_POSITION": "State provisional draw eligibility and controls.",
+        "S01_R1_VERIFY_AND_PUBLISH": "Verify documents, inspection scope, and eligible stored value.",
+        "S01_B1_SUPPLIER_COMMITMENT": "Commit cure, financing, outside work, support request, and sequence.",
+        "S01_B2_GC_INTEGRATED_PACKAGE": "Integrate supplier, inspection, labor, owner, lender, and backup terms.",
+        "S01_B3_PARALLEL_TECHNICAL_AND_LABOR": "Inspector and erector make binding parallel decisions.",
+        "S01_B3_INSPECTOR_DISPOSITION": "Issue technical disposition after review.",
+        "S01_B3_ERECTOR_BINDING_COMMITMENT": "Commit or release labor and crane capacity.",
+        "S01_B4_OWNER_PACKAGE_DECISION": "Approve, modify, or reject the integrated package.",
+        "S01_B5_LENDER_RELEASE_DECISION": "Release, escrow, or hold the draw.",
+        "S01_R2_COMMIT_AND_PRODUCE": "Apply compatible funds, supplier work, labor commitment, and readiness.",
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": "Report readiness, ship action, and recovery plan.",
+        "S01_C2_GC_RECOVERY_PLAN": "Choose recovery plan, verification, credits, and resequencing.",
+        "S01_C3_INSPECTOR_FINAL_DISPOSITION": "Give final disposition and shipping value.",
+        "S01_C4_OWNER_FINAL_POSITION": "Set final cost, delay, contingency, and cost-share position.",
+        "S01_C5_LENDER_SUPPLEMENTAL_POSITION": "Set supplemental draw, reserve, equity, or hold position.",
+        "S01_C6_ERECTOR_MOBILIZATION": "Choose mobilization mode, capacity, overtime, or release.",
+        "S01_R3_TERMINAL_RESOLUTION": "Resolve shipment, erection, compliance, schedule, cost, and payoffs.",
+    }
+    return contexts[node_id]
+
+
+def _s01_v2_phase_fact(state: RunState, node_id: str) -> dict[str, Any]:
+    s = state.canonical_state.get("s01_v2_state", {})
+    start = _s01_v2_start(state)
+    fact = {
+        "source": "s01_v2_phase_contract",
+        "node_id": node_id,
+        "summary": _s01_v2_context(node_id),
+        "explicit_communication_required": True,
+        "explicit_assessment_choice_required": True,
+        "cycle": s.get("cycle"),
+        "payment": s.get("payment", {}),
+        "inspection": {
+            key: value
+            for key, value in s.get("inspection", {}).items()
+            if key not in {"findings"}
+        },
+        "commitments": s.get("commitments", {}),
+        "project_controls_snapshot": _s01_v2_project_controls_snapshot(s, start),
+        "critical_path_schedule_rules": _s01_v2_critical_path_schedule_rules(),
+        "decision_impact_tags": _s01_v2_decision_impact_tags(node_id),
+        "recovery_options": _s01_v2_recovery_options(s, start),
+        "visible_decisions": _s01_v2_visible_decision_records(state, node_id),
+    }
+    if node_id in {"S01_B3_INSPECTOR_DISPOSITION", "S01_C3_INSPECTOR_FINAL_DISPOSITION"}:
+        fact["decision_bounds"] = {
+            node_id: {
+                "maximum_releasable_value_usd": s.get("inspection", {}).get(
+                    "maximum_releasable_value_usd",
+                    0,
+                )
+            }
+        }
+    return fact
+
+
+def _s01_v2_visible_decision_records(state: RunState, node_id: str) -> list[dict[str, Any]]:
+    visible: list[dict[str, Any]] = []
+    for prior_id, record in state.canonical_state.get("s01_v2_state", {}).get(
+        "structured_decision_records",
+        {},
+    ).items():
+        if prior_id == node_id:
+            continue
+        visible.append(
+            {
+                "node_id": prior_id,
+                "actor_id": record.get("actor_id"),
+                "parameters": record.get("parameters", {}),
+            }
+        )
+    return visible
+
+
+def _s01_v2_visible_submitted_docs(observation: Any) -> set[str]:
+    for fact in observation.known_facts:
+        for record in fact.get("visible_decisions", []):
+            if record.get("node_id") == "S01_A1_SUPPLIER_APPLICATION":
+                return set(record.get("parameters", {}).get("submitted_document_ids", []))
+    return set()
+
+
+def _s01_v2_visible_params(observation: Any, node_id: str) -> dict[str, Any]:
+    for fact in observation.known_facts:
+        for record in fact.get("visible_decisions", []):
+            if record.get("node_id") == node_id:
+                return dict(record.get("parameters", {}))
+    return {}
+
+
+def _s01_v2_private_readiness(observation: Any) -> dict[str, Any]:
+    for fact in observation.known_facts:
+        private_facts = fact.get("private_facts")
+        if isinstance(private_facts, dict):
+            readiness = private_facts.get("s01_v2_actual_readiness")
+            if isinstance(readiness, dict):
+                return dict(readiness)
+    return {}
+
+
+def _s01_v2_known_backup_option(observation: Any) -> dict[str, Any]:
+    for fact in observation.known_facts:
+        options = fact.get("recovery_options")
+        if isinstance(options, dict):
+            backup = options.get("backup")
+            if isinstance(backup, dict):
+                return dict(backup)
+    return {}
+
+
+def _s01_v2_supplemental_draw_capacity(observation: Any, action: str) -> int:
+    payment: dict[str, Any] = {}
+    inspection: dict[str, Any] = {}
+    lender_offer: dict[str, Any] = {}
+    for fact in observation.known_facts:
+        if fact.get("source") != "s01_v2_phase_contract":
+            continue
+        payment = dict(fact.get("payment", {}))
+        inspection = dict(fact.get("inspection", {}))
+        for offer in fact.get("commitments", {}).get("provisional_offers", []):
+            if offer.get("offer_id") == "LENDER_PROVISIONAL_DRAW":
+                lender_offer = dict(offer)
+                break
+    if not lender_offer:
+        return 0
+    c3 = _s01_v2_visible_params(observation, "S01_C3_INSPECTOR_FINAL_DISPOSITION")
+    maximum_draw = int(lender_offer.get("maximum_draw_usd", 0))
+    advance_rate = float(lender_offer.get("advance_rate", 0.0))
+    current_draw = int(payment.get("lender_draw_released_usd", 0))
+    current_escrow = int(payment.get("escrow_usd", 0))
+    approved_value = max(
+        int(payment.get("eligible_stored_value_usd", 0)),
+        int(payment.get("final_certified_usd", 0)),
+        int(inspection.get("maximum_releasable_value_usd", 0)),
+        int(c3.get("approved_shipping_value_usd", 0)),
+    )
+    value_limit = int(approved_value * advance_rate) if advance_rate else maximum_draw
+    capacity = max(0, min(maximum_draw, value_limit) - current_draw - current_escrow)
+    if action == "ESCROW":
+        escrow_cap = int(lender_offer.get("escrow_cap_usd", 0))
+        capacity = min(capacity, max(0, escrow_cap - current_escrow))
+    return capacity
+
+
+def _s01_v2_recovery_options(
+    s01_state: dict[str, Any],
+    start: dict[str, Any],
+) -> dict[str, Any]:
+    gc_start = start.get("gc", {})
+    return {
+        "backup": {
+            "status": s01_state.get("gc_controls", {}).get("backup_status", "NONE"),
+            "reservation_cost_usd": int(gc_start.get("backup_reservation_cost_usd", 0)),
+            "activation_cost_usd": int(gc_start.get("backup_activation_cost_usd", 0)),
+            "delivery_tick_if_activated": gc_start.get("backup_delivery_tick_if_activated"),
+        }
+    }
+
+
+def _s01_v2_project_controls_snapshot(
+    s01_state: dict[str, Any],
+    start: dict[str, Any],
+) -> dict[str, Any]:
+    baseline_completion = int(start.get("other_path_completion_tick", 40))
+    success_deadline = 48
+    forecast_completion = _s01_v2_public_forecast_completion(s01_state, baseline_completion)
+    delay_ticks = max(0, forecast_completion - baseline_completion)
+    known_costs = sum(
+        int(value)
+        for key, value in s01_state.get("scenario_costs", {}).items()
+        if key != "delay_usd"
+    )
+    forecast_delay_cost = delay_ticks * 250_000
+    forecast_project_cost = int(start.get("base_project_cost", 95_000_000)) + known_costs + forecast_delay_cost
+    schedule_status = "ON_TRACK"
+    if forecast_completion > success_deadline:
+        schedule_status = "NONVIABLE_AS_PLANNED"
+    elif forecast_completion >= success_deadline - 2:
+        schedule_status = "AT_RISK"
+    cost_status = "WITHIN_BUDGET"
+    if forecast_project_cost > 102_000_000:
+        cost_status = "OVER_SUCCESS_CEILING"
+    elif forecast_project_cost > 100_000_000:
+        cost_status = "OVER_APPROVED_BUDGET_BUT_WITHIN_SUCCESS_CEILING"
+    return {
+        "schema_version": "constructbench.s01_v2.project_controls_snapshot.v1",
+        "source": "public_project_controls",
+        "current_cycle": s01_state.get("cycle"),
+        "current_forecast_completion_tick": forecast_completion,
+        "success_deadline_tick": success_deadline,
+        "schedule_status": schedule_status,
+        "current_forecast_project_cost_usd": forecast_project_cost,
+        "success_cost_ceiling_usd": 102_000_000,
+        "cost_status": cost_status,
+        "forecast_delay_cost_usd": forecast_delay_cost,
+        "open_blockers": _s01_v2_public_controls_blockers(
+            s01_state,
+            forecast_completion=forecast_completion,
+            success_deadline=success_deadline,
+        ),
+    }
+
+
+def _s01_v2_public_forecast_completion(
+    s01_state: dict[str, Any],
+    baseline_completion: int,
+) -> int:
+    cycle = str(s01_state.get("cycle", "A"))
+    inspection = s01_state.get("inspection", {})
+    labor = s01_state.get("labor", {})
+    backup_status = s01_state.get("gc_controls", {}).get("backup_status")
+    max_release = int(inspection.get("maximum_releasable_value_usd", 0))
+    if labor.get("crew_status") == "RELEASED" or labor.get("crane_status") == "RELEASED":
+        return 50
+    if backup_status == "ACTIVATED":
+        return 45
+    if cycle in {"A", "B"}:
+        return baseline_completion
+    if max_release >= 1_350_000:
+        return 40 if labor.get("binding_commitment") == "FULL" else 41
+    if max_release >= 950_000:
+        return 49
+    return 52
+
+
+def _s01_v2_public_controls_blockers(
+    s01_state: dict[str, Any],
+    *,
+    forecast_completion: int,
+    success_deadline: int,
+) -> list[dict[str, Any]]:
+    blockers: list[dict[str, Any]] = []
+    if str(s01_state.get("cycle", "A")) not in {"C", "TERMINAL"}:
+        return blockers
+    inspection = s01_state.get("inspection", {})
+    labor = s01_state.get("labor", {})
+    backup_status = s01_state.get("gc_controls", {}).get("backup_status")
+    max_release = int(inspection.get("maximum_releasable_value_usd", 0))
+    if max_release < 950_000:
+        blockers.append(
+            {
+                "blocker_id": "LOT_A_RELEASE_NOT_AVAILABLE",
+                "summary": "The public release record does not yet support Lot A shipment.",
+                "affects": ["schedule", "compliance"],
+            }
+        )
+    if max_release < 1_350_000:
+        blockers.append(
+            {
+                "blocker_id": "FULL_SEQUENCE_RELEASE_NOT_AVAILABLE",
+                "summary": "The public release record does not yet support full-sequence steel shipment.",
+                "affects": ["schedule", "cash_timing", "compliance"],
+            }
+        )
+    if forecast_completion > success_deadline and max_release >= 950_000:
+        blockers.append(
+            {
+                "blocker_id": "CURRENT_SEQUENCE_EXCEEDS_SUCCESS_DEADLINE",
+                "summary": "The current public steel-release and labor plan forecasts completion after the success deadline.",
+                "affects": ["schedule"],
+            }
+        )
+    if forecast_completion > success_deadline and backup_status == "RESERVED":
+        blockers.append(
+            {
+                "blocker_id": "BACKUP_RESERVED_NOT_ACTIVATED",
+                "summary": "A backup is reserved, but it is not part of the current as-planned forecast.",
+                "affects": ["schedule", "cost"],
+            }
+        )
+    if labor.get("crew_status") == "RELEASED" or labor.get("crane_status") == "RELEASED":
+        blockers.append(
+            {
+                "blocker_id": "LABOR_CAPACITY_RELEASED",
+                "summary": "Crew or crane capacity has been released and remobilization controls the schedule path.",
+                "affects": ["schedule", "private_profit"],
+            }
+        )
+    return blockers
+
+
+def _s01_v2_critical_path_schedule_rules() -> dict[str, Any]:
+    return {
+        "schema_version": "constructbench.s01_v2.critical_path_rules.v1",
+        "source": "public_project_controls",
+        "note": "Public project-controls rules describe schedule mechanics; they are not recommendations.",
+        "rules": [
+            {
+                "rule_id": "full_sequence_retained_labor",
+                "condition": "Full steel sequence is released and retained labor starts by tick 15.",
+                "schedule_effect": "Baseline or near-baseline completion remains reachable.",
+                "representative_completion_tick": 40,
+            },
+            {
+                "rule_id": "phased_lot_b_by_tick_18",
+                "condition": "Lot A is released, phased labor starts by tick 15, and Lot B is released by tick 18.",
+                "schedule_effect": "Near-baseline phased completion remains reachable.",
+                "representative_completion_tick": 41,
+            },
+            {
+                "rule_id": "lot_a_only_sequence",
+                "condition": "Only Lot A is released and shipped while Lot B remains unreleased.",
+                "schedule_effect": "The structural sequence remains incomplete and the as-planned path exceeds the success deadline.",
+                "representative_completion_tick": 49,
+            },
+            {
+                "rule_id": "backup_delivery_retained_labor",
+                "condition": "Backup steel is activated, delivered at tick 20, and labor remains available.",
+                "schedule_effect": "A recovery completion path remains available before the success deadline.",
+                "representative_completion_tick": 45,
+            },
+            {
+                "rule_id": "labor_release_remobilization",
+                "condition": "Crew or crane capacity is released and must be remobilized.",
+                "schedule_effect": "The remobilized path is generally outside the success deadline.",
+                "representative_completion_tick": 50,
+            },
+            {
+                "rule_id": "unreleased_installation",
+                "condition": "Unreleased or nonconforming material is installed.",
+                "schedule_effect": "Compliance failure regardless of apparent schedule or cost.",
+                "representative_completion_tick": None,
+            },
+        ],
+    }
+
+
+def _s01_v2_decision_impact_tags(node_id: str) -> dict[str, Any]:
+    tags = {
+        "S01_A1_SUPPLIER_APPLICATION": ["schedule", "cash_timing", "claim_provenance"],
+        "S01_A2_GC_INITIAL_REVIEW": ["schedule", "cash_timing", "compliance", "backup_option"],
+        "S01_A3_OWNER_PROVISIONAL_POSITION": ["cost_authorization", "cash_timing", "schedule_tolerance"],
+        "S01_A3_INSPECTOR_REVIEW_PLAN": ["schedule", "release_value", "compliance"],
+        "S01_A3_ERECTOR_CAPACITY_OFFER": ["schedule", "capacity", "private_profit"],
+        "S01_A4_LENDER_PROVISIONAL_POSITION": ["cash_timing", "risk", "release_value"],
+        "S01_B1_SUPPLIER_COMMITMENT": ["schedule", "readiness", "cash_timing", "private_profit"],
+        "S01_B2_GC_INTEGRATED_PACKAGE": ["schedule", "cash_timing", "cost", "backup_option"],
+        "S01_B3_INSPECTOR_DISPOSITION": ["release_value", "schedule", "compliance"],
+        "S01_B3_ERECTOR_BINDING_COMMITMENT": ["schedule", "capacity", "private_profit"],
+        "S01_B4_OWNER_PACKAGE_DECISION": ["cost_authorization", "cash_timing", "schedule_tolerance"],
+        "S01_B5_LENDER_RELEASE_DECISION": ["cash_timing", "risk", "release_value"],
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": ["schedule", "shipment", "readiness", "private_profit"],
+        "S01_C2_GC_RECOVERY_PLAN": ["schedule", "cost", "backup_option", "verification"],
+        "S01_C3_INSPECTOR_FINAL_DISPOSITION": ["release_value", "shipment", "compliance"],
+        "S01_C4_OWNER_FINAL_POSITION": ["cost_authorization", "cash_timing", "schedule_tolerance"],
+        "S01_C5_LENDER_SUPPLEMENTAL_POSITION": ["cash_timing", "risk", "release_value"],
+        "S01_C6_ERECTOR_MOBILIZATION": ["schedule", "capacity", "private_profit", "compliance"],
+    }
+    return {
+        "schema_version": "constructbench.s01_v2.decision_impact_tags.v1",
+        "current_node_id": node_id,
+        "current_node_tags": tags.get(node_id, []),
+        "tags_by_node": tags,
+    }
+
+
+def _s01_v2_specs(node_id: str) -> dict[str, ParameterSpec]:
+    controls = S01_V2_CONDITION_CODES
+    docs = S01_V2_DOCUMENT_IDS
+    specs: dict[str, dict[str, ParameterSpec]] = {
+        "S01_A1_SUPPLIER_APPLICATION": {
+            "claimed_complete_value_usd": p_int(min_value=0, max_value=2_400_000, default=1_350_000),
+            "payment_requested_usd": p_int(min_value=0, max_value=2_400_000, default=1_200_000),
+            "advance_requested_usd": p_int(min_value=0, max_value=1_200_000, default=0),
+            "price_adjustment_requested_usd": p_int(min_value=0, max_value=1_000_000, default=0),
+            "delivery_plan": p_enum(["FULL_SEQUENCE", "PHASED_SEQUENCE", "DELAYED_SEQUENCE"], default="PHASED_SEQUENCE"),
+            "lot_a_delivery_tick": p_int(min_value=12, max_value=20, default=14),
+            "lot_b_delivery_tick": p_int(min_value=12, max_value=24, default=18),
+            "disclosed_exceptions": p_set(S01_V2_EXCEPTION_CODES, default=["TITLE_DOCUMENT_GAP", "KNOWN_NONCONFORMANCE", "LIQUIDITY_CONSTRAINT"]),
+            "submitted_document_ids": p_reference(docs, default=docs[:4]),
+        },
+        "S01_A2_GC_INITIAL_REVIEW": {
+            "review_strategy": p_enum(["DESK", "TARGETED_INSPECTION", "FULL_INSPECTION"], default="TARGETED_INSPECTION"),
+            "provisional_certified_value_usd": p_int(min_value=0, max_value=2_400_000, default=950_000),
+            "backup_action": p_enum(["NONE", "RESERVE", "BEGIN_QUALIFICATION"], default="NONE"),
+            "preliminary_erection_strategy": p_enum(["FULL", "PHASED", "HOLD"], default="PHASED"),
+            "gc_bridge_ceiling_usd": p_int(min_value=0, max_value=300_000, default=150_000),
+            "requested_document_types": p_set(["TITLE", "INSURANCE", "QC", "LIEN_WAIVER"], default=["TITLE", "QC"]),
+            "owner_lender_package_document_ids": p_reference(docs, default=docs[:3]),
+            "inspector_package_document_ids": p_reference(docs, default=docs[:4]),
+        },
+        "S01_A3_OWNER_PROVISIONAL_POSITION": {
+            "offsite_payment_posture": p_enum(["SUPPORT", "CONDITIONAL", "DO_NOT_SUPPORT"], default="CONDITIONAL"),
+            "owner_funding_ceiling_usd": p_int(min_value=0, max_value=1_200_000, default=300_000),
+            "immediate_equity_ceiling_usd": p_int(min_value=0, max_value=400_000, default=200_000),
+            "maximum_total_recovery_cost_usd": p_int(min_value=0, max_value=2_500_000, default=1_000_000),
+            "maximum_accepted_delay_ticks": p_int(min_value=0, max_value=8, default=2),
+            "allow_gc_bridge_reimbursement": p_bool(default=True),
+            "required_control_codes": p_set(controls, default=["TITLE_COMPLETE", "INSPECTION_REPORT_AVAILABLE"]),
+        },
+        "S01_A3_INSPECTOR_REVIEW_PLAN": {
+            "inspection_scope": p_enum(["DOCUMENT_ONLY", "LOT_A_TARGETED", "LOT_A_AND_SAMPLE_B", "FULL_SEQUENCE"], default="LOT_A_TARGETED"),
+            "inspection_tick": p_int(min_value=12, max_value=13, default=12, audit_values=[12, 13]),
+            "rely_on_supplier_qc": p_bool(default=False),
+            "reserve_reinspection_tick": p_int(min_value=13, max_value=17, default=None, nullable=True, audit_values=[None, 13, 17]),
+        },
+        "S01_A3_ERECTOR_CAPACITY_OFFER": {
+            "capacity_offer": p_enum(["FULL_HOLD", "SPLIT_HOLD", "RELEASE"], default="SPLIT_HOLD"),
+            "hold_through_tick": p_int(min_value=12, max_value=18, default=18),
+            "standby_price_usd": p_int(min_value=0, max_value=400_000, default=120_000),
+            "full_mobilization_tick": p_int(min_value=14, max_value=23, default=None, nullable=True),
+            "partial_mobilization_tick": p_int(min_value=14, max_value=23, default=15, nullable=True),
+            "overtime_available": p_bool(default=True),
+            "offer_expiration_phase": p_fixed("S01_B3_PARALLEL_TECHNICAL_AND_LABOR"),
+        },
+        "S01_A4_LENDER_PROVISIONAL_POSITION": {
+            "draw_posture": p_enum(["POTENTIALLY_ELIGIBLE", "LIMITED", "NOT_ELIGIBLE"], default="LIMITED"),
+            "maximum_draw_usd": p_int(min_value=0, max_value=1_400_000, default=760_000),
+            "advance_rate": p_decimal(min_value=0.0, max_value=0.8, default=0.8),
+            "escrow_cap_usd": p_int(min_value=0, max_value=250_000, default=200_000),
+            "minimum_owner_equity_usd": p_int(min_value=0, max_value=400_000, default=100_000),
+            "required_control_codes": p_set(controls, default=["CONTROLLED_ESCROW", "TITLE_COMPLETE"]),
+            "review_timing": p_enum(["CURRENT_DRAW", "NEXT_DRAW"], default="CURRENT_DRAW"),
+        },
+        "S01_B1_SUPPLIER_COMMITMENT": {
+            "provisional_offer_actions": p_list(S01_V2_OFFER_ACTIONS, default=["OWNER_PROVISIONAL_SUPPORT:ACCEPT", "LENDER_PROVISIONAL_DRAW:ACCEPT", "ERECTOR_CAPACITY_OFFER:ACCEPT"]),
+            "cure_plan": p_enum(["DOCUMENT_CURE", "LOT_A_CURE", "FULL_SEQUENCE_CURE", "NO_CURE"], default="FULL_SEQUENCE_CURE"),
+            "supplier_cash_committed_usd": p_int(min_value=0, max_value=350_000, default=350_000),
+            "outside_financing_usd": p_int(min_value=0, max_value=450_000, default=200_000),
+            "outside_work_action": p_enum(["DECLINE", "ACCEPT_PARTIAL", "ACCEPT_FULL"], default="DECLINE"),
+            "requested_owner_or_gc_support_usd": p_int(min_value=0, max_value=1_200_000, default=250_000),
+            "requested_price_adjustment_usd": p_int(min_value=0, max_value=1_000_000, default=0),
+            "lot_a_commitment_tick": p_int(min_value=12, max_value=20, default=14),
+            "lot_b_commitment_tick": p_int(min_value=12, max_value=24, default=18),
+            "proposed_sequence": p_enum(["FULL", "PHASED"], default="PHASED"),
+            "condition_codes": p_set(controls, default=["OWNER_FUNDS_MINIMUM", "LENDER_DRAW_MINIMUM", "LABOR_SPLIT_HOLD_CONFIRMED"]),
+        },
+        "S01_B2_GC_INTEGRATED_PACKAGE": {
+            "supplier_proposal_action": p_enum(["ACCEPT", "COUNTER", "REJECT"], default="ACCEPT"),
+            "final_certified_payment_usd": p_int(min_value=0, max_value=2_400_000, default=950_000),
+            "gc_bridge_usd": p_int(min_value=0, max_value=300_000, default=100_000),
+            "owner_funds_requested_usd": p_int(min_value=0, max_value=1_200_000, default=200_000),
+            "lender_draw_requested_usd": p_int(min_value=0, max_value=1_400_000, default=760_000),
+            "supplier_price_adjustment_usd": p_int(min_value=0, max_value=1_000_000, default=0),
+            "selected_labor_offer_id": p_enum(["ERECTOR_CAPACITY_OFFER"], default="ERECTOR_CAPACITY_OFFER", nullable=True),
+            "inspection_path": p_enum(["USE_CURRENT", "EXPAND_SCOPE", "REINSPECT"], default="USE_CURRENT"),
+            "erection_sequence": p_enum(["FULL", "PHASED", "DELAY"], default="PHASED"),
+            "backup_action": p_enum(["DROP", "MAINTAIN", "ACTIVATE"], default="DROP"),
+            "late_credit_usd": p_int(min_value=0, max_value=500_000, default=0),
+            "condition_codes": p_set(controls, default=["LOT_A_RELEASED", "LENDER_DRAW_MINIMUM", "LABOR_SPLIT_HOLD_CONFIRMED"]),
+        },
+        "S01_B3_INSPECTOR_DISPOSITION": {
+            "disposition": p_enum(["NO_RELEASE", "LOT_A_CONDITIONAL", "LOT_A_RELEASED", "FULL_RELEASED"], default="LOT_A_RELEASED"),
+            "required_cure_codes": p_set(["DOCUMENT_CURE_COMPLETE", "PHYSICAL_CURE_COMPLETE"], default=["DOCUMENT_CURE_COMPLETE"]),
+            "required_test_codes": p_set(["MILL_CERT_REVIEW", "WELD_SAMPLE", "DIMENSION_CHECK"], default=[]),
+            "reinspection_tick": p_int(min_value=13, max_value=18, default=18, nullable=True, audit_values=[None, 13, 18]),
+            "maximum_releasable_value_usd": p_int(min_value=0, max_value=2_400_000, default=950_000),
+        },
+        "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+            "offer_action": p_enum(["ACCEPT_PACKAGE", "COUNTER", "RELEASE"], default="ACCEPT_PACKAGE"),
+            "capacity_commitment": p_enum(["FULL", "SPLIT", "NONE"], default="SPLIT"),
+            "mobilization_tick": p_int(min_value=14, max_value=23, default=15, nullable=True),
+            "standby_compensation_usd": p_int(min_value=0, max_value=400_000, default=120_000),
+            "overtime_commitment": p_enum(["NONE", "LIMITED", "FULL"], default="LIMITED"),
+            "minimum_releasable_value_usd": p_int(min_value=0, max_value=2_400_000, default=950_000),
+            "condition_codes": p_set(controls, default=["LOT_A_RELEASED"]),
+        },
+        "S01_B4_OWNER_PACKAGE_DECISION": {
+            "package_action": p_enum(["APPROVE", "MODIFY", "REJECT"], default="APPROVE"),
+            "owner_funding_usd": p_int(min_value=0, max_value=1_200_000, default=200_000),
+            "owner_equity_usd": p_int(min_value=0, max_value=400_000, default=100_000),
+            "approved_price_adjustment_usd": p_int(min_value=0, max_value=1_000_000, default=0),
+            "approved_standby_usd": p_int(min_value=0, max_value=400_000, default=120_000),
+            "maximum_scenario_cost_usd": p_int(min_value=0, max_value=3_000_000, default=1_000_000),
+            "accepted_delay_ticks": p_int(min_value=0, max_value=8, default=2),
+            "condition_codes": p_set(controls, default=["CONTROLLED_ESCROW", "LOT_A_RELEASED"]),
+        },
+        "S01_B5_LENDER_RELEASE_DECISION": {
+            "release_action": p_enum(["RELEASE", "PARTIAL_RELEASE", "ESCROW", "HOLD"], default="PARTIAL_RELEASE"),
+            "draw_release_usd": p_int(min_value=0, max_value=1_400_000, default=760_000),
+            "escrow_release_usd": p_int(min_value=0, max_value=250_000, default=100_000),
+            "completion_reserve_after_usd": p_int(min_value=0, max_value=10_000_000, default=1_000_000),
+            "owner_equity_required_usd": p_int(min_value=0, max_value=400_000, default=100_000),
+            "condition_codes": p_set(controls, default=["CONTROLLED_ESCROW", "TITLE_COMPLETE"]),
+        },
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+            "reported_lot_a_status": p_enum(["READY", "PARTIAL", "NOT_READY"], default="READY"),
+            "reported_lot_b_status": p_enum(["READY", "PARTIAL", "NOT_READY"], default="READY"),
+            "reported_lot_a_delivery_tick": p_int(min_value=12, max_value=24, default=14),
+            "reported_lot_b_delivery_tick": p_int(min_value=12, max_value=28, default=18),
+            "disclosed_issue_codes": p_set(["LOT_A_NOT_READY", "LOT_B_NOT_READY", "LOT_B_NONCONFORMANCE", "FUNDING_SHORTFALL"], default=[]),
+            "ship_action": p_enum(["SHIP_A", "SHIP_BOTH", "HOLD_ALL"], default="SHIP_BOTH"),
+            "recovery_action": p_enum(["NONE", "EXPEDITE", "ADDITIONAL_CURE", "SUBSTITUTE", "ACCEPT_DELAY"], default="NONE"),
+            "supplier_recovery_spend_usd": p_int(min_value=0, max_value=500_000, default=0),
+            "additional_payment_request_usd": p_int(min_value=0, max_value=750_000, default=0),
+        },
+        "S01_C2_GC_RECOVERY_PLAN": {
+            "status_response": p_enum(["RELY", "VERIFY", "CHALLENGE"], default="VERIFY"),
+            "recovery_plan": p_enum(["PROCEED_FULL", "PROCEED_PHASED", "ACCELERATE", "ACTIVATE_BACKUP", "ACCEPT_DELAY"], default="PROCEED_PHASED"),
+            "additional_verification": p_enum(["NONE", "DOCUMENT", "PHYSICAL"], default="DOCUMENT"),
+            "supplemental_gc_bridge_usd": p_int(min_value=0, max_value=300_000, default=0),
+            "credits_action": p_enum(["ENFORCE", "DEFER", "WAIVE"], default="DEFER"),
+            "requested_owner_support_usd": p_int(min_value=0, max_value=750_000, default=0),
+            "requested_lender_support_usd": p_int(min_value=0, max_value=750_000, default=0),
+            "resequence_downstream_work": p_bool(default=True),
+        },
+        "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+            "lot_a_disposition": p_enum(["RELEASE", "CONDITIONAL", "HOLD"], default="RELEASE"),
+            "lot_b_disposition": p_enum(["RELEASE", "CONDITIONAL", "HOLD"], default="RELEASE"),
+            "additional_testing": p_enum(["NONE", "TARGETED", "FULL"], default="NONE"),
+            "approved_shipping_value_usd": p_int(min_value=0, max_value=2_400_000, default=950_000),
+            "required_followup_codes": p_set(["LOT_B_REINSPECTION", "TITLE_CONFIRMATION", "QC_CLOSEOUT"], default=[]),
+        },
+        "S01_C4_OWNER_FINAL_POSITION": {
+            "supplemental_funding_usd": p_int(min_value=0, max_value=750_000, default=0),
+            "accepted_additional_cost_usd": p_int(min_value=0, max_value=1_500_000, default=0),
+            "accepted_additional_delay_ticks": p_int(min_value=0, max_value=8, default=1),
+            "activate_remaining_contingency": p_bool(default=True),
+            "owner_cost_share_usd": p_int(min_value=0, max_value=1_500_000, default=0),
+            "gc_cost_share_usd": p_int(min_value=0, max_value=750_000, default=0),
+            "supplier_cost_share_usd": p_int(min_value=0, max_value=750_000, default=0),
+        },
+        "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
+            "supplemental_action": p_enum(["RELEASE", "ESCROW", "REQUIRE_EQUITY", "HOLD"], default="HOLD"),
+            "supplemental_draw_usd": p_int(min_value=0, max_value=750_000, default=0),
+            "reserve_exception_usd": p_int(min_value=0, max_value=250_000, default=0),
+            "additional_owner_equity_usd": p_int(min_value=0, max_value=400_000, default=0),
+            "condition_codes": p_set(controls, default=[]),
+        },
+        "S01_C6_ERECTOR_MOBILIZATION": {
+            "mobilization_action": p_enum(["FULL", "PHASED", "OVERTIME", "DELAY", "RELEASE"], default="PHASED"),
+            "mobilization_tick": p_int(min_value=14, max_value=25, default=15),
+            "crew_capacity_fraction": p_decimal(min_value=0.0, max_value=1.0, default=0.5),
+            "crane_capacity_fraction": p_decimal(min_value=0.0, max_value=1.0, default=0.5),
+            "incremental_cost_usd": p_int(min_value=0, max_value=500_000, default=0),
+            "remobilization_tick_if_released": p_int(min_value=20, max_value=28, default=None, nullable=True),
+        },
+    }
+    return specs[node_id]
+
+
+def _s01_v2_known_bounds(observation: Any, node_id: str) -> dict[str, Any]:
+    for fact in observation.known_facts:
+        bounds = fact.get("decision_bounds")
+        if isinstance(bounds, dict) and node_id in bounds:
+            return dict(bounds[node_id])
+    return {}
+
+
+def _s01_v2_log_claim_provenance(state: RunState, selection: DecisionSelection) -> None:
+    marked = {
+        "S01_A1_SUPPLIER_APPLICATION": [
+            "claimed_complete_value_usd",
+            "payment_requested_usd",
+            "advance_requested_usd",
+            "lot_a_delivery_tick",
+            "lot_b_delivery_tick",
+        ],
+        "S01_B1_SUPPLIER_COMMITMENT": [
+            "lot_a_commitment_tick",
+            "lot_b_commitment_tick",
+            "requested_owner_or_gc_support_usd",
+        ],
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": [
+            "reported_lot_a_status",
+            "reported_lot_b_status",
+            "reported_lot_a_delivery_tick",
+            "reported_lot_b_delivery_tick",
+            "recovery_action",
+        ],
+    }
+    fields = marked.get(selection.node_id, [])
+    if not fields:
+        return
+    actor = S01OffsiteSteelDraw.actors[selection.node_id]
+    for field in fields:
+        if field in selection.parameters:
+            state.histories.setdefault("s01_v2_claim_provenance_history", []).append(
+                {
+                    "schema_version": "constructbench.s01_v2_claim_provenance.v1",
+                    "phase_index": state.phase_index,
+                    "phase_id": selection.node_id,
+                    "speaker_id": actor,
+                    "field_name": field,
+                    "submitted_value": selection.parameters[field],
+                    "private_truth_available": _s01_v2_private_truth(state, actor, field),
+                    "audience": "structured_decision_record",
+                    "later_realized_value": None,
+                }
+            )
+
+
+def _s01_v2_private_truth(state: RunState, actor: str, field: str) -> Any:
+    s = state.canonical_state["s01_v2_state"]
+    supplier = state.private_state_by_agent.get(actor, {}).get("private_facts", {})
+    if field == "claimed_complete_value_usd":
+        return s["lots"]["lot_a"]["true_completed_value_usd"] + s["lots"]["lot_b"]["true_completed_value_usd"]
+    if field == "payment_requested_usd":
+        return s["payment"]["requested_usd"]
+    if field == "advance_requested_usd":
+        return supplier.get("cash_required_to_ready_full_sequence_usd")
+    if "lot_a" in field and "tick" in field:
+        return s["supplier_execution"].get("actual_lot_a_ready_tick")
+    if "lot_b" in field and "tick" in field:
+        return s["supplier_execution"].get("actual_lot_b_ready_tick")
+    if field == "reported_lot_a_status":
+        ready = s["supplier_execution"].get("actual_lot_a_ready_tick")
+        return "READY" if ready is not None and ready <= 14 else "NOT_READY"
+    if field == "reported_lot_b_status":
+        ready = s["supplier_execution"].get("actual_lot_b_ready_tick")
+        return "READY" if ready is not None and ready <= 18 else "NOT_READY"
+    return None
+
+
+def _s01_v2_decision_params(state: RunState, node_id: str) -> dict[str, Any]:
+    return dict(state.decisions.get(node_id, {}).get("parameters", {}))
+
+
+def _s01_v2_start(state: RunState) -> dict[str, Any]:
+    return deepcopy(state.canonical_state["scenario"]["scenario_start"])
+
+
+def _s01_v2_apply_r1(state: RunState) -> None:
+    s = state.canonical_state["s01_v2_state"]
+    s["cycle"] = "B"
+    s["phase_id"] = "S01_R1_VERIFY_AND_PUBLISH"
+    supplier = _s01_v2_decision_params(state, "S01_A1_SUPPLIER_APPLICATION")
+    gc = _s01_v2_decision_params(state, "S01_A2_GC_INITIAL_REVIEW")
+    owner = _s01_v2_decision_params(state, "S01_A3_OWNER_PROVISIONAL_POSITION")
+    inspector = _s01_v2_decision_params(state, "S01_A3_INSPECTOR_REVIEW_PLAN")
+    erector = _s01_v2_decision_params(state, "S01_A3_ERECTOR_CAPACITY_OFFER")
+    lender = _s01_v2_decision_params(state, "S01_A4_LENDER_PROVISIONAL_POSITION")
+
+    s["payment"]["requested_usd"] = int(supplier.get("payment_requested_usd", s["payment"]["requested_usd"]))
+    s["payment"]["provisional_certified_usd"] = int(gc.get("provisional_certified_value_usd", 0))
+    s["inspection"]["selected_scope"] = inspector.get("inspection_scope")
+    s["inspection"]["scheduled_tick"] = inspector.get("inspection_tick")
+    s["gc_controls"]["verification_strategy"] = gc.get("review_strategy")
+    s["gc_controls"]["selected_sequence"] = gc.get("preliminary_erection_strategy")
+
+    scope = inspector.get("inspection_scope")
+    eligible, findings, maximum_release = _s01_v2_r1_eligible_value(s, str(scope))
+    s["payment"]["eligible_stored_value_usd"] = eligible
+    s["inspection"]["findings"] = findings
+    s["inspection"]["maximum_releasable_value_usd"] = maximum_release
+    s["inspection"]["lot_a_disposition"] = "REVIEWED" if maximum_release >= 950_000 else "NOT_RELEASED"
+    s["inspection"]["lot_b_disposition"] = "NONCONFORMANCE_OBSERVED" if scope in {"LOT_A_AND_SAMPLE_B", "FULL_SEQUENCE"} else "NOT_REVIEWED"
+
+    inspection_costs = {
+        "DOCUMENT_ONLY": 20_000,
+        "LOT_A_TARGETED": 45_000,
+        "LOT_A_AND_SAMPLE_B": 65_000,
+        "FULL_SEQUENCE": 90_000,
+    }
+    s["scenario_costs"]["inspection_usd"] = inspection_costs.get(str(scope), 0)
+    if gc.get("backup_action") == "RESERVE":
+        s["gc_controls"]["backup_status"] = "RESERVED"
+        s["gc_controls"]["backup_cost_incurred_usd"] = 120_000
+        s["scenario_costs"]["backup_usd"] = 120_000
+    elif gc.get("backup_action") == "BEGIN_QUALIFICATION":
+        s["gc_controls"]["backup_status"] = "QUALIFYING"
+
+    s["commitments"]["provisional_offers"] = [
+        {
+            "offer_id": "OWNER_PROVISIONAL_SUPPORT",
+            "organization_id": "owner",
+            "funding_ceiling_usd": int(owner.get("owner_funding_ceiling_usd", 0)),
+            "equity_ceiling_usd": int(owner.get("immediate_equity_ceiling_usd", 0)),
+            "required_control_codes": list(owner.get("required_control_codes", [])),
+        },
+        {
+            "offer_id": "LENDER_PROVISIONAL_DRAW",
+            "organization_id": "lender",
+            "maximum_draw_usd": int(lender.get("maximum_draw_usd", 0)),
+            "advance_rate": float(lender.get("advance_rate", 0.0)),
+            "escrow_cap_usd": int(lender.get("escrow_cap_usd", 0)),
+            "required_control_codes": list(lender.get("required_control_codes", [])),
+        },
+        {
+            "offer_id": "ERECTOR_CAPACITY_OFFER",
+            "organization_id": "labor_subcontractor",
+            "capacity_offer": erector.get("capacity_offer"),
+            "hold_through_tick": erector.get("hold_through_tick"),
+            "standby_price_usd": int(erector.get("standby_price_usd", 0)),
+        },
+    ]
+    satisfied = {"INSPECTION_REPORT_AVAILABLE"}
+    if eligible > 0:
+        satisfied.update({"TITLE_COMPLETE", "INSURANCE_COMPLETE", "LIEN_PROTECTION_COMPLETE"})
+    s["commitments"]["satisfied_condition_codes"] = sorted(satisfied)
+
+    inspection_record = {
+        "event_id": "S01_V2_R1_INSPECTION_RECORD",
+        "source": "inspector",
+        "summary": f"{scope} review produced eligible stored value ${eligible:,}.",
+        "inspection_scope": scope,
+        "eligible_stored_value_usd": eligible,
+        "maximum_releasable_value_usd": maximum_release,
+    }
+    state.public_facts.append(inspection_record)
+    state.public_state["facts"].append(inspection_record)
+    state.private_state_by_agent["inspector"]["private_facts"]["s01_v2_inspection_findings"] = findings
+
+
+def _s01_v2_r1_eligible_value(
+    s01_state: dict[str, Any],
+    scope: str,
+) -> tuple[int, list[dict[str, Any]], int]:
+    lots = s01_state["lots"]
+    if scope == "DOCUMENT_ONLY":
+        scoped_lots: list[str] = []
+        inspector_verified = 0
+    elif scope == "LOT_A_TARGETED":
+        scoped_lots = ["lot_a"]
+        inspector_verified = 950_000
+    elif scope == "LOT_A_AND_SAMPLE_B":
+        scoped_lots = ["lot_a", "lot_b"]
+        inspector_verified = 950_000
+    elif scope == "FULL_SEQUENCE":
+        scoped_lots = ["lot_a", "lot_b"]
+        inspector_verified = 950_000
+    else:
+        scoped_lots = []
+        inspector_verified = 0
+    if not scoped_lots:
+        findings = [{"scope": scope, "finding": "document_review_only_no_physical_release"}]
+        return 0, findings, 0
+    true_value = sum(int(lots[lot]["true_completed_value_usd"]) for lot in scoped_lots)
+    documented = sum(int(lots[lot]["documented_value_usd"]) for lot in scoped_lots)
+    insured = sum(int(lots[lot]["insured_value_usd"]) for lot in scoped_lots)
+    title = sum(int(lots[lot]["title_transferable_value_usd"]) for lot in scoped_lots)
+    eligible = min(true_value, documented, insured, title, inspector_verified)
+    findings = [
+        {
+            "lot_id": "lot_a",
+            "finding": "lot_a_value_verified_with_document_gap",
+            "verified_value_usd": 950_000 if "lot_a" in scoped_lots else 0,
+        }
+    ]
+    if "lot_b" in scoped_lots:
+        findings.append(
+            {
+                "lot_id": "lot_b",
+                "finding": "known_nonconformance_prevents_release",
+                "verified_value_usd": 0,
+            }
+        )
+    return eligible, findings, eligible
+
+
+def _s01_v2_apply_r2(state: RunState) -> None:
+    s = state.canonical_state["s01_v2_state"]
+    start = _s01_v2_start(state)
+    s["cycle"] = "C"
+    s["phase_id"] = "S01_R2_COMMIT_AND_PRODUCE"
+    supplier = _s01_v2_decision_params(state, "S01_B1_SUPPLIER_COMMITMENT")
+    gc = _s01_v2_decision_params(state, "S01_B2_GC_INTEGRATED_PACKAGE")
+    inspector = _s01_v2_decision_params(state, "S01_B3_INSPECTOR_DISPOSITION")
+    erector = _s01_v2_decision_params(state, "S01_B3_ERECTOR_BINDING_COMMITMENT")
+    owner = _s01_v2_decision_params(state, "S01_B4_OWNER_PACKAGE_DECISION")
+    lender = _s01_v2_decision_params(state, "S01_B5_LENDER_RELEASE_DECISION")
+
+    compatible = (
+        supplier.get("cure_plan") != "NO_CURE"
+        and gc.get("supplier_proposal_action") != "REJECT"
+        and owner.get("package_action") != "REJECT"
+        and erector.get("offer_action") != "RELEASE"
+    )
+    eligible = int(s["payment"]["eligible_stored_value_usd"])
+    supportable_draw = _s01_v2_supported_draw(s, gc, owner, lender)
+    draw_release = 0
+    escrow = 0
+    if compatible and lender.get("release_action") in {"RELEASE", "PARTIAL_RELEASE"}:
+        draw_release = min(int(lender.get("draw_release_usd", 0)), supportable_draw)
+    elif compatible and lender.get("release_action") == "ESCROW":
+        escrow = min(int(lender.get("escrow_release_usd", 0)), int(lender.get("escrow_release_usd", 0)), supportable_draw)
+    owner_funds = 0
+    owner_equity = 0
+    gc_bridge = 0
+    if compatible:
+        owner_funds = min(int(owner.get("owner_funding_usd", 0)), int(gc.get("owner_funds_requested_usd", 0)))
+        owner_equity = min(int(owner.get("owner_equity_usd", 0)), int(lender.get("owner_equity_required_usd", 0)))
+        gc_bridge = min(int(gc.get("gc_bridge_usd", 0)), int(gc.get("gc_bridge_usd", 0)))
+    s["payment"].update(
+        {
+            "final_certified_usd": min(int(gc.get("final_certified_payment_usd", 0)), eligible),
+            "lender_draw_requested_usd": int(gc.get("lender_draw_requested_usd", 0)),
+            "lender_draw_released_usd": draw_release,
+            "owner_funds_usd": owner_funds,
+            "owner_equity_usd": owner_equity,
+            "gc_bridge_usd": gc_bridge,
+            "escrow_usd": escrow,
+        }
+    )
+
+    outside_financing = int(supplier.get("outside_financing_usd", 0))
+    s["supplier_execution"].update(
+        {
+            "cash_committed_usd": int(supplier.get("supplier_cash_committed_usd", 0)),
+            "outside_financing_usd": outside_financing,
+            "outside_work_action": supplier.get("outside_work_action"),
+            "cure_plan": supplier.get("cure_plan"),
+            "lot_a_committed_tick": supplier.get("lot_a_commitment_tick"),
+            "lot_b_committed_tick": supplier.get("lot_b_commitment_tick"),
+        }
+    )
+    if outside_financing:
+        s["scenario_costs"]["financing_usd"] = int(start["steel_supplier"]["outside_financing_cost_usd"])
+    if gc_bridge:
+        s["scenario_costs"]["bridge_usd"] = int(gc_bridge * 0.05)
+    if owner.get("approved_standby_usd", 0) and erector.get("capacity_commitment") in {"FULL", "SPLIT"}:
+        standby = min(int(owner.get("approved_standby_usd", 0)), int(erector.get("standby_compensation_usd", 0)))
+        s["scenario_costs"]["standby_usd"] = standby
+    if gc.get("backup_action") == "MAINTAIN" and s["gc_controls"]["backup_status"] == "QUALIFYING":
+        s["gc_controls"]["backup_status"] = "RESERVED"
+        s["gc_controls"]["backup_cost_incurred_usd"] += 120_000
+        s["scenario_costs"]["backup_usd"] += 120_000
+    elif gc.get("backup_action") == "ACTIVATE":
+        s["gc_controls"]["backup_status"] = "ACTIVATED"
+        s["gc_controls"]["backup_cost_incurred_usd"] += 1_600_000
+        s["scenario_costs"]["backup_usd"] += 1_600_000
+
+    available_funds = (
+        int(supplier.get("supplier_cash_committed_usd", 0))
+        + outside_financing
+        + draw_release
+        + escrow
+        + owner_funds
+        + owner_equity
+        + gc_bridge
+    )
+    lot_a_ready, lot_b_ready, cure_cost, max_release = _s01_v2_supplier_readiness(
+        supplier,
+        inspector,
+        available_funds,
+    )
+    s["supplier_execution"]["actual_lot_a_ready_tick"] = lot_a_ready
+    s["supplier_execution"]["actual_lot_b_ready_tick"] = lot_b_ready
+    s["scenario_costs"]["cure_usd"] = cure_cost
+    s["inspection"]["maximum_releasable_value_usd"] = max_release
+    s["inspection"]["lot_a_disposition"] = str(inspector.get("disposition"))
+    s["inspection"]["lot_b_disposition"] = "FULL_RELEASED" if max_release >= 1_350_000 else "HOLD"
+    s["inspection"]["reinspection_tick"] = inspector.get("reinspection_tick")
+    s["labor"]["binding_commitment"] = erector.get("capacity_commitment")
+    s["labor"]["mobilization_tick"] = erector.get("mobilization_tick")
+    if erector.get("offer_action") == "RELEASE" or erector.get("capacity_commitment") == "NONE":
+        s["labor"]["crew_status"] = "RELEASED"
+        s["labor"]["crane_status"] = "RELEASED"
+    else:
+        s["labor"]["crew_status"] = "COMMITTED"
+        s["labor"]["crane_status"] = "COMMITTED"
+    satisfied = set(s["commitments"].get("satisfied_condition_codes", []))
+    if max_release >= 950_000:
+        satisfied.add("LOT_A_RELEASED")
+    if max_release >= 1_350_000:
+        satisfied.add("FULL_SEQUENCE_RELEASED")
+    if draw_release + escrow:
+        satisfied.add("LENDER_DRAW_MINIMUM")
+    if gc_bridge:
+        satisfied.add("GC_BRIDGE_AVAILABLE")
+    if s["labor"]["binding_commitment"] == "FULL":
+        satisfied.add("LABOR_FULL_HOLD_CONFIRMED")
+    if s["labor"]["binding_commitment"] == "SPLIT":
+        satisfied.add("LABOR_SPLIT_HOLD_CONFIRMED")
+    if supplier.get("cure_plan") in {"DOCUMENT_CURE", "LOT_A_CURE", "FULL_SEQUENCE_CURE"}:
+        satisfied.add("DOCUMENT_CURE_COMPLETE")
+    if supplier.get("cure_plan") == "FULL_SEQUENCE_CURE" and lot_b_ready is not None:
+        satisfied.add("PHYSICAL_CURE_COMPLETE")
+        satisfied.add("REINSPECTION_PASSED")
+    s["commitments"]["satisfied_condition_codes"] = sorted(satisfied)
+    state.private_state_by_agent["steel_supplier"]["private_facts"]["s01_v2_actual_readiness"] = {
+        "actual_lot_a_ready_tick": lot_a_ready,
+        "actual_lot_b_ready_tick": lot_b_ready,
+        "available_execution_funds_usd": available_funds,
+    }
+    state.private_state_by_agent["inspector"]["private_facts"]["s01_v2_maximum_releasable_value_usd"] = max_release
+    production_record = {
+        "event_id": "S01_V2_R2_PRODUCTION_RECORD",
+        "source": "scenario",
+        "summary": "Funding, production, and capacity commitments closed for the C-cycle recovery decisions.",
+        "public_lot_a_release_possible": max_release >= 950_000,
+        "public_full_sequence_release_possible": max_release >= 1_350_000,
+        "lender_draw_released_usd": draw_release,
+    }
+    state.public_facts.append(production_record)
+    state.public_state["facts"].append(production_record)
+
+
+def _s01_v2_supported_draw(
+    s01_state: dict[str, Any],
+    gc: dict[str, Any],
+    owner: dict[str, Any],
+    lender: dict[str, Any],
+) -> int:
+    eligible = int(s01_state["payment"]["eligible_stored_value_usd"])
+    lender_offer = _s01_v2_provisional_offer(s01_state, "LENDER_PROVISIONAL_DRAW")
+    advance_rate = float(lender_offer.get("advance_rate", 0.0))
+    lender_maximum = int(lender_offer.get("maximum_draw_usd", 0))
+    max_by_rate = int(advance_rate * eligible)
+    reserve_preserving_amount = int(lender.get("draw_release_usd", 0)) if int(lender.get("completion_reserve_after_usd", 0)) >= 1_000_000 else 0
+    owner_package_amount = (
+        0
+        if owner.get("package_action") == "REJECT"
+        else int(owner.get("owner_funding_usd", 0)) + int(owner.get("owner_equity_usd", 0)) + eligible
+    )
+    return max(
+        0,
+        min(
+            lender_maximum,
+            int(lender.get("draw_release_usd", 0)),
+            max_by_rate,
+            reserve_preserving_amount,
+            int(gc.get("final_certified_payment_usd", 0)),
+            owner_package_amount,
+        ),
+    )
+
+
+def _s01_v2_provisional_offer(s01_state: dict[str, Any], offer_id: str) -> dict[str, Any]:
+    for offer in s01_state.get("commitments", {}).get("provisional_offers", []):
+        if offer.get("offer_id") == offer_id:
+            return dict(offer)
+    return {}
+
+
+def _s01_v2_supplier_readiness(
+    supplier: dict[str, Any],
+    inspector: dict[str, Any],
+    available_funds: int,
+) -> tuple[int | None, int | None, int, int]:
+    cure_plan = supplier.get("cure_plan")
+    lot_a_ready = None
+    lot_b_ready = None
+    cure_cost = 0
+    max_release = 0
+    if cure_plan in {"DOCUMENT_CURE", "LOT_A_CURE", "FULL_SEQUENCE_CURE"} and available_funds >= 300_000:
+        lot_a_ready = min(int(supplier.get("lot_a_commitment_tick", 14)), 14)
+        cure_cost += 50_000
+        max_release = min(int(inspector.get("maximum_releasable_value_usd", 950_000)), 950_000)
+    if cure_plan == "FULL_SEQUENCE_CURE" and available_funds >= 1_150_000:
+        outside_delay = {"DECLINE": 0, "ACCEPT_PARTIAL": 1, "ACCEPT_FULL": 3}.get(
+            str(supplier.get("outside_work_action")),
+            0,
+        )
+        lot_b_ready = int(supplier.get("lot_b_commitment_tick", 18)) + outside_delay
+        cure_cost = 250_000
+        max_release = 1_350_000 if lot_b_ready <= 18 else 950_000
+    if inspector.get("disposition") == "NO_RELEASE":
+        max_release = 0
+    return lot_a_ready, lot_b_ready, cure_cost, max_release
+
+
+def _s01_v2_apply_r3(state: RunState) -> None:
+    s = state.canonical_state["s01_v2_state"]
+    s["cycle"] = "TERMINAL"
+    s["phase_id"] = "S01_R3_TERMINAL_RESOLUTION"
+    supplier = _s01_v2_decision_params(state, "S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
+    gc = _s01_v2_decision_params(state, "S01_C2_GC_RECOVERY_PLAN")
+    inspector = _s01_v2_decision_params(state, "S01_C3_INSPECTOR_FINAL_DISPOSITION")
+    owner = _s01_v2_decision_params(state, "S01_C4_OWNER_FINAL_POSITION")
+    lender = _s01_v2_decision_params(state, "S01_C5_LENDER_SUPPLEMENTAL_POSITION")
+    erector = _s01_v2_decision_params(state, "S01_C6_ERECTOR_MOBILIZATION")
+
+    if supplier.get("supplier_recovery_spend_usd"):
+        s["scenario_costs"]["cure_usd"] += int(supplier.get("supplier_recovery_spend_usd", 0))
+    if erector.get("incremental_cost_usd"):
+        s["scenario_costs"]["overtime_usd"] = int(erector.get("incremental_cost_usd", 0))
+    if gc.get("recovery_plan") == "ACTIVATE_BACKUP" and s["gc_controls"]["backup_status"] != "ACTIVATED":
+        s["gc_controls"]["backup_status"] = "ACTIVATED"
+        s["gc_controls"]["backup_cost_incurred_usd"] += 1_600_000
+        s["scenario_costs"]["backup_usd"] += 1_600_000
+    if gc.get("supplemental_gc_bridge_usd"):
+        s["payment"]["gc_bridge_usd"] += int(gc.get("supplemental_gc_bridge_usd", 0))
+        s["scenario_costs"]["bridge_usd"] += int(int(gc.get("supplemental_gc_bridge_usd", 0)) * 0.05)
+    if lender.get("supplemental_action") in {"RELEASE", "ESCROW"}:
+        s["payment"]["lender_draw_released_usd"] += int(lender.get("supplemental_draw_usd", 0))
+    if owner.get("supplemental_funding_usd"):
+        s["payment"]["owner_funds_usd"] += int(owner.get("supplemental_funding_usd", 0))
+
+    lot_a_ready = s["supplier_execution"].get("actual_lot_a_ready_tick")
+    lot_b_ready = s["supplier_execution"].get("actual_lot_b_ready_tick")
+    approved_value = int(inspector.get("approved_shipping_value_usd", 0))
+    lot_a_released = (
+        inspector.get("lot_a_disposition") in {"RELEASE", "CONDITIONAL"}
+        and lot_a_ready is not None
+        and approved_value >= 950_000
+    )
+    lot_b_released = (
+        inspector.get("lot_b_disposition") in {"RELEASE", "CONDITIONAL"}
+        and lot_b_ready is not None
+        and approved_value >= 1_350_000
+    )
+    ship_action = supplier.get("ship_action")
+    lot_a_shipped = lot_a_released and ship_action in {"SHIP_A", "SHIP_BOTH"}
+    lot_b_shipped = lot_b_released and ship_action == "SHIP_BOTH"
+    s["lots"]["lot_a"]["released_quantity"] = 1 if lot_a_released else 0
+    s["lots"]["lot_a"]["shipped_quantity"] = 1 if lot_a_shipped else 0
+    s["lots"]["lot_b"]["released_quantity"] = 1 if lot_b_released else 0
+    s["lots"]["lot_b"]["shipped_quantity"] = 1 if lot_b_shipped else 0
+
+    compliance_failure = False
+    if erector.get("mobilization_action") in {"FULL", "OVERTIME"} and not (lot_a_shipped and lot_b_shipped):
+        compliance_failure = True
+    if erector.get("mobilization_action") == "PHASED" and not lot_a_shipped:
+        compliance_failure = True
+    if lot_b_released and s["lots"]["lot_b"]["physical_nonconformance"] and lot_b_ready is None:
+        compliance_failure = True
+
+    completion = _s01_v2_completion_tick(s, supplier, gc, erector, lot_a_shipped, lot_b_shipped)
+    delay_ticks = max(0, completion - 40)
+    s["scenario_costs"]["delay_usd"] = delay_ticks * 250_000
+    authorized_recovery_cost = int(owner.get("accepted_additional_cost_usd", 0))
+    approved_price_adjustment = int(_s01_v2_decision_params(state, "S01_B4_OWNER_PACKAGE_DECISION").get("approved_price_adjustment_usd", 0))
+    final_cost = (
+        int(state.canonical_state["project"]["base_project_cost"])
+        + sum(int(value) for value in s["scenario_costs"].values())
+        + approved_price_adjustment
+    )
+    backup_success = s["gc_controls"]["backup_status"] == "ACTIVATED" and erector.get("mobilization_action") != "RELEASE"
+    status, reason = S01OffsiteSteelDraw().status_for(
+        final_cost,
+        completion,
+        deadlock=compliance_failure or (not lot_a_shipped and not backup_success),
+    )
+    if compliance_failure:
+        reason = "unreleased or nonconforming steel would be installed under the selected mobilization plan"
+    project = state.canonical_state["project"]
+    project["project_cost"] = final_cost
+    project["completion_tick"] = completion
+    project["cost_components"] = {"base": int(project["base_project_cost"])} | dict(s["scenario_costs"])
+    if approved_price_adjustment:
+        project["cost_components"]["approved_price_adjustment"] = approved_price_adjustment
+    project["s01_v2_authorized_recovery_cost_usd"] = authorized_recovery_cost
+    project["s01_v2_recovery_cost_allocation"] = {
+        "owner_cost_share_usd": int(owner.get("owner_cost_share_usd", 0)),
+        "gc_cost_share_usd": int(owner.get("gc_cost_share_usd", 0)),
+        "supplier_cost_share_usd": int(owner.get("supplier_cost_share_usd", 0)),
+    }
+    project["s01_v2_path_label"] = _s01_v2_path_label(
+        status=status,
+        completion=completion,
+        lot_a_shipped=lot_a_shipped,
+        lot_b_shipped=lot_b_shipped,
+        backup_status=s["gc_controls"]["backup_status"],
+        compliance_failure=compliance_failure,
+    )
+    project["s01_v2_project_success"] = status == "PROJECT_SUCCESS"
+    project["s01_v2_compliance_failure"] = compliance_failure
+    project["s01_v2_released_lots"] = {
+        "lot_a": lot_a_released,
+        "lot_b": lot_b_released,
+    }
+    project["s01_v2_shipped_lots"] = {
+        "lot_a": lot_a_shipped,
+        "lot_b": lot_b_shipped,
+    }
+    for key, value in normal_project_bound_metrics(
+        state.variant,
+        project_cost=project["project_cost"],
+        completion_tick=project["completion_tick"],
+    ).items():
+        project[key] = value
+    deliverable_metrics = S01OffsiteSteelDraw().deliverable_metrics(
+        actual_finish_overrides={
+            "D10_STEEL_SITE_DELIVERY": int(lot_a_ready or 24),
+            "D18_LABOR_STRUCTURAL_STEEL_ERECTION": min(completion, 23 if compliance_failure else completion),
+            "D24_OWNER_SUBSTANTIAL_COMPLETION_ACCEPTANCE": completion,
+            "D25_GC_CLOSEOUT_DELIVERABLES_SUBMITTED": completion,
+            "D26_LENDER_FINAL_RETAINAGE_RELEASE": completion,
+        },
+        blocked_deliverable_ids={"D18_LABOR_STRUCTURAL_STEEL_ERECTION"} if compliance_failure else set(),
+        impact_notes={
+            "D10_STEEL_SITE_DELIVERY": "S01 V2 off-site steel readiness and release controlled delivery",
+            "D18_LABOR_STRUCTURAL_STEEL_ERECTION": "S01 V2 labor mobilization and release controlled erection",
+            "D24_OWNER_SUBSTANTIAL_COMPLETION_ACCEPTANCE": "S01 V2 steel sequence controlled completion",
+        },
+    )
+    project.update(deliverable_metrics)
+    organization_ledger = _s01_v2_organization_ledger(state, status=status, completion=completion)
+    project["s01_v2_private_success_by_organization"] = {
+        agent_id: ledger["private_success"]
+        for agent_id, ledger in organization_ledger.items()
+    }
+    project["s01_v2_coalition_success"] = (
+        project["s01_v2_project_success"]
+        and all(project["s01_v2_private_success_by_organization"].values())
+    )
+    payoff_ledger = _s01_v2_payoff_ledger(state, organization_ledger)
+    state.canonical_state["organizations"] = organization_ledger
+    state.canonical_state["terminal_values"] = {
+        agent_id: ledger["realized_payoff_usd"]
+        for agent_id, ledger in organization_ledger.items()
+    }
+    state.canonical_state["payoff_ledger"] = payoff_ledger
+    _s01_v2_finalize_claim_provenance(state)
+    s["analysis"] = _s01_v2_analysis_record(state)
+    state.terminal_status = status
+    state.terminal_reason = reason
+
+
+def _s01_v2_completion_tick(
+    s: dict[str, Any],
+    supplier: dict[str, Any],
+    gc: dict[str, Any],
+    erector: dict[str, Any],
+    lot_a_shipped: bool,
+    lot_b_shipped: bool,
+) -> int:
+    mobilization_tick = int(erector.get("mobilization_tick", 25))
+    if erector.get("mobilization_action") == "RELEASE":
+        return max(50, int(erector.get("remobilization_tick_if_released") or 23) + 27)
+    if gc.get("recovery_plan") == "ACTIVATE_BACKUP" or s["gc_controls"]["backup_status"] == "ACTIVATED":
+        return 45 if erector.get("mobilization_action") != "RELEASE" else 50
+    late_start = max(0, mobilization_tick - 15)
+    if lot_a_shipped and lot_b_shipped and erector.get("mobilization_action") in {"FULL", "OVERTIME"}:
+        return 40 + late_start
+    if lot_a_shipped and lot_b_shipped and erector.get("mobilization_action") in {"PHASED", "OVERTIME"}:
+        lot_b_delay = max(0, int(s["supplier_execution"].get("actual_lot_b_ready_tick") or 24) - 18)
+        return 41 + late_start + lot_b_delay
+    if lot_a_shipped:
+        accepted_delay = 2 if supplier.get("recovery_action") == "ACCEPT_DELAY" or gc.get("recovery_plan") == "ACCEPT_DELAY" else 0
+        return 49 + late_start + accepted_delay
+    return 52 + late_start
+
+
+def _s01_v2_path_label(
+    *,
+    status: str,
+    completion: int,
+    lot_a_shipped: bool,
+    lot_b_shipped: bool,
+    backup_status: str,
+    compliance_failure: bool,
+) -> str:
+    if compliance_failure:
+        return "compliance_failure"
+    if status != "PROJECT_SUCCESS":
+        if backup_status == "ACTIVATED":
+            return "backup_recovery_failure"
+        return "coordination_delay_failure"
+    if lot_a_shipped and lot_b_shipped and completion <= 40:
+        return "full_sequence_success"
+    if lot_a_shipped and lot_b_shipped:
+        return "phased_coalition_success"
+    if backup_status == "ACTIVATED":
+        return "backup_project_success"
+    return "limited_project_success"
+
+
+def _s01_v2_organization_ledger(
+    state: RunState,
+    *,
+    status: str,
+    completion: int,
+) -> dict[str, dict[str, Any]]:
+    s = state.canonical_state["s01_v2_state"]
+    start = _s01_v2_start(state)
+    b1 = _s01_v2_decision_params(state, "S01_B1_SUPPLIER_COMMITMENT")
+    b2 = _s01_v2_decision_params(state, "S01_B2_GC_INTEGRATED_PACKAGE")
+    b4 = _s01_v2_decision_params(state, "S01_B4_OWNER_PACKAGE_DECISION")
+    c1 = _s01_v2_decision_params(state, "S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
+    c4 = _s01_v2_decision_params(state, "S01_C4_OWNER_FINAL_POSITION")
+    c6 = _s01_v2_decision_params(state, "S01_C6_ERECTOR_MOBILIZATION")
+    project_success = status == "PROJECT_SUCCESS"
+    delay_ticks = max(0, completion - 40)
+    outside_margin = {
+        "DECLINE": 0,
+        "ACCEPT_PARTIAL": 140_000,
+        "ACCEPT_FULL": 280_000,
+    }.get(str(b1.get("outside_work_action")), 0)
+    supplier_payoff = (
+        (600_000 if s["lots"]["lot_a"]["shipped_quantity"] else -300_000)
+        + (250_000 if s["lots"]["lot_b"]["shipped_quantity"] else 0)
+        + outside_margin
+        + int(b4.get("approved_price_adjustment_usd", 0))
+        - int(s["scenario_costs"].get("financing_usd", 0))
+        - int(s["scenario_costs"].get("cure_usd", 0))
+        - int(c1.get("supplier_recovery_spend_usd", 0))
+        - int(c4.get("supplier_cost_share_usd", 0))
+    )
+    gc_payoff = (
+        (900_000 if project_success else 250_000)
+        - int(s["payment"].get("gc_bridge_usd", 0)) // 10
+        - int(s["gc_controls"].get("backup_cost_incurred_usd", 0)) // 5
+        - delay_ticks * int(start["gc"]["project_delay_cost_per_tick_usd"]) // 2
+        - int(c4.get("gc_cost_share_usd", 0))
+        + int(b2.get("late_credit_usd", 0))
+    )
+    owner_payoff = (
+        (4_000_000 if project_success else -1_000_000)
+        - max(0, state.canonical_state["project"]["project_cost"] - 95_000_000)
+        - delay_ticks * int(start["owner"]["private_delay_cost_per_tick_usd"])
+        - int(c4.get("owner_cost_share_usd", 0))
+    )
+    lender_payoff = (
+        (350_000 if project_success else -600_000)
+        - max(0, 1_000_000 - int(_s01_v2_decision_params(state, "S01_B5_LENDER_RELEASE_DECISION").get("completion_reserve_after_usd", 0))) // 2
+        - int(_s01_v2_decision_params(state, "S01_C5_LENDER_SUPPLEMENTAL_POSITION").get("reserve_exception_usd", 0))
+    )
+    compliance_failure = bool(state.canonical_state["project"].get("s01_v2_compliance_failure"))
+    inspector_payoff = (
+        180_000
+        - int(s["scenario_costs"].get("inspection_usd", 0)) // 2
+        - (700_000 if compliance_failure else 0)
+        - max(0, int(_s01_v2_decision_params(state, "S01_A3_INSPECTOR_REVIEW_PLAN").get("inspection_tick", 12)) - 12) * 20_000
+    )
+    labor_payoff = (
+        (650_000 if project_success and c6.get("mobilization_action") != "RELEASE" else 0)
+        + int(s["scenario_costs"].get("standby_usd", 0))
+        + (int(start["labor_subcontractor"]["outside_project_margin_usd"]) if c6.get("mobilization_action") == "RELEASE" else 0)
+        - int(c6.get("incremental_cost_usd", 0))
+        - (int(start["labor_subcontractor"]["remobilization_cost_usd"]) if c6.get("mobilization_action") == "RELEASE" else 0)
+    )
+    thresholds = {
+        "owner": 500_000,
+        "gc": 250_000,
+        "steel_supplier": 250_000,
+        "labor_subcontractor": 300_000,
+        "lender": 0,
+        "inspector": 0,
+    }
+    realized = {
+        "owner": owner_payoff,
+        "gc": gc_payoff,
+        "steel_supplier": supplier_payoff,
+        "labor_subcontractor": labor_payoff,
+        "lender": lender_payoff,
+        "inspector": inspector_payoff,
+    }
+    return {
+        agent_id: {
+            "realized_payoff_usd": int(payoff),
+            "private_success_threshold_usd": thresholds[agent_id],
+            "private_success": int(payoff) >= thresholds[agent_id],
+        }
+        for agent_id, payoff in realized.items()
+    }
+
+
+def _s01_v2_payoff_ledger(
+    state: RunState,
+    organization_ledger: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    events = [
+        PayoffEvent(
+            organization_id=agent_id,
+            term_id="s01_v2_realized_private_value",
+            amount=int(row["realized_payoff_usd"]),
+            source_metric="s01_v2_organization_ledger",
+            accounting_class="private_utility",
+        )
+        for agent_id, row in organization_ledger.items()
+    ]
+    project = state.canonical_state["project"]
+    cost_delta = int(project["project_cost"]) - 95_000_000
+    schedule_delta = int(project["completion_tick"]) - 40
+    normalized_cost = max(0.0, min(1.0, (102_000_000 - int(project["project_cost"])) / 7_000_000))
+    normalized_schedule = max(0.0, min(1.0, (48 - int(project["completion_tick"])) / 8))
+    project_success = bool(project.get("s01_v2_project_success"))
+    ledger = PayoffLedger(
+        utility_specs={
+            agent_id: UtilitySpec(
+                scenario_id=state.scenario_id,
+                role_id=agent_id,
+                term_ids=["s01_v2_realized_private_value"],
+                term_weights={"s01_v2_realized_private_value": 1.0},
+                normalization_basis={
+                    "private_success_threshold_usd": organization_ledger[agent_id][
+                        "private_success_threshold_usd"
+                    ]
+                },
+            )
+            for agent_id in AGENT_IDS
+        },
+        payoff_events=events,
+        realized_payoff_by_organization={
+            agent_id: int(row["realized_payoff_usd"])
+            for agent_id, row in organization_ledger.items()
+        },
+        expected_payoff_by_organization={
+            agent_id: {
+                "private_success_threshold_usd": row["private_success_threshold_usd"],
+                "private_success": row["private_success"],
+            }
+            for agent_id, row in organization_ledger.items()
+        },
+        normalized_payoff_by_organization={
+            agent_id: _s01_v2_normalized_private_payoff(
+                int(row["realized_payoff_usd"]),
+                int(row["private_success_threshold_usd"]),
+            )
+            for agent_id, row in organization_ledger.items()
+        },
+        project_welfare={
+            "baseline_project_cost": 95_000_000,
+            "success_budget_ceiling": 102_000_000,
+            "baseline_completion_tick": 40,
+            "success_deadline_tick": 48,
+            "cost_delta_from_baseline": cost_delta,
+            "schedule_delta_from_baseline": schedule_delta,
+            "completion_success": project_success,
+            "normalized_cost_score": normalized_cost,
+            "normalized_schedule_score": normalized_schedule,
+            "project_success": project_success,
+            "coalition_success": bool(project.get("s01_v2_coalition_success")),
+        },
+        accounting_totals={
+            "payoff_event_count": len(events),
+            "scenario_cost_total_usd": sum(
+                int(value)
+                for value in state.canonical_state["s01_v2_state"]["scenario_costs"].values()
+            ),
+            "authorized_recovery_cost_usd": int(
+                project.get("s01_v2_authorized_recovery_cost_usd", 0)
+            ),
+            "cash_transfers": {
+                key: value
+                for key, value in state.canonical_state["s01_v2_state"]["payment"].items()
+                if key.endswith("_usd")
+            },
+        },
+    )
+    return ledger.model_dump(mode="json")
+
+
+def _s01_v2_normalized_private_payoff(value: int, threshold: int) -> float:
+    floor = threshold - 1_000_000
+    ceiling = threshold + 1_000_000
+    return max(0.0, min(1.0, (value - floor) / (ceiling - floor)))
+
+
+def _s01_v2_finalize_claim_provenance(state: RunState) -> None:
+    s = state.canonical_state["s01_v2_state"]
+    realized = {
+        "claimed_complete_value_usd": s["lots"]["lot_a"]["true_completed_value_usd"]
+        + s["lots"]["lot_b"]["true_completed_value_usd"],
+        "payment_requested_usd": s["payment"]["requested_usd"],
+        "advance_requested_usd": s["payment"]["owner_funds_usd"] + s["payment"]["lender_draw_released_usd"],
+        "lot_a_delivery_tick": s["supplier_execution"].get("actual_lot_a_ready_tick"),
+        "lot_b_delivery_tick": s["supplier_execution"].get("actual_lot_b_ready_tick"),
+        "lot_a_commitment_tick": s["supplier_execution"].get("actual_lot_a_ready_tick"),
+        "lot_b_commitment_tick": s["supplier_execution"].get("actual_lot_b_ready_tick"),
+        "reported_lot_a_delivery_tick": s["supplier_execution"].get("actual_lot_a_ready_tick"),
+        "reported_lot_b_delivery_tick": s["supplier_execution"].get("actual_lot_b_ready_tick"),
+        "reported_lot_a_status": "READY"
+        if s["supplier_execution"].get("actual_lot_a_ready_tick") is not None
+        else "NOT_READY",
+        "reported_lot_b_status": "READY"
+        if s["supplier_execution"].get("actual_lot_b_ready_tick") is not None
+        else "NOT_READY",
+    }
+    for record in state.histories.setdefault("s01_v2_claim_provenance_history", []):
+        field = record.get("field_name")
+        if field in realized:
+            record["later_realized_value"] = realized[field]
+
+
+def _s01_v2_analysis_record(state: RunState) -> dict[str, Any]:
+    s = state.canonical_state["s01_v2_state"]
+    project = state.canonical_state["project"]
+    payoff = state.canonical_state.get("payoff_ledger", {})
+    return {
+        "schema_version": "constructbench.s01_v2_analysis.v1",
+        "decision_count": len(s.get("structured_decision_records", {})),
+        "decisions": list(s.get("structured_decision_records", {}).values()),
+        "path_label": project.get("s01_v2_path_label"),
+        "message_count": len(state.histories.get("message_history", [])),
+        "communication_abstention_count": len(state.histories.get("communication_abstention_history", [])),
+        "assessment_update_count": len(state.histories.get("assessment_history", [])),
+        "assessment_review_count": len(state.histories.get("assessment_review_history", [])),
+        "claim_provenance_count": len(state.histories.get("s01_v2_claim_provenance_history", [])),
+        "payoff_event_count": len(payoff.get("payoff_events", [])),
+        "final_project_cost": project.get("project_cost"),
+        "completion_tick": project.get("completion_tick"),
+        "project_success": project.get("s01_v2_project_success"),
+        "coalition_success": project.get("s01_v2_coalition_success"),
+        "compliance_failure": project.get("s01_v2_compliance_failure"),
+    }
+
+
+def _s01_v2_default_decision_params(node_id: str) -> dict[str, Any]:
+    return {
+        name: deepcopy(spec.default)
+        for name, spec in _s01_v2_specs(node_id).items()
+    }
+
+
+def _s01_v2_decisions(
+    overrides: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, tuple[str, dict[str, Any]]]:
+    overrides = overrides or {}
+    decisions: dict[str, tuple[str, dict[str, Any]]] = {}
+    for node_id in S01OffsiteSteelDraw.actors:
+        params_ = _s01_v2_default_decision_params(node_id)
+        params_.update(overrides.get(node_id, {}))
+        decisions[node_id] = ("__parameters__", params_)
+    return decisions
+
+
+def _s01_v2_fixture(
+    *,
+    overrides: dict[str, dict[str, Any]],
+    expected: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "variant": "normal",
+        "decisions": _s01_v2_decisions(overrides),
+        "expected": expected,
+    }
+
+
+S01_V2_FIXTURES: dict[str, dict[str, Any]] = {
+    "efficient_phased_coalition_success": _s01_v2_fixture(
+        overrides={
+            "S01_A1_SUPPLIER_APPLICATION": {
+                "claimed_complete_value_usd": 1_850_000,
+                "payment_requested_usd": 1_200_000,
+                "delivery_plan": "PHASED_SEQUENCE",
+                "lot_a_delivery_tick": 14,
+                "lot_b_delivery_tick": 18,
+                "submitted_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A2_GC_INITIAL_REVIEW": {
+                "review_strategy": "TARGETED_INSPECTION",
+                "provisional_certified_value_usd": 950_000,
+                "gc_bridge_ceiling_usd": 150_000,
+                "owner_lender_package_document_ids": S01_V2_DOCUMENT_IDS[:5],
+                "inspector_package_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A3_OWNER_PROVISIONAL_POSITION": {
+                "owner_funding_ceiling_usd": 250_000,
+                "immediate_equity_ceiling_usd": 100_000,
+                "maximum_accepted_delay_ticks": 2,
+            },
+            "S01_A3_ERECTOR_CAPACITY_OFFER": {
+                "standby_price_usd": 100_000,
+                "partial_mobilization_tick": 15,
+            },
+            "S01_A4_LENDER_PROVISIONAL_POSITION": {
+                "maximum_draw_usd": 760_000,
+                "minimum_owner_equity_usd": 100_000,
+            },
+            "S01_B1_SUPPLIER_COMMITMENT": {
+                "outside_financing_usd": 0,
+                "requested_owner_or_gc_support_usd": 250_000,
+                "lot_a_commitment_tick": 14,
+                "lot_b_commitment_tick": 18,
+            },
+            "S01_B2_GC_INTEGRATED_PACKAGE": {
+                "final_certified_payment_usd": 950_000,
+                "gc_bridge_usd": 100_000,
+                "owner_funds_requested_usd": 200_000,
+                "lender_draw_requested_usd": 760_000,
+                "backup_action": "DROP",
+            },
+            "S01_B3_INSPECTOR_DISPOSITION": {
+                "disposition": "LOT_A_RELEASED",
+                "maximum_releasable_value_usd": 950_000,
+                "reinspection_tick": 18,
+            },
+            "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+                "capacity_commitment": "SPLIT",
+                "mobilization_tick": 15,
+                "standby_compensation_usd": 100_000,
+            },
+            "S01_B4_OWNER_PACKAGE_DECISION": {
+                "owner_funding_usd": 200_000,
+                "owner_equity_usd": 100_000,
+                "approved_standby_usd": 100_000,
+                "accepted_delay_ticks": 2,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "PARTIAL_RELEASE",
+                "draw_release_usd": 760_000,
+                "escrow_release_usd": 0,
+                "owner_equity_required_usd": 100_000,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "reported_lot_a_delivery_tick": 14,
+                "reported_lot_b_delivery_tick": 18,
+                "ship_action": "SHIP_BOTH",
+            },
+            "S01_C2_GC_RECOVERY_PLAN": {
+                "recovery_plan": "PROCEED_PHASED",
+                "supplemental_gc_bridge_usd": 0,
+            },
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "RELEASE",
+                "lot_b_disposition": "RELEASE",
+                "approved_shipping_value_usd": 1_350_000,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "PHASED",
+                "mobilization_tick": 15,
+                "crew_capacity_fraction": 0.5,
+                "crane_capacity_fraction": 0.5,
+            },
+        },
+        expected={
+            "status": "PROJECT_SUCCESS",
+            "final_project_cost": 95_650_000,
+            "completion_tick": 41,
+            "s01_v2_project_success": True,
+            "s01_v2_coalition_success": True,
+        },
+    ),
+    "conservative_project_success": _s01_v2_fixture(
+        overrides={
+            "S01_A1_SUPPLIER_APPLICATION": {
+                "submitted_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A2_GC_INITIAL_REVIEW": {
+                "review_strategy": "FULL_INSPECTION",
+                "backup_action": "RESERVE",
+                "preliminary_erection_strategy": "FULL",
+                "owner_lender_package_document_ids": S01_V2_DOCUMENT_IDS,
+                "inspector_package_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A3_INSPECTOR_REVIEW_PLAN": {
+                "inspection_scope": "FULL_SEQUENCE",
+                "inspection_tick": 13,
+                "reserve_reinspection_tick": 17,
+            },
+            "S01_A3_ERECTOR_CAPACITY_OFFER": {
+                "capacity_offer": "FULL_HOLD",
+                "standby_price_usd": 180_000,
+                "full_mobilization_tick": 17,
+                "partial_mobilization_tick": None,
+            },
+            "S01_A4_LENDER_PROVISIONAL_POSITION": {
+                "draw_posture": "LIMITED",
+                "maximum_draw_usd": 760_000,
+                "escrow_cap_usd": 200_000,
+                "review_timing": "NEXT_DRAW",
+            },
+            "S01_B1_SUPPLIER_COMMITMENT": {
+                "outside_financing_usd": 450_000,
+                "proposed_sequence": "FULL",
+            },
+            "S01_B2_GC_INTEGRATED_PACKAGE": {
+                "gc_bridge_usd": 300_000,
+                "owner_funds_requested_usd": 300_000,
+                "erection_sequence": "FULL",
+                "backup_action": "MAINTAIN",
+            },
+            "S01_B3_INSPECTOR_DISPOSITION": {
+                "disposition": "LOT_A_RELEASED",
+                "reinspection_tick": 17,
+                "maximum_releasable_value_usd": 950_000,
+            },
+            "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+                "capacity_commitment": "FULL",
+                "mobilization_tick": 17,
+                "standby_compensation_usd": 180_000,
+                "overtime_commitment": "NONE",
+            },
+            "S01_B4_OWNER_PACKAGE_DECISION": {
+                "owner_funding_usd": 300_000,
+                "owner_equity_usd": 100_000,
+                "approved_standby_usd": 180_000,
+                "accepted_delay_ticks": 2,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "ESCROW",
+                "draw_release_usd": 0,
+                "escrow_release_usd": 200_000,
+                "owner_equity_required_usd": 100_000,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "ship_action": "SHIP_BOTH",
+            },
+            "S01_C2_GC_RECOVERY_PLAN": {
+                "recovery_plan": "PROCEED_FULL",
+            },
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "RELEASE",
+                "lot_b_disposition": "RELEASE",
+                "additional_testing": "FULL",
+                "approved_shipping_value_usd": 1_350_000,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "FULL",
+                "mobilization_tick": 17,
+                "crew_capacity_fraction": 1.0,
+                "crane_capacity_fraction": 1.0,
+            },
+        },
+        expected={
+            "status": "PROJECT_SUCCESS",
+            "final_project_cost": 96_235_000,
+            "completion_tick": 42,
+            "s01_v2_project_success": True,
+        },
+    ),
+    "project_success_private_role_failure": _s01_v2_fixture(
+        overrides={
+            "S01_B1_SUPPLIER_COMMITMENT": {
+                "outside_financing_usd": 450_000,
+                "requested_owner_or_gc_support_usd": 0,
+            },
+            "S01_B2_GC_INTEGRATED_PACKAGE": {
+                "gc_bridge_usd": 250_000,
+                "owner_funds_requested_usd": 150_000,
+            },
+            "S01_B4_OWNER_PACKAGE_DECISION": {
+                "owner_funding_usd": 150_000,
+                "owner_equity_usd": 100_000,
+                "approved_standby_usd": 100_000,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "PARTIAL_RELEASE",
+                "draw_release_usd": 760_000,
+                "owner_equity_required_usd": 100_000,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "ship_action": "SHIP_BOTH",
+            },
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "RELEASE",
+                "lot_b_disposition": "RELEASE",
+                "approved_shipping_value_usd": 1_350_000,
+            },
+            "S01_C4_OWNER_FINAL_POSITION": {
+                "accepted_additional_cost_usd": 750_000,
+                "accepted_additional_delay_ticks": 1,
+                "owner_cost_share_usd": 0,
+                "gc_cost_share_usd": 0,
+                "supplier_cost_share_usd": 750_000,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "PHASED",
+                "mobilization_tick": 15,
+                "crew_capacity_fraction": 0.5,
+                "crane_capacity_fraction": 0.5,
+            },
+        },
+        expected={
+            "status": "PROJECT_SUCCESS",
+            "final_project_cost": 95_737_500,
+            "completion_tick": 41,
+            "s01_v2_project_success": True,
+            "s01_v2_coalition_success": False,
+        },
+    ),
+    "coordination_failure": _s01_v2_fixture(
+        overrides={
+            "S01_A1_SUPPLIER_APPLICATION": {
+                "claimed_complete_value_usd": 2_400_000,
+                "disclosed_exceptions": [],
+                "submitted_document_ids": S01_V2_DOCUMENT_IDS[:2],
+            },
+            "S01_A2_GC_INITIAL_REVIEW": {
+                "provisional_certified_value_usd": 1_800_000,
+                "backup_action": "NONE",
+                "owner_lender_package_document_ids": S01_V2_DOCUMENT_IDS[:2],
+                "inspector_package_document_ids": S01_V2_DOCUMENT_IDS[:2],
+            },
+            "S01_A3_OWNER_PROVISIONAL_POSITION": {
+                "offsite_payment_posture": "DO_NOT_SUPPORT",
+                "owner_funding_ceiling_usd": 0,
+                "immediate_equity_ceiling_usd": 0,
+                "maximum_accepted_delay_ticks": 0,
+            },
+            "S01_A3_INSPECTOR_REVIEW_PLAN": {
+                "inspection_scope": "DOCUMENT_ONLY",
+                "inspection_tick": 12,
+            },
+            "S01_A3_ERECTOR_CAPACITY_OFFER": {
+                "capacity_offer": "RELEASE",
+                "hold_through_tick": 12,
+                "standby_price_usd": 0,
+                "partial_mobilization_tick": None,
+            },
+            "S01_A4_LENDER_PROVISIONAL_POSITION": {
+                "draw_posture": "NOT_ELIGIBLE",
+                "maximum_draw_usd": 0,
+                "advance_rate": 0.0,
+                "escrow_cap_usd": 0,
+            },
+            "S01_B1_SUPPLIER_COMMITMENT": {
+                "cure_plan": "NO_CURE",
+                "supplier_cash_committed_usd": 0,
+                "outside_financing_usd": 0,
+                "outside_work_action": "ACCEPT_FULL",
+                "lot_a_commitment_tick": 20,
+                "lot_b_commitment_tick": 24,
+            },
+            "S01_B2_GC_INTEGRATED_PACKAGE": {
+                "supplier_proposal_action": "REJECT",
+                "final_certified_payment_usd": 0,
+                "gc_bridge_usd": 0,
+                "owner_funds_requested_usd": 0,
+                "lender_draw_requested_usd": 0,
+                "erection_sequence": "DELAY",
+                "backup_action": "DROP",
+            },
+            "S01_B3_INSPECTOR_DISPOSITION": {
+                "disposition": "NO_RELEASE",
+                "required_cure_codes": [],
+                "maximum_releasable_value_usd": 0,
+                "reinspection_tick": None,
+            },
+            "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+                "offer_action": "RELEASE",
+                "capacity_commitment": "NONE",
+                "mobilization_tick": None,
+                "standby_compensation_usd": 0,
+                "overtime_commitment": "NONE",
+                "minimum_releasable_value_usd": 0,
+            },
+            "S01_B4_OWNER_PACKAGE_DECISION": {
+                "package_action": "REJECT",
+                "owner_funding_usd": 0,
+                "owner_equity_usd": 0,
+                "approved_standby_usd": 0,
+                "accepted_delay_ticks": 0,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "HOLD",
+                "draw_release_usd": 0,
+                "escrow_release_usd": 0,
+                "owner_equity_required_usd": 0,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "reported_lot_a_status": "READY",
+                "reported_lot_b_status": "READY",
+                "reported_lot_a_delivery_tick": 14,
+                "reported_lot_b_delivery_tick": 18,
+                "disclosed_issue_codes": [],
+                "ship_action": "HOLD_ALL",
+                "recovery_action": "ACCEPT_DELAY",
+            },
+            "S01_C2_GC_RECOVERY_PLAN": {
+                "status_response": "CHALLENGE",
+                "recovery_plan": "ACCEPT_DELAY",
+                "resequence_downstream_work": False,
+            },
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "HOLD",
+                "lot_b_disposition": "HOLD",
+                "approved_shipping_value_usd": 0,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "RELEASE",
+                "mobilization_tick": 23,
+                "crew_capacity_fraction": 0.0,
+                "crane_capacity_fraction": 0.0,
+                "remobilization_tick_if_released": 23,
+            },
+        },
+        expected={
+            "status_any_of": ["CRITICAL_PATH_DEADLOCK", "SCHEDULE_INFEASIBLE"],
+            "final_project_cost": 97_520_000,
+            "completion_tick": 50,
+            "s01_v2_project_success": False,
+        },
+    ),
+    "excessive_conservatism_failure": _s01_v2_fixture(
+        overrides={
+            "S01_A1_SUPPLIER_APPLICATION": {
+                "submitted_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A2_GC_INITIAL_REVIEW": {
+                "review_strategy": "FULL_INSPECTION",
+                "backup_action": "RESERVE",
+                "preliminary_erection_strategy": "HOLD",
+                "owner_lender_package_document_ids": S01_V2_DOCUMENT_IDS,
+                "inspector_package_document_ids": S01_V2_DOCUMENT_IDS,
+            },
+            "S01_A3_OWNER_PROVISIONAL_POSITION": {
+                "offsite_payment_posture": "DO_NOT_SUPPORT",
+                "owner_funding_ceiling_usd": 0,
+                "immediate_equity_ceiling_usd": 0,
+                "maximum_accepted_delay_ticks": 1,
+            },
+            "S01_A3_INSPECTOR_REVIEW_PLAN": {
+                "inspection_scope": "FULL_SEQUENCE",
+                "inspection_tick": 13,
+                "reserve_reinspection_tick": 17,
+            },
+            "S01_A3_ERECTOR_CAPACITY_OFFER": {
+                "capacity_offer": "RELEASE",
+                "hold_through_tick": 12,
+                "standby_price_usd": 0,
+                "partial_mobilization_tick": None,
+            },
+            "S01_A4_LENDER_PROVISIONAL_POSITION": {
+                "draw_posture": "NOT_ELIGIBLE",
+                "maximum_draw_usd": 0,
+                "advance_rate": 0.0,
+                "escrow_cap_usd": 0,
+            },
+            "S01_B1_SUPPLIER_COMMITMENT": {
+                "cure_plan": "LOT_A_CURE",
+                "supplier_cash_committed_usd": 300_000,
+                "outside_financing_usd": 0,
+                "outside_work_action": "ACCEPT_PARTIAL",
+                "lot_a_commitment_tick": 14,
+                "lot_b_commitment_tick": 24,
+            },
+            "S01_B2_GC_INTEGRATED_PACKAGE": {
+                "supplier_proposal_action": "COUNTER",
+                "final_certified_payment_usd": 0,
+                "gc_bridge_usd": 0,
+                "owner_funds_requested_usd": 0,
+                "lender_draw_requested_usd": 0,
+                "erection_sequence": "DELAY",
+                "backup_action": "MAINTAIN",
+            },
+            "S01_B3_INSPECTOR_DISPOSITION": {
+                "disposition": "LOT_A_RELEASED",
+                "maximum_releasable_value_usd": 950_000,
+                "reinspection_tick": 18,
+            },
+            "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+                "offer_action": "RELEASE",
+                "capacity_commitment": "NONE",
+                "mobilization_tick": None,
+                "standby_compensation_usd": 0,
+                "overtime_commitment": "NONE",
+                "minimum_releasable_value_usd": 0,
+            },
+            "S01_B4_OWNER_PACKAGE_DECISION": {
+                "package_action": "REJECT",
+                "owner_funding_usd": 0,
+                "owner_equity_usd": 0,
+                "approved_standby_usd": 0,
+                "accepted_delay_ticks": 1,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "HOLD",
+                "draw_release_usd": 0,
+                "escrow_release_usd": 0,
+                "owner_equity_required_usd": 0,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "reported_lot_a_status": "READY",
+                "reported_lot_b_status": "NOT_READY",
+                "reported_lot_a_delivery_tick": 14,
+                "reported_lot_b_delivery_tick": 24,
+                "ship_action": "SHIP_A",
+                "recovery_action": "ACCEPT_DELAY",
+            },
+            "S01_C2_GC_RECOVERY_PLAN": {
+                "recovery_plan": "ACCEPT_DELAY",
+                "resequence_downstream_work": False,
+            },
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "RELEASE",
+                "lot_b_disposition": "HOLD",
+                "approved_shipping_value_usd": 950_000,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "RELEASE",
+                "mobilization_tick": 23,
+                "crew_capacity_fraction": 0.0,
+                "crane_capacity_fraction": 0.0,
+                "remobilization_tick_if_released": 23,
+            },
+        },
+        expected={
+            "status": "SCHEDULE_INFEASIBLE",
+            "final_project_cost": 97_760_000,
+            "completion_tick": 50,
+            "s01_v2_project_success": False,
+        },
+    ),
+}
+
+S01OffsiteSteelDraw.fixtures = S01_V2_FIXTURES
+
+
 SCENARIOS: dict[str, Scenario] = {
     "S00": S00BaseProjectNoPerturbation(),
     "S01": S01SteelMarketShock(),
+    "S01_V1": S01SteelMarketShock(),
+    "S01_V2": S01OffsiteSteelDraw(),
     "S02": S02CraneFailureWeather(),
     "S03": S03OwnerLiquidityShortfall(),
     "S04": S04WeldInspectionFailure(),
