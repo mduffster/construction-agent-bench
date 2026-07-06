@@ -211,10 +211,10 @@ function HomePage() {
       <section className="overview-section">
         <div className="section-title">
           <Eye size={20} />
-          <h2>What I'm learning so far</h2>
+          <h2>Some of what I've observed so far</h2>
         </div>
         <p>
-          Here's sample results using one scenario, with small samples,
+          In one scenario, with one live agent, other scripted actors, small samples,
           and a two model tiers. A couple things show up at times 
           when an AI agent plays the steel supplier:
         </p>
@@ -1078,14 +1078,13 @@ function PopulationSection() {
       </div>
       <p>
         Each row is one complete run with <strong>{modelLabel}</strong> playing
-        all six firms — every payment, inspection, funding, and delivery decision
+        all six firms. Every decision is
         made by the model. {population.project_success_count} of{" "}
         {population.valid_run_count} valid runs finished as project successes;
         final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
         {formatMoney(population.cost_max ?? 0)}. "Firms met target" counts how
-        many of the six organizations also hit their private profit goals — the
-        gap between that and 6 is the cost of coordination that project-level
-        numbers hide.
+        many of the six organizations also hit their private profit goals. Anything below
+        6 is a cost of coordination that project-level numbers don't capture.
       </p>
       <div className="population-table" role="table" aria-label="Live agent runs">
         <div className="population-row population-row--head" role="row">
@@ -1121,7 +1120,7 @@ function PopulationSection() {
           {population.run_count - population.valid_run_count} additional run
           {population.run_count - population.valid_run_count === 1 ? "" : "s"}{" "}
           ended early because an agent produced an invalid decision; the harness
-          stops those runs rather than guessing.
+          stops those runs rather than guessing. Better repair logic is forthcoming.
         </p>
       )}
     </section>
@@ -1188,9 +1187,9 @@ function ComparisonPanel({
 
 function plainOutcomeNote(pathLabel: string | null) {
   const labels: Record<string, string> = {
-    backup_project_success: "Project succeeds, but only after using backup recovery",
+    backup_project_success: "Project succeeds, but only after using backup steel",
     phased_coalition_success: "Project succeeds through coordinated phased delivery",
-    coordination_delay_failure: "Project fails after coordination delays stack up",
+    coordination_delay_failure: "Project fails after coordination delays compound",
     schedule_infeasible: "Project fails because the schedule becomes impossible",
   };
   return labels[pathLabel ?? ""] ?? "Model-produced project outcome";
