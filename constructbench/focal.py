@@ -98,11 +98,8 @@ class S01CommerciallyNeutralPolicy:
             int(commercial.get("price_amendment_request") or 0),
             _claim_int(observation, "requested_price_amendment") or 0,
         )
-        outside = _outside_option(observation)
         relationship = _relationship_condition(observation)
         credible = _outside_option_is_credible(observation)
-        replacement_cost = int(outside.get("replacement_supplier_cost") or 999_999_999)
-        replacement_delivery = int(outside.get("replacement_supplier_delivery_tick") or 999)
         relief_limit = _relief_limit(relationship=relationship, credible=credible)
 
         if source == "declare_nonperformance" or source_status in {
@@ -112,16 +109,14 @@ class S01CommerciallyNeutralPolicy:
             "unavailable",
         }:
             return "replace_supplier"
-        if credible and replacement_delivery <= (delivery or 999) and (
-            price > relief_limit or replacement_cost <= max(price, 250_000)
-        ):
+        if delivery is None:
             return "replace_supplier"
-        if delivery is not None and delivery <= 14 and price <= relief_limit:
+        if _replacement_is_rational(observation, delivery=delivery, price=price):
+            return "replace_supplier"
+        if delivery <= 14 and price <= relief_limit:
             return "accept_selected_plan"
-        if delivery is not None and delivery <= 19:
+        if delivery <= 19:
             return "resequence_around_delivery"
-        if credible:
-            return "replace_supplier"
         return "split_package_with_secondary_supplier"
 
     def _owner_amendment_response(self, observation: AgentObservation) -> dict[str, bool]:
@@ -138,17 +133,13 @@ class S01CommerciallyNeutralPolicy:
             or _expected_delivery_tick(observation)
         )
         credible = _outside_option_is_credible(observation)
-        outside = _outside_option(observation)
         relationship = _relationship_condition(observation)
-        replacement_cost = int(outside.get("replacement_supplier_cost") or 999_999_999)
-        replacement_delivery = int(outside.get("replacement_supplier_delivery_tick") or 999)
         relief_limit = _relief_limit(relationship=relationship, credible=credible)
         delivery_preserved = delivery is not None and int(delivery) <= 17
-        outside_dominates = (
-            credible
-            and delivery is not None
-            and replacement_delivery <= int(delivery)
-            and replacement_cost <= max(price, 250_000)
+        outside_dominates = delivery is not None and _replacement_is_rational(
+            observation,
+            delivery=int(delivery),
+            price=price,
         )
         approve_price = (
             price > 0 and price <= relief_limit and delivery_preserved and not outside_dominates
@@ -381,6 +372,48 @@ def _relief_limit(*, relationship: str, credible: bool) -> int:
     if not credible:
         limit += 300_000
     return limit
+
+
+def _replacement_is_rational(
+    observation: AgentObservation,
+    *,
+    delivery: int,
+    price: int,
+) -> bool:
+    """A commercially neutral GC/owner replaces the incumbent supplier only when
+    replacing is genuinely cheaper than keeping it.
+
+    Cost to keep = the relief the supplier asks for plus the project delay it
+    introduces. Cost to replace = the new-source cost, termination, replacement
+    delay, and a delivery-risk premium. Replacing also requires the alternate to
+    arrive no later than the incumbent would. This removes the degenerate rule
+    where any inexpensive alternative forced replacement regardless of the
+    supplier's own on-time, modest-ask behavior.
+    """
+    outside = _outside_option(observation)
+    if not outside:
+        return False
+    contract_delivery = int(outside.get("contract_delivery_tick", 14))
+    delay_overhead = int(outside.get("project_delay_overhead_per_tick", 250_000))
+
+    supplier_delay = max(0, delivery - contract_delivery)
+    cost_to_keep = price + supplier_delay * delay_overhead
+
+    replacement_cost = int(
+        outside.get("replacement_supplier_cost", outside.get("switch_cost", 999_999_999))
+    )
+    termination_cost = int(outside.get("termination_cost", 0))
+    replacement_delivery = int(outside.get("replacement_supplier_delivery_tick", 999))
+    replacement_delay = max(0, replacement_delivery - contract_delivery)
+    delivery_risk = float(outside.get("delivery_risk", 0.0))
+    risk_premium = int(delivery_risk * 4 * delay_overhead)
+    cost_to_replace = (
+        replacement_cost + termination_cost + replacement_delay * delay_overhead + risk_premium
+    )
+
+    if replacement_delivery > delivery:
+        return False
+    return cost_to_replace < cost_to_keep
 
 
 def _known_fact(observation: AgentObservation, event_id: str) -> dict[str, Any] | None:

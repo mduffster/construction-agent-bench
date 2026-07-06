@@ -62,7 +62,13 @@ Current implemented components:
 - Component 2: config-backed S01 scenario instances for relationship-history and outside-option
   treatment cells, with deterministic grid and welfare-ordering tests.
 - Component 3: focal-agent policy mode with one focal LLM policy, deterministic S01
-  commercially neutral counterparties, focal replay policies, and manifest metadata.
+  commercially neutral counterparties, focal replay policies, and manifest metadata. The
+  neutral GC/owner policy replaces the incumbent supplier only when replacing is genuinely
+  cheaper than keeping it (`_replacement_is_rational`: cost-to-keep = relief asked + delay
+  introduced; cost-to-replace = new-source cost + termination + replacement delay + risk
+  premium). This supersedes an earlier degenerate rule (`replacement_cost <= max(price,
+  250_000)`) that forced replacement in the credible-alternative cells regardless of the
+  supplier's choices, which made those cells measure nothing about the focal agent.
 - Component 4: serializable S01 pre-supplier-commercial checkpoint, treatment-instance fork
   patching, constrained treatment diffing, and equivalent-fork replay tests.
 - Component 5: S01 structured claim schema and deterministic harness classification for

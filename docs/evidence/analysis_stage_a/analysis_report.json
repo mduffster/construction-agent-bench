@@ -103,7 +103,7 @@
     {
       "invalid_run_count": 0,
       "mean_focal_expected_regret": 640000.0,
-      "mean_project_welfare_value": 0.9485713333333333,
+      "mean_project_welfare_value": 0.9557141666666666,
       "outside_option_condition": "weak_alternative",
       "relationship_history_condition": "prior_success_with_remediated_issue",
       "run_count": 2,

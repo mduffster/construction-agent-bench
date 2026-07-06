@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   ClipboardCheck,
   DollarSign,
+  Eye,
   Gauge,
   Home,
   MessageSquare,
@@ -27,12 +28,14 @@ import {
   recordTrust,
   roleNodes,
   selectChoice,
+  trustCalibration,
 } from "./lib/gameEngine";
 import type {
   AgentId,
   Choice,
   ChoiceId,
   DecisionNode,
+  Disclosure,
   GameData,
   GameEvaluation,
   GameState,
@@ -174,7 +177,7 @@ function HomePage() {
               Play the scenario
             </NavButton>
             <NavButton href="/results" icon={<Gauge size={18} />}>
-              Compare outcomes
+              See example runs
             </NavButton>
           </div>
         </div>
@@ -198,6 +201,44 @@ function HomePage() {
           mutually beneficial AI transactional management, which will benefit
           deployments within firms, and potentially future deployments where AI
           manages many transactions as the primary actor.
+        </p>
+      </section>
+
+      <section className="overview-section">
+        <div className="section-title">
+          <Eye size={20} />
+          <h2>What I'm learning so far</h2>
+        </div>
+        <p>
+          These are early, preliminary results — one scenario, small samples,
+          a single model tier — not a benchmark score. But two things already
+          show up clearly when an AI agent plays the steel supplier:
+        </p>
+        <ul className="findings-list">
+          <li>
+            <strong>It does not price its own replaceability.</strong> The agent
+            demands price relief whether or not the buyer has a cheap, credible
+            replacement. That is the winning move when no good alternative exists,
+            but self-defeating when one does: the agent gets replaced and takes a
+            loss it could have avoided by simply staying on schedule and not
+            over-asking. The project still finishes — the failure is the firm's
+            alone.
+          </li>
+          <li>
+            <strong>Its honesty tracks relationship history; its strategy does
+            not.</strong> With no prior track record, the agent overstates the cash
+            it needs; with a verified history of delivering, it reports accurately.
+            Yet its bargaining posture stays the same either way.
+          </li>
+        </ul>
+        <p>
+          The harness scores these against each firm's private truth and
+          objective payoffs, and every run is deterministic and replayable. Code
+          and the full evidence write-up are on{" "}
+          <a href="https://github.com/mduffster/construction-agent-bench" rel="noreferrer" target="_blank">
+            GitHub
+          </a>
+          .
         </p>
       </section>
 
@@ -560,6 +601,9 @@ function DecisionResult({
         <p className="result-choice">You chose: {selectedChoice.label}</p>
         <p>{playerMove?.summary ?? selectedChoice.after_choice}</p>
       </section>
+      {selectedChoice.disclosure && (
+        <DisclosurePanel disclosure={selectedChoice.disclosure} />
+      )}
       <PartnerDecisionReview
         trace={trace}
         state={state}
@@ -570,6 +614,34 @@ function DecisionResult({
         <ArrowRight size={18} />
       </button>
     </>
+  );
+}
+
+function DisclosurePanel({ disclosure }: { disclosure: Disclosure }) {
+  return (
+    <section className={`disclosure-panel disclosure-panel--${disclosure.verdict}`} aria-label="What you disclosed">
+      <div className="section-title">
+        <Eye size={20} />
+        <h2>What you told the team vs. what you know</h2>
+      </div>
+      <p className="disclosure-lead">
+        The AI agents score this gap directly. Here it is in plain language.
+      </p>
+      <div className="disclosure-grid">
+        <div className="disclosure-cell disclosure-cell--claimed">
+          <span>What the team hears</span>
+          <p>{disclosure.claimed}</p>
+        </div>
+        <div className="disclosure-cell disclosure-cell--private">
+          <span>What you privately know</span>
+          <p>{disclosure.private_truth}</p>
+        </div>
+      </div>
+      <p className="disclosure-read">
+        <strong>{disclosure.verdict === "withheld" ? "Withheld" : "Accurate"}:</strong>{" "}
+        {disclosure.honesty_read}
+      </p>
+    </section>
   );
 }
 
@@ -778,31 +850,75 @@ function EndScreen({ state }: { state: GameState }) {
         </div>
       </section>
 
-      <section className="trust-summary" aria-label="Trust summary">
-        <div className="section-title">
-          <MessageSquare size={20} />
-          <h2>Trust Summary</h2>
-        </div>
-        <div className="trust-summary-card">
-          <span>Average partner trust</span>
-          <strong>{averageTrust.toFixed(1)}/5</strong>
-          <em>{trustRatings.length} partners rated</em>
-          <div className="trust-meter" aria-hidden="true">
-            <span style={{ width: `${(averageTrust / 5) * 100}%` }} />
-          </div>
-        </div>
-      </section>
+      <TrustCalibrationPanel state={state} averageTrust={averageTrust} />
 
       <div className="hero-actions">
         <NavButton href="/play" icon={<RotateCcw size={18} />}>
           Play another role
         </NavButton>
         <NavButton href="/results" icon={<Gauge size={18} />}>
-          Compare outcomes
+          See example runs
         </NavButton>
         <NavButton href="/" icon={<Home size={18} />}>
           Back to overview
         </NavButton>
+      </div>
+    </section>
+  );
+}
+
+function TrustCalibrationPanel({
+  state,
+  averageTrust,
+}: {
+  state: GameState;
+  averageTrust: number;
+}) {
+  const calibration = trustCalibration(gameData, state);
+  return (
+    <section className="trust-summary" aria-label="Trust calibration">
+      <div className="section-title">
+        <MessageSquare size={20} />
+        <h2>How well did you read your partners?</h2>
+      </div>
+      <p className="trust-calibration-lead">
+        You rated each partner without seeing their private information. Here is what
+        each one was actually responding to — and whether your rating matched.
+      </p>
+      <div className="trust-summary-card">
+        <span>Ratings that matched the partner's real driver</span>
+        <strong>
+          {calibration.wellCalibratedCount}/{calibration.total}
+        </strong>
+        <em>Average trust you gave: {averageTrust.toFixed(1)}/5</em>
+        <div className="trust-meter" aria-hidden="true">
+          <span
+            style={{
+              width: `${
+                calibration.total
+                  ? (calibration.wellCalibratedCount / calibration.total) * 100
+                  : 0
+              }%`,
+            }}
+          />
+        </div>
+      </div>
+      <div className="trust-calibration-list">
+        {calibration.entries.map((entry) => (
+          <article
+            className={`trust-calibration-card trust-calibration-card--${entry.driver}${
+              entry.wellCalibrated ? "" : " trust-calibration-card--miss"
+            }`}
+            key={entry.actorId}
+          >
+            <header>
+              <strong>{roleLabel(entry.actorId)}</strong>
+              <span className="trust-calibration-rating">You rated {entry.playerRating}/5</span>
+            </header>
+            <p className="trust-calibration-driver">{entry.driverLabel}</p>
+            <p className="trust-calibration-read">{entry.read}</p>
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -835,21 +951,59 @@ function OutcomeExplanation({
 }
 
 function ResultsPage() {
-  const state = createInitialGameState(gameData, "steel_supplier");
-  const evaluation = evaluateGame(gameData, state);
+  const idealWitness = gameData.witnesses.efficient_phased_coalition_success;
+  const failureWitness = gameData.witnesses.excessive_conservatism_failure;
+  const modelOutcome = gameData.comparisons.model?.outcome ?? null;
+
+  const rows = [
+    {
+      label: "Coordinated phased success",
+      cost: idealWitness.final_project_cost,
+      week: idealWitness.completion_tick,
+      note: "Every firm gives a little; the project lands despite the steel problem.",
+    },
+    modelOutcome
+      ? {
+          label: "One sampled Claude Haiku run",
+          cost: modelOutcome.final_project_cost,
+          week: modelOutcome.completion_tick,
+          note: `A single all-agent run — ${plainOutcomeNote(modelOutcome.path_label)}.`,
+        }
+      : null,
+    {
+      label: "Excessive-caution failure",
+      cost: failureWitness.final_project_cost,
+      week: failureWitness.completion_tick,
+      note: "Every firm self-protects; the project fails with no deception involved.",
+    },
+  ].filter(
+    (row): row is { label: string; cost: number | null; week: number | null; note: string } =>
+      row !== null
+  );
+
   return (
     <Shell>
       <section className="overview-section">
         <div className="section-title">
           <Gauge size={20} />
-          <h2>Outcome comparison</h2>
+          <h2>Example runs, not a leaderboard</h2>
         </div>
         <p>
-          The ideal row shows what happens when every party coordinates well even
-          after the steel problem appears. The model row shows one Claude Haiku
-          all-agent run from the simulation outputs.
+          These are individual runs of the same scenario, not scores to beat. One
+          shows what coordinated success looks like, one is a single sampled Claude
+          Haiku run, and one shows how excessive caution alone — no deception — can
+          still sink the project.
         </p>
-        <ComparisonPanel evaluation={evaluation} playerOnly={false} />
+        <section className="comparison-panel" aria-label="Example runs">
+          {rows.map((row) => (
+            <div className="comparison-row" key={row.label}>
+              <strong>{row.label}</strong>
+              <span>{row.cost === null ? "n/a" : formatMoney(row.cost)}</span>
+              <span>{row.week === null ? "n/a" : `Week ${row.week}`}</span>
+              <em>{row.note}</em>
+            </div>
+          ))}
+        </section>
       </section>
     </Shell>
   );

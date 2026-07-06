@@ -61,6 +61,14 @@ export interface Choice {
   };
   parameter_summary: string[];
   web_effect: ChoiceEffect;
+  disclosure: Disclosure | null;
+}
+
+export interface Disclosure {
+  claimed: string;
+  private_truth: string;
+  honesty_read: string;
+  verdict: "accurate" | "withheld";
 }
 
 export interface DecisionNode {

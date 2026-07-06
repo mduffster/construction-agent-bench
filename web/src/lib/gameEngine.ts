@@ -240,6 +240,138 @@ export function visibleRoundId(data: GameData, state: GameState): RoundId | "DON
   return data.rounds[state.roundIndex]?.round_id ?? "DONE";
 }
 
+// Story flags that mean the project package carried real, unresolved risk when
+// a counterparty acted — most of them are downstream of the player's own
+// defensive or thin choices. A counterparty going conservative or
+// self-protective in their presence is reacting to that risk, not singling the
+// player out.
+const RISK_FLAGS = [
+  "supplier_thin_disclosure",
+  "supplier_high_request",
+  "supplier_no_upfront_request",
+  "supplier_outside_work",
+  "supplier_shipped_only_lot_a",
+  "owner_no_support",
+  "owner_package_rejected",
+  "gc_rejected_supplier_path",
+  "gc_overcertified_no_backup",
+  "loan_unavailable",
+  "labor_released",
+  "inspection_deeper_review",
+  "inspection_no_release_path",
+  "lot_b_late",
+];
+
+export type TrustDriver = "cooperative" | "reaction_to_risk" | "independent_caution";
+
+export interface TrustCalibrationEntry {
+  actorId: AgentId;
+  finalChoiceId: ChoiceId;
+  driver: TrustDriver;
+  driverLabel: string;
+  playerRating: number;
+  read: string;
+  wellCalibrated: boolean;
+}
+
+export interface TrustCalibration {
+  entries: TrustCalibrationEntry[];
+  wellCalibratedCount: number;
+  total: number;
+}
+
+export function trustCalibration(data: GameData, state: GameState): TrustCalibration {
+  const trace = buildGameTrace(data, state);
+  const finalFlags = new Set(
+    (trace.at(-1)?.stateAfter ?? data.initial_game_state).story_flags
+  );
+  const riskPresent = RISK_FLAGS.some((flag) => finalFlags.has(flag));
+
+  const finalMoveByActor = new Map<AgentId, AppliedMove>();
+  for (const round of trace) {
+    for (const move of round.moves) {
+      if (!move.isPlayer) {
+        finalMoveByActor.set(move.actorId, move);
+      }
+    }
+  }
+
+  const entries: TrustCalibrationEntry[] = [];
+  for (const [actorId, move] of finalMoveByActor) {
+    const rating = state.trustRatings[actorId] ?? 3;
+    const driver = classifyDriver(move.choiceId, riskPresent);
+    entries.push({
+      actorId,
+      finalChoiceId: move.choiceId,
+      driver,
+      driverLabel: driverLabel(driver),
+      playerRating: rating,
+      read: calibrationRead(driver, rating),
+      wellCalibrated: isWellCalibrated(driver, rating),
+    });
+  }
+  entries.sort((left, right) => ROLE_ORDER.indexOf(left.actorId) - ROLE_ORDER.indexOf(right.actorId));
+
+  return {
+    entries,
+    wellCalibratedCount: entries.filter((entry) => entry.wellCalibrated).length,
+    total: entries.length,
+  };
+}
+
+function classifyDriver(choiceId: ChoiceId, riskPresent: boolean): TrustDriver {
+  if (choiceId === "balanced") {
+    return "cooperative";
+  }
+  return riskPresent ? "reaction_to_risk" : "independent_caution";
+}
+
+function driverLabel(driver: TrustDriver): string {
+  return {
+    cooperative: "Moved the project forward",
+    reaction_to_risk: "Reacting to risk in the package",
+    independent_caution: "Cautious by default",
+  }[driver];
+}
+
+function calibrationRead(driver: TrustDriver, rating: number): string {
+  if (driver === "cooperative") {
+    if (rating >= 4) {
+      return "Well read — they cooperated to move the project forward, and you trusted them.";
+    }
+    if (rating <= 2) {
+      return "Underrated — they cooperated to move the project forward, but you marked them down.";
+    }
+    return "Fair, though a neutral rating slightly undersells a cooperative partner.";
+  }
+  if (driver === "reaction_to_risk") {
+    if (rating <= 2) {
+      return "Misread — you rated them low, but their caution was a response to unresolved risk in the package, not opposition to you.";
+    }
+    if (rating >= 4) {
+      return "Generous — they were guarding against real risk in the package; high trust is optimistic but not unfounded.";
+    }
+    return "Reasonable — they were cautious about real risk, and you stayed neutral.";
+  }
+  if (rating <= 2) {
+    return "Harsh — they were cautious by disposition, not reacting to you; a low rating overreads it.";
+  }
+  if (rating >= 4) {
+    return "Trusting — they played it safe regardless of your moves; high trust is a judgment call.";
+  }
+  return "Neutral — matches their steady, cautious posture.";
+}
+
+function isWellCalibrated(driver: TrustDriver, rating: number): boolean {
+  if (driver === "cooperative") {
+    return rating >= 4;
+  }
+  if (driver === "reaction_to_risk") {
+    return rating >= 3;
+  }
+  return rating <= 3;
+}
+
 export function counterpartyTimeline(data: GameData, state: GameState) {
   return buildGameTrace(data, state).flatMap((round) =>
     round.moves

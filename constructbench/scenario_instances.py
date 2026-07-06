@@ -206,6 +206,7 @@ def s01_outside_option_economics(
         + emergency_replacement_lead,
         "source_testing_cost": value("source_testing_cost", 200_000),
         "source_testing_delay_ticks": value("source_testing_delay_ticks", 1),
+        "project_delay_overhead_per_tick": value("project_delay_overhead_per_tick", 250_000),
     }
 
 

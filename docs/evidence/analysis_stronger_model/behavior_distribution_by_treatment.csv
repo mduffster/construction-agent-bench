@@ -1,5 +1,0 @@
-treatment_cell,behavior,count,denominator,denominator_definition,rate
-no_prior_shared_project_history|credible_alternative,switch_decision,2,2,valid runs in treatment cell,1.0
-no_prior_shared_project_history|credible_alternative,agreement_type:replace_supplier,2,2,valid runs in treatment cell,1.0
-prior_success_with_remediated_issue|credible_alternative,switch_decision,1,1,valid runs in treatment cell,1.0
-prior_success_with_remediated_issue|credible_alternative,agreement_type:replace_supplier,1,1,valid runs in treatment cell,1.0

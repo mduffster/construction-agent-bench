@@ -27,6 +27,7 @@ class FakeAdapter:
 def _supplier_response(
     source_plan: str = "current_expedited",
     communications: list[dict] | None = None,
+    price_amendment_request: int = 0,
 ) -> str:
     return json.dumps(
         {
@@ -40,7 +41,7 @@ def _supplier_response(
                     "node_id": "S01_SUPPLIER_COMMERCIAL_REQUEST",
                     "option_id": None,
                     "parameters": {
-                        "price_amendment_request": 0,
+                        "price_amendment_request": price_amendment_request,
                         "delivery_date_amendment_request": None,
                         "advance_payment_request": 0,
                         "claimed_incremental_cost_usd": 800_000,
@@ -60,9 +61,12 @@ def _supplier_response(
 def _focal_supplier_policies(
     source_plan: str = "current_expedited",
     communications: list[dict] | None = None,
+    price_amendment_request: int = 0,
 ):
     focal_policy = LLMPolicy(
-        FakeAdapter([_supplier_response(source_plan, communications)]),
+        FakeAdapter(
+            [_supplier_response(source_plan, communications, price_amendment_request)]
+        ),
         "steel_supplier",
     )
     return build_focal_policies("S01", "steel_supplier", focal_policy)
@@ -207,6 +211,51 @@ def test_commercially_neutral_gc_uses_outside_option_economics() -> None:
     assert "outside_option_economics" not in credible.final_state.canonical_state[
         "scenario"
     ]["scenario_instance_public_context"]
+
+
+def test_neutral_gc_replaces_only_when_replacement_is_cheaper_than_keeping() -> None:
+    # Credible cell (replacement cost 150k + termination 150k + risk premium 80k
+    # = 380k to replace): an on-time supplier asking nothing is cheaper to keep
+    # and must be kept; the same supplier asking 600k relief is rationally
+    # replaced. In the weak cell the alternate arrives later than the incumbent,
+    # so the same 600k ask is accepted. This locks the supplier's own choices as
+    # consequential in every treatment cell.
+    disciplined = run_policy(
+        "S01",
+        "normal",
+        _focal_supplier_policies("current_expedited", price_amendment_request=0),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_CREDIBLE",
+        model_settings=_focal_model_settings(),
+    )
+    asking_credible = run_policy(
+        "S01",
+        "normal",
+        _focal_supplier_policies("current_expedited", price_amendment_request=600_000),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_CREDIBLE",
+        model_settings=_focal_model_settings(),
+    )
+    asking_weak = run_policy(
+        "S01",
+        "normal",
+        _focal_supplier_policies("current_expedited", price_amendment_request=600_000),
+        scenario_instance_id="S01_REL_NONE_OUTSIDE_WEAK",
+        model_settings=_focal_model_settings(),
+    )
+
+    def gc_choice(result):
+        return result.final_state.decisions["S01_GC_PROCUREMENT_PLAN"]["option_id"]
+
+    def supplier_payoff(result):
+        ledger = result.final_state.canonical_state["payoff_ledger"]
+        return ledger["realized_payoff_by_organization"]["steel_supplier"]
+
+    assert gc_choice(disciplined) == "accept_selected_plan"
+    assert gc_choice(asking_credible) == "replace_supplier"
+    assert gc_choice(asking_weak) == "accept_selected_plan"
+    # The supplier's choice changes its own payoff in the credible cell: asking
+    # for relief there is strictly worse than absorbing the cost.
+    assert supplier_payoff(disciplined) > supplier_payoff(asking_credible)
+    assert supplier_payoff(asking_weak) > supplier_payoff(asking_credible)
 
 
 def test_commercially_neutral_gc_responds_to_focal_claimed_cost_and_evidence() -> None:

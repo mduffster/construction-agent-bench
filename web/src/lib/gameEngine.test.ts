@@ -10,6 +10,7 @@ import {
   recordTrust,
   roleNodes,
   selectChoice,
+  trustCalibration,
 } from "./gameEngine";
 import type { AgentId, ChoiceId, GameData, GameState } from "./types";
 
@@ -150,5 +151,49 @@ describe("S01 V2 public human game engine", () => {
 
     expect(evaluation.idealOutcome.final_project_cost).toBe(95_650_000);
     expect(evaluation.modelOutcome?.final_project_cost).toBeGreaterThanOrEqual(95_000_000);
+  });
+
+  it("rates every counterparty in the trust calibration", () => {
+    const state = playChoices("steel_supplier", ["balanced", "balanced", "balanced"]);
+    const calibration = trustCalibration(data, state);
+
+    expect(calibration.entries).toHaveLength(5);
+    expect(calibration.total).toBe(5);
+    for (const entry of calibration.entries) {
+      expect(entry.actorId).not.toBe("steel_supplier");
+      expect(["cooperative", "reaction_to_risk", "independent_caution"]).toContain(entry.driver);
+      expect(entry.read.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("reads a low rating of a risk-reacting partner as a misread", () => {
+    // Thin disclosure creates package risk; counterparties turn defensive in
+    // response, so a low trust rating of one is a calibration miss.
+    let state = playChoices("steel_supplier", [
+      "self_protective",
+      "self_protective",
+      "self_protective",
+    ]);
+    state = recordTrust(data, state, "lender", 1);
+    const calibration = trustCalibration(data, state);
+    const lender = calibration.entries.find((entry) => entry.actorId === "lender");
+
+    expect(lender?.driver).toBe("reaction_to_risk");
+    expect(lender?.wellCalibrated).toBe(false);
+    expect(lender?.read).toMatch(/misread/i);
+  });
+
+  it("counts high trust in cooperative partners as well calibrated", () => {
+    let state = playChoices("steel_supplier", ["balanced", "balanced", "balanced"]);
+    for (const actorId of ["gc", "owner", "inspector", "labor_subcontractor", "lender"] as AgentId[]) {
+      state = recordTrust(data, state, actorId, 5);
+    }
+    const calibration = trustCalibration(data, state);
+    const cooperative = calibration.entries.filter((entry) => entry.driver === "cooperative");
+
+    expect(cooperative.length).toBeGreaterThan(0);
+    for (const entry of cooperative) {
+      expect(entry.wellCalibrated).toBe(true);
+    }
   });
 });

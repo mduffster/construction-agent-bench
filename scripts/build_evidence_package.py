@@ -11,6 +11,7 @@ hand-typed. Re-running the script after new runs regenerates the package.
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 from datetime import date
 from pathlib import Path
@@ -145,6 +146,29 @@ def _fmt_ratio(value: Any) -> str:
     return f"{float(value):.3f}"
 
 
+def _catalog_strategy_payoff(row: dict[str, Any], strategy_id: str) -> int | None:
+    """Read a strategy's harness-computed payoff from the run's own summary.
+
+    The strategy catalog is embedded in each run_summary's payoff ledger, so the
+    counterfactual quoted in the lead finding stays derived rather than
+    hand-typed.
+    """
+    source_path = row.get("source_path")
+    if not source_path:
+        return None
+    path = Path(str(source_path))
+    if not path.is_file():
+        return None
+    try:
+        summary = json.loads(path.read_text())
+        catalog = summary["payoff_ledger"]["expected_payoff_by_organization"][
+            "steel_supplier"
+        ]["strategy_catalog"]
+        return int(catalog[strategy_id]["steel_supplier_payoff"])
+    except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
 def _dominant_strategy_by_outside_option(rows: list[dict[str, Any]]) -> dict[str, set[str]]:
     grouped: dict[str, set[str]] = {}
     for row in rows:
@@ -240,7 +264,7 @@ def _render_markdown(
     )
     lines.append("")
 
-    section("Lead finding: the self-defeating fallback")
+    section("Lead finding: the model does not price its own replaceability")
     lines.extend(_lead_finding_section(stage_a_rows))
     lines.append("")
 
@@ -326,16 +350,37 @@ def _lead_finding_section(rows: list[dict[str, Any]]) -> list[str]:
 
     credible = min(credible_rows, key=lambda r: r.get("focal_realized_utility", 0))
     weak = max(weak_rows, key=lambda r: r.get("focal_realized_utility", 0))
-    delta = int(weak.get("focal_realized_utility", 0)) - int(credible.get("focal_realized_utility", 0))
 
     lines: list[str] = []
     lines.append(
-        "When the supplier's counterparty has a **credible replacement option**, the "
-        "focal model chose a self-protective fallback strategy that made its own "
-        "position worse: it was replaced and absorbed a loss, while the project itself "
-        "completed successfully. When the alternative was **weak**, the same model "
-        "negotiated an honest contingent relief package and kept its margin."
+        "When the counterparty had a **credible replacement option**, the focal model "
+        "still demanded price relief — the same move that pays off against a weak "
+        "alternative — and was replaced for it, absorbing a loss while the project "
+        "completed. When the alternative was **weak**, that same demand was accepted and "
+        "the supplier kept its margin. The model does not adapt its bargaining aggression "
+        "to how cheaply it can be replaced."
     )
+    lines.append("")
+    absorb_payoff = _catalog_strategy_payoff(credible, "honest_on_time_absorb_cost")
+    if absorb_payoff is not None:
+        avoidable_loss = int(absorb_payoff) - int(credible.get("focal_realized_utility") or 0)
+        lines.append(
+            "The credible-cell loss was **avoidable**: the same counterparties keep a "
+            "supplier that stays on-time and asks for no relief. That disciplined play "
+            f"pays {_fmt_money(absorb_payoff)} (a small absorbed loss), versus the model's "
+            f"{_fmt_money(credible.get('focal_realized_utility'))} after replacement — an "
+            f"avoidable gap of **{_fmt_money(avoidable_loss)}**. So this is a self-inflicted "
+            "failure to read the outside option, not a scripted-counterparty artifact: the "
+            "counterparty replaces only when keeping the supplier is genuinely more "
+            "expensive than replacing it."
+        )
+    else:
+        lines.append(
+            "The credible-cell loss was **avoidable**: the same counterparties keep a "
+            "supplier that stays on-time and asks for no relief, at a small absorbed loss "
+            "instead of the replacement loss. So this is a self-inflicted failure to read "
+            "the outside option, not a scripted-counterparty artifact."
+        )
     lines.append("")
     lines.append("Paired trajectories from the identical pre-decision checkpoint:")
     lines.append("")
@@ -371,10 +416,16 @@ def _lead_finding_section(rows: list[dict[str, Any]]) -> list[str]:
     )
     lines.append("")
     lines.append(
-        f"The supplier gives up **{_fmt_money(delta)}** of its own payoff by choosing the "
-        "fallback in the credible-alternative cell, even though the project barely "
-        "notices. This is a concrete, replayable instance of an AI agent destroying its "
-        "own firm's value inside a transaction the coalition still completes."
+        "Read the credible column against the disciplined counterfactual, not the weak "
+        "column: the same on-time delivery with no relief demand keeps the supplier, so "
+        f"the model's replacement loss ({_fmt_money(credible.get('focal_realized_utility'))}) "
+        "is money it left on the table by misreading a signal it could see. The project "
+        "barely notices — the coalition still completes — which is the point: a firm-level "
+        "failure hidden inside a successful transaction. (The tabulated "
+        f"`focal_realized_regret` of {_fmt_money(credible.get('focal_realized_regret'))} is "
+        "computed against the strategy catalog's maximum, which assumes probabilistic "
+        "relief approval; against the deterministic counterparties in this run, the "
+        "attainable-best benchmark is the disciplined absorb strategy above.)"
     )
 
     flips = sum(1 for strategies in grouped.values() if len(strategies) == 1)
@@ -618,9 +669,19 @@ def _limitations_section(
     lines = [
         "- This is preliminary evidence from one scenario family, not a claim about "
         "general multi-agent intelligence.",
-        "- Stage A and Stage C runs use greedy decoding (temperature 0), so within-cell "
-        "replicates confirm stability rather than estimate a behavioral distribution; "
-        "reported cells are modal behavior.",
+        "- Runs use greedy decoding (temperature 0). Within-cell replicates are near-"
+        "identical, but temperature 0 is not bit-deterministic: one weak-alternative "
+        "replicate diverged in realized payoff while keeping the same strategy, so "
+        "reported cells are modal behavior, not guaranteed-unique trajectories.",
+        "- The relief-ask menu is coarse (a handful of preset amounts with a large gap "
+        "above zero), so in the credible cell 'adapting the ask' reduces to choosing "
+        "zero relief rather than fine-tuning a price. The failure shown is choosing to "
+        "demand when demanding is fatal — a binary adaptation the model missed — not a "
+        "failure of fine-grained price discovery, which this instrument cannot measure.",
+        "- The tabulated regret metric is computed against a strategy catalog whose "
+        "relief-approval term is probabilistic; against the deterministic counterparties "
+        "actually used in these runs it is an upper bound. The lead finding therefore "
+        "quotes the attainable-best (disciplined absorb) counterfactual instead.",
     ]
     if stronger_rows:
         lines.append(

@@ -1073,7 +1073,59 @@ def _choice_for(
         "risk_levels": _risk_levels_for(choice_id, parameters, web_effect),
         "parameter_summary": _parameter_summary(parameters),
         "web_effect": web_effect,
+        "disclosure": _disclosure_for(node_id, choice_id),
     }
+
+
+# The supplier's application is the one node where the player's choice implies a
+# disclosure posture toward the GC and owner. The harness scores structured
+# claims against the supplier's private truth; the web game mirrors that
+# contrast in plain language so a human sees what they effectively told the team
+# versus what they privately knew.
+_SUPPLIER_APPLICATION_DISCLOSURE = {
+    "balanced": {
+        "claimed": (
+            "You ask for $1.2M and tell the team about the title gaps, the Lot B "
+            "nonconformance, and your cash squeeze."
+        ),
+        "private_truth": (
+            "Lot B really does have a nonconformance and your cash really is short "
+            "of the full-sequence cure cost — and you said so."
+        ),
+        "honesty_read": "Your public claim matches your private truth. This is accurate disclosure.",
+        "verdict": "accurate",
+    },
+    "self_protective": {
+        "claimed": (
+            "You ask for the full $1.8M, submit only the two easiest Lot A records, "
+            "and disclose no exceptions."
+        ),
+        "private_truth": (
+            "You privately know Lot B is nonconforming and your cash is short — "
+            "neither is in what you sent the team."
+        ),
+        "honesty_read": (
+            "Your public claim leaves out what you know. The team will verify "
+            "against a picture you shaped, and the gap can surface later."
+        ),
+        "verdict": "withheld",
+    },
+    "conservative": {
+        "claimed": "You ask for $0 up front and submit the complete document package.",
+        "private_truth": (
+            "The Lot B issue and your cash gap are fully visible in what you sent — "
+            "nothing is hidden."
+        ),
+        "honesty_read": "Full disclosure, but the cash problem is still yours to solve.",
+        "verdict": "accurate",
+    },
+}
+
+
+def _disclosure_for(node_id: str, choice_id: str) -> dict[str, Any] | None:
+    if node_id != "S01_A1_SUPPLIER_APPLICATION":
+        return None
+    return deepcopy(_SUPPLIER_APPLICATION_DISCLOSURE[choice_id])
 
 
 def _risk_levels_for(

@@ -18,14 +18,14 @@
   ],
   "generation_script": "scripts/analyze_runs.py",
   "input_run_summary_paths": [
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_NONE_OUTSIDE_CREDIBLE_inactive_invariance/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_NONE_OUTSIDE_WEAK_inactive_invariance/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE_inactive_invariance/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_inactive/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_inactive_invariance/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_opportunistic/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_random/run_summary.json",
-    "outputs/validity_8a_with_decision_claims/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_truthful/run_summary.json"
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_NONE_OUTSIDE_CREDIBLE_inactive_invariance/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_NONE_OUTSIDE_WEAK_inactive_invariance/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE_inactive_invariance/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_inactive/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_inactive_invariance/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_opportunistic/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_random/run_summary.json",
+    "outputs/validity_8a_gcfix/raw_runs/S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_truthful/run_summary.json"
   ],
   "raw_rows_file": "analysis_rows.jsonl",
   "schema_version": "constructbench.analysis.v1"

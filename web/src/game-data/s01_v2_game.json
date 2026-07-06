@@ -113,6 +113,12 @@
         {
           "after_choice": "The team receives a smaller payment request plus the key exception information. They can now verify Lot A while deciding how to handle Lot B.",
           "choice_id": "balanced",
+          "disclosure": {
+            "claimed": "You ask for $1.2M and tell the team about the title gaps, the Lot B nonconformance, and your cash squeeze.",
+            "honesty_read": "Your public claim matches your private truth. This is accurate disclosure.",
+            "private_truth": "Lot B really does have a nonconformance and your cash really is short of the full-sequence cure cost \u2014 and you said so.",
+            "verdict": "accurate"
+          },
           "display_bullets": [
             "Request $1.2M against the steel package.",
             "Submit all available Lot A and Lot B records.",
@@ -203,6 +209,12 @@
         {
           "after_choice": "The team sees a larger payment claim but less evidence. This may protect your ask, but it makes later verification harder.",
           "choice_id": "self_protective",
+          "disclosure": {
+            "claimed": "You ask for the full $1.8M, submit only the two easiest Lot A records, and disclose no exceptions.",
+            "honesty_read": "Your public claim leaves out what you know. The team will verify against a picture you shaped, and the gap can surface later.",
+            "private_truth": "You privately know Lot B is nonconforming and your cash is short \u2014 neither is in what you sent the team.",
+            "verdict": "withheld"
+          },
           "display_bullets": [
             "Request $1.8M before the steel is on site.",
             "Submit only the two easiest Lot A records.",
@@ -285,6 +297,12 @@
         {
           "after_choice": "The team receives a complete package and no early payment request. The record is cleaner, but the cash problem is still yours to solve.",
           "choice_id": "conservative",
+          "disclosure": {
+            "claimed": "You ask for $0 up front and submit the complete document package.",
+            "honesty_read": "Full disclosure, but the cash problem is still yours to solve.",
+            "private_truth": "The Lot B issue and your cash gap are fully visible in what you sent \u2014 nothing is hidden.",
+            "verdict": "accurate"
+          },
           "display_bullets": [
             "Request $0 up front.",
             "Submit the full document package.",
@@ -413,6 +431,7 @@
         {
           "after_choice": "The package now supports a targeted inspection and a limited certified value. The phased path stays alive.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Certify $950K for the verified Lot A path.",
             "Send available records to owner, lender, and inspector.",
@@ -506,6 +525,7 @@
         {
           "after_choice": "The project has an aggressive certification but no backup protection. If the supplier slips, the team has fewer recovery options.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Certify the supplier's high application.",
             "Do not reserve backup steel.",
@@ -591,6 +611,7 @@
         {
           "after_choice": "The backup option is preserved and the review is stronger. The project buys protection at the cost of time and money.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Send the full package for review.",
             "Reserve backup steel.",
@@ -720,6 +741,7 @@
         {
           "after_choice": "Partial labor capacity stays available for a phased start.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Keep a split crew available.",
             "Offer partial mobilization at week 15.",
@@ -795,6 +817,7 @@
         {
           "after_choice": "The crew and crane are no longer reserved. If steel becomes available, the project may still miss the window.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Do not hold crew or crane.",
             "Avoid standby exposure.",
@@ -870,6 +893,7 @@
         {
           "after_choice": "Full capacity stays available, but someone must pay more standby cost.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Keep the full crew and crane.",
             "Mobilize later with more certainty.",
@@ -979,6 +1003,7 @@
         {
           "after_choice": "The inspection plan keeps the first steel batch on a possible shipment path and exposes the second batch's issue early.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Review Lot A so the first shipment can stay possible.",
             "Sample Lot B to expose the known issue early.",
@@ -1048,6 +1073,7 @@
         {
           "after_choice": "No physical release path is created yet. The project will still need another step before steel can move.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Avoid approving any steel for shipment yet.",
             "Create no shipment clearance today.",
@@ -1115,6 +1141,7 @@
         {
           "after_choice": "The review can create a stronger record, but the project spends more time and cost before release.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Review both lots before anything moves.",
             "Spend more time and inspection cost today.",
@@ -1223,6 +1250,7 @@
         {
           "after_choice": "The owner leaves a limited funding path open. Other parties can build a package around controls and modest delay.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Make $250K available if controls clear.",
             "Add $100K immediate equity.",
@@ -1301,6 +1329,7 @@
         {
           "after_choice": "The owner refuses new money. The supplier and GC must solve the cash problem without owner support.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Do not support off-site payment.",
             "Keep owner funds and equity at zero.",
@@ -1378,6 +1407,7 @@
         {
           "after_choice": "The owner keeps support possible only if controls clear. The package must become cleaner before money moves.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Require title and inspection controls.",
             "Allow funding only after review.",
@@ -1490,6 +1520,7 @@
         {
           "after_choice": "A limited draw remains possible if verified value and owner equity line up.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Cap the draw at $760K.",
             "Require owner equity.",
@@ -1568,6 +1599,7 @@
         {
           "after_choice": "Loan money is not available for this draw. The package must find cash elsewhere.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Release no funds.",
             "Require no escrow.",
@@ -1645,6 +1677,7 @@
         {
           "after_choice": "Money may move only under escrow and reserve controls.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Limit release through escrow.",
             "Preserve completion reserves.",
@@ -1757,6 +1790,7 @@
         {
           "after_choice": "You commit to curing both lots with support. Lot A and Lot B can still fit the phased schedule.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Commit cash and request support.",
             "Target Lot A for week 14.",
@@ -1845,6 +1879,7 @@
         {
           "after_choice": "You protect cash and take outside work. Lot A may move, but Lot B is likely late.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Do not add financing.",
             "Accept outside shop work.",
@@ -1933,6 +1968,7 @@
         {
           "after_choice": "You use outside financing to keep the full sequence possible, reducing delay risk but hurting your own economics.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Use maximum outside financing.",
             "Push for full sequence readiness.",
@@ -2057,6 +2093,7 @@
         {
           "after_choice": "The recovery package now has certification, short-term GC funding, owner support, lender support, and a phased field-work path.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Put $100K of short-term GC funding into the package.",
             "Request owner and lender support.",
@@ -2141,6 +2178,7 @@
         {
           "after_choice": "The supplier proposal is rejected. The project avoids carrying the risk but loses the near-term recovery path.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Certify no payment.",
             "Do not put short-term GC money into the package.",
@@ -2225,6 +2263,7 @@
         {
           "after_choice": "The package keeps backup alive and asks for stronger controls, making recovery more expensive but more protected.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Put more short-term GC funding into the package.",
             "Keep backup available.",
@@ -2345,6 +2384,7 @@
         {
           "after_choice": "A split crew and crane commitment is now available for the phased steel path.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Mobilize partial capacity in week 15.",
             "Require Lot A release.",
@@ -2422,6 +2462,7 @@
         {
           "after_choice": "Labor capacity is released. Even if steel clears, remobilization may push the schedule late.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Do not accept the package.",
             "Take outside work.",
@@ -2499,6 +2540,7 @@
         {
           "after_choice": "Full labor capacity is protected, but the package absorbs higher standby cost.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Hold the full crew and crane.",
             "Mobilize later with full capacity.",
@@ -2610,6 +2652,7 @@
         {
           "after_choice": "Lot A can move toward shipment, but Lot B remains blocked until cure and reinspection.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Let Lot A move toward shipment.",
             "Keep Lot B blocked until the issue is cured.",
@@ -2682,6 +2725,7 @@
         {
           "after_choice": "No steel is released. Field steel work cannot start from the current material.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Approve no steel for shipment.",
             "Do not set a cure path today.",
@@ -2749,6 +2793,7 @@
         {
           "after_choice": "Lot A remains available, but Lot B is still held. The project has a safer partial path, not a full release.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Keep Lot A possible, but do not fully clear it yet.",
             "Require another inspection step.",
@@ -2859,6 +2904,7 @@
         {
           "after_choice": "Owner money, equity, and standby support are approved for the phased package.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Fund $200K.",
             "Add $100K equity.",
@@ -2938,6 +2984,7 @@
         {
           "after_choice": "The package loses owner support. The cash gap remains unresolved.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Approve no funding.",
             "Approve no equity.",
@@ -3016,6 +3063,7 @@
         {
           "after_choice": "The owner approves support only inside a tighter, more controlled package.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Fund more, but only under controls.",
             "Approve full standby.",
@@ -3129,6 +3177,7 @@
         {
           "after_choice": "Loan funds release against verified value, giving the supplier usable cash.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Release $760K.",
             "Require $100K owner equity.",
@@ -3206,6 +3255,7 @@
         {
           "after_choice": "No loan money moves. The package must rely on other cash or delay.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Release no funds.",
             "Escrow no funds.",
@@ -3281,6 +3331,7 @@
         {
           "after_choice": "Funds move only through escrow, keeping control but limiting immediate supplier liquidity.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Hold direct release.",
             "Use controlled escrow.",
@@ -3392,6 +3443,7 @@
         {
           "after_choice": "Both lots are reported ready and sent toward shipment.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Report both lots ready.",
             "Ship Lot A and Lot B.",
@@ -3470,6 +3522,7 @@
         {
           "after_choice": "Only Lot A ships. The project can start, but the full sequence remains incomplete.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Report Lot B not ready.",
             "Ship only Lot A.",
@@ -3548,6 +3601,7 @@
         {
           "after_choice": "Both lots ship after the cleaner cure path, preserving the full sequence.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Report both lots ready.",
             "Ship both lots.",
@@ -3662,6 +3716,7 @@
         {
           "after_choice": "The GC proceeds with a phased recovery and keeps downstream work resequenced.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Verify supplier status.",
             "Keep downstream work resequenced.",
@@ -3736,6 +3791,7 @@
         {
           "after_choice": "The GC accepts delay. The project avoids more recovery spend but likely misses schedule success.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Challenge status.",
             "Do not resequence downstream work.",
@@ -3809,6 +3865,7 @@
         {
           "after_choice": "Backup steel is activated. The project spends more but protects a viable schedule path.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Use backup steel.",
             "Spend to protect schedule.",
@@ -3918,6 +3975,7 @@
         {
           "after_choice": "Both lots are released for shipping, so the steel path can finish without installing unreleased material.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Clear Lot A.",
             "Clear Lot B after cure.",
@@ -3988,6 +4046,7 @@
         {
           "after_choice": "Final release is held. The project cannot use the material for compliant field installation.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Keep Lot A blocked.",
             "Keep Lot B blocked.",
@@ -4057,6 +4116,7 @@
         {
           "after_choice": "Both lots can release after stronger testing, protecting compliance at higher review cost.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Clear both lots only after the added test record.",
             "Accept extra review cost.",
@@ -4161,6 +4221,7 @@
         {
           "after_choice": "The owner accepts the recovery cost and keeps the project path viable.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Use contingency if needed.",
             "Accept one week of delay.",
@@ -4231,6 +4292,7 @@
         {
           "after_choice": "The owner refuses added cost. The recovery path has less money to solve the remaining problem.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Provide no supplemental funding.",
             "Do not share recovery cost.",
@@ -4301,6 +4363,7 @@
         {
           "after_choice": "The owner authorizes a larger controlled recovery and assigns cost shares.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Accept higher recovery cost.",
             "Keep delay acceptance limited.",
@@ -4405,6 +4468,7 @@
         {
           "after_choice": "The lender holds supplemental funds unless verified value truly supports more release.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Do not over-release.",
             "Keep reserves intact.",
@@ -4474,6 +4538,7 @@
         {
           "after_choice": "No supplemental lender support is available.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Release no supplemental draw.",
             "Require no exception.",
@@ -4543,6 +4608,7 @@
         {
           "after_choice": "Any further lending support requires more owner equity and reserve protection.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Require owner equity.",
             "Preserve reserves.",
@@ -4646,6 +4712,7 @@
         {
           "after_choice": "The crew mobilizes for a phased start and avoids installing unreleased steel.",
           "choice_id": "balanced",
+          "disclosure": null,
           "display_bullets": [
             "Start in week 15.",
             "Use half crew and crane capacity.",
@@ -4719,6 +4786,7 @@
         {
           "after_choice": "The crew releases and returns later. The project likely loses the schedule window.",
           "choice_id": "self_protective",
+          "disclosure": null,
           "display_bullets": [
             "Release current capacity.",
             "Return only after week 23.",
@@ -4792,6 +4860,7 @@
         {
           "after_choice": "Full crew and crane capacity mobilize, protecting installation if release is complete.",
           "choice_id": "conservative",
+          "disclosure": null,
           "display_bullets": [
             "Use full capacity.",
             "Start after controls are clearer.",
@@ -5441,7 +5510,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "f1354c58325042ed62dd78105246259f29f8ad6fac2571d312661a0367c0912d",
+    "content_hash": "c0de899da21649c4e2928c0a8cbd4679cffe8a525d76d477b5bb8e1b3046c452",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",
