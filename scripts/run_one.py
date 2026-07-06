@@ -8,13 +8,9 @@ from constructbench.agents import EmptyPolicy
 from constructbench.focal import S01_COMMERCIAL_NEUTRAL_POLICY_ID, build_focal_policies
 from constructbench.models import (
     DEFAULT_ANTHROPIC_HAIKU_MODEL,
-    DEFAULT_OLLAMA_MODEL,
     AnthropicModelAdapter,
     LLMPolicy,
-    OllamaModelAdapter,
-    assert_ollama_model_available,
     make_anthropic_policies,
-    make_ollama_policies,
 )
 from constructbench.runner import run_fixture, run_policy
 from constructbench.scenarios import SCENARIOS
@@ -22,12 +18,12 @@ from constructbench.state import AGENT_IDS, default_behavior_profiles
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run one ConstructBench scenario.")
+    parser = argparse.ArgumentParser(description="Run one ConstructSim scenario.")
     parser.add_argument("--scenario", required=True, choices=sorted(SCENARIOS))
     parser.add_argument("--variant", choices=["normal", "stressed"], default="normal")
     parser.add_argument("--fixture")
     parser.add_argument("--policy", choices=["fixture", "llm", "focal", "no_decision"], default="fixture")
-    parser.add_argument("--provider", choices=["ollama", "anthropic"], default="ollama")
+    parser.add_argument("--provider", choices=["anthropic"], default="anthropic")
     parser.add_argument("--model", default=None)
     parser.add_argument("--focal-agent", choices=AGENT_IDS, default="steel_supplier")
     parser.add_argument("--scenario-instance-id")
@@ -42,11 +38,7 @@ def main() -> None:
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir = args.output_dir or Path("outputs") / f"{args.scenario}_{args.policy}_{stamp}"
-    model = args.model or (
-        DEFAULT_ANTHROPIC_HAIKU_MODEL
-        if args.provider == "anthropic"
-        else DEFAULT_OLLAMA_MODEL
-    )
+    model = args.model or DEFAULT_ANTHROPIC_HAIKU_MODEL
     behavior_profiles = default_behavior_profiles(args.behavior_profile)
     if args.policy == "fixture":
         fixture = args.fixture or f"{args.variant}_success"
@@ -60,10 +52,7 @@ def main() -> None:
             behavior_profile_by_agent=behavior_profiles,
         )
     elif args.policy == "llm":
-        if args.provider == "anthropic":
-            policies = make_anthropic_policies(model)
-        else:
-            policies = make_ollama_policies(model)
+        policies = make_anthropic_policies(model)
         result = run_policy(
             args.scenario,
             args.variant,
@@ -119,17 +108,10 @@ def main() -> None:
 
 
 def _single_llm_policy(provider: str, model: str, agent_id: str) -> LLMPolicy:
-    if provider == "anthropic":
-        return LLMPolicy(
-            AnthropicModelAdapter(model=model),
-            agent_id,
-            prompt_style="anthropic_structured",
-        )
-    assert_ollama_model_available(model)
     return LLMPolicy(
-        OllamaModelAdapter(model, json_format=False),
+        AnthropicModelAdapter(model=model),
         agent_id,
-        prompt_style="gemma_compact",
+        prompt_style="anthropic_structured",
     )
 
 

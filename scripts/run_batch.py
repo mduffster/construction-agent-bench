@@ -9,9 +9,7 @@ from typing import Any
 
 from constructbench.models import (
     DEFAULT_ANTHROPIC_HAIKU_MODEL,
-    DEFAULT_OLLAMA_MODEL,
     make_anthropic_policies,
-    make_ollama_policies,
 )
 from constructbench.reporting import model_usage_summary
 from constructbench.runner import run_fixture, run_policy
@@ -20,9 +18,9 @@ from constructbench.state import RunState, default_behavior_profiles
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run ConstructBench scenario batch.")
+    parser = argparse.ArgumentParser(description="Run ConstructSim scenario batch.")
     parser.add_argument("--policy", choices=["fixture", "llm"], default="fixture")
-    parser.add_argument("--provider", choices=["ollama", "anthropic"], default="ollama")
+    parser.add_argument("--provider", choices=["anthropic"], default="anthropic")
     parser.add_argument("--model", default=None)
     parser.add_argument(
         "--behavior-profile",
@@ -35,11 +33,7 @@ def main() -> None:
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     root = args.output_dir or Path("outputs") / f"batch_{args.policy}_{stamp}"
-    model = args.model or (
-        DEFAULT_ANTHROPIC_HAIKU_MODEL
-        if args.provider == "anthropic"
-        else DEFAULT_OLLAMA_MODEL
-    )
+    model = args.model or DEFAULT_ANTHROPIC_HAIKU_MODEL
     behavior_profiles = default_behavior_profiles(args.behavior_profile)
     root.mkdir(parents=True, exist_ok=True)
     rows = []
@@ -58,10 +52,7 @@ def main() -> None:
             raise SystemExit("live LLM batch requires --allow-live-batch after smoke tests pass")
         for scenario in ["S01", "S02", "S03", "S04", "S05"]:
             for variant in ["normal", "stressed"]:
-                if args.provider == "anthropic":
-                    policies = make_anthropic_policies(model)
-                else:
-                    policies = make_ollama_policies(model)
+                policies = make_anthropic_policies(model)
                 result = run_policy(
                     scenario,
                     variant,

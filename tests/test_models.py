@@ -246,127 +246,6 @@ def test_llm_policy_normalizes_recipient_agent_ids_field() -> None:
     assert submission.communications[0].recipient_ids == ["gc"]
 
 
-def test_gemma_compact_policy_parses_decisions_by_node() -> None:
-    observation = _supplier_observation()
-    compact_response = json.dumps(
-        {
-            "decisions_by_node": {
-                "S01_SUPPLIER_SOURCE_PLAN": "approved_alternate",
-                "S01_SUPPLIER_COMMERCIAL_REQUEST": "__parameters__",
-            },
-            "parameters_by_node": {
-                "S01_SUPPLIER_COMMERCIAL_REQUEST": {
-                    "price_amendment_request": 0,
-                    "delivery_date_amendment_request": None,
-                    "advance_payment_request": 0,
-                }
-            },
-            "communications": [],
-            "assessment_updates": [],
-            "assessment_reviews": [],
-            "private_notes": "Use a compact supplier action shape.",
-        }
-    )
-    policy = LLMPolicy(
-        FakeAdapter([compact_response]),
-        "steel_supplier",
-        prompt_style="gemma_compact",
-    )
-
-    submission = policy.decide(observation)
-
-    assert _validate_submission(observation, submission) == []
-
-
-def test_gemma_compact_policy_parses_parameter_nodes_from_parameters_by_node() -> None:
-    observation = _observation_for("S02", "gc_recovery_plan", "gc")
-    compact_response = json.dumps(
-        {
-            "decisions_by_node": {
-                "S02_GC_RECOVERY_PLAN": "rent_replacement_crane",
-            },
-            "parameters_by_node": {
-                "S02_GC_INTERIM_PLAN": {
-                    "crew_plan": "retain_idle",
-                    "delivery_plan": "accept_as_scheduled",
-                    "protect_exposed_work": True,
-                },
-                "S02_GC_RECOVERY_COST_REQUEST": {
-                    "requested_reimbursement_fraction": "0.5",
-                },
-            },
-            "communications": [],
-            "assessment_updates": [],
-            "assessment_reviews": [],
-            "private_notes": "Rent a replacement crane and request partial reimbursement.",
-        }
-    )
-    policy = LLMPolicy(FakeAdapter([compact_response]), "gc", prompt_style="gemma_compact")
-
-    submission = policy.decide(observation)
-
-    assert _validate_submission(observation, submission) == []
-    reimbursement = next(
-        decision
-        for decision in submission.decisions
-        if decision.node_id == "S02_GC_RECOVERY_COST_REQUEST"
-    )
-    assert reimbursement.parameters["requested_reimbursement_fraction"] == 0.5
-
-
-def test_gemma_compact_policy_converts_flat_unchanged_assessment_to_review() -> None:
-    scenario = get_scenario("S01")
-    state = scenario.create_state(run_id="test", variant="normal")
-    observation = AgentObservation(
-        run_id=state.run_id,
-        scenario_id=state.scenario_id,
-        phase_index=4,
-        phase_id="final_assessment",
-        phase_type="assessment_phase",
-        agent_id="owner",
-        role_briefing=state.briefings_by_agent["owner"],
-        current_business_context="Review steel delivery outcome.",
-        known_facts=[],
-        received_messages=[],
-        required_decisions=[],
-        assessment_evidence=[
-            AssessmentEvidence(
-                evidence_id="S01_DELIVERY_OUTCOME",
-                summary="Steel delivery realized at tick 16; contract baseline was tick 14.",
-                possible_counterparty_ids=["steel_supplier"],
-                diagnosticity="delivery_outcome",
-            )
-        ],
-        trust_prior_by_counterparty=state.trust_state["owner"],
-        private_memory="",
-    )
-    compact_response = json.dumps(
-        {
-            "decisions_by_node": {},
-            "parameters_by_node": {},
-            "communications": [],
-            "assessment_updates": [
-                {
-                    "evidence_id": "S01_DELIVERY_OUTCOME",
-                    "counterparty_id": "steel_supplier",
-                    "performance_reliability": 0.75,
-                    "information_reliability": 0.75,
-                    "contractual_reliability": 0.75,
-                }
-            ],
-            "assessment_reviews": [],
-            "private_notes": "Late delivery does not change my score because the cause is not clear.",
-        }
-    )
-    policy = LLMPolicy(FakeAdapter([compact_response]), "owner", prompt_style="gemma_compact")
-
-    submission = policy.decide(observation)
-
-    assert _validate_submission(observation, submission) == []
-    assert submission.assessment_updates == []
-    assert submission.assessment_reviews[0].evidence_ids == ["S01_DELIVERY_OUTCOME"]
-
-
 def test_llm_policy_normalizes_dimension_specific_assessment_update() -> None:
     scenario = get_scenario("S01")
     state = scenario.create_state(run_id="test", variant="normal")
@@ -770,24 +649,29 @@ def test_validation_accepts_current_source_alias_for_current_standard() -> None:
     observation = _supplier_observation()
     response = json.dumps(
         {
-            "decisions_by_node": {
-                "S01_SUPPLIER_SOURCE_PLAN": "current_source",
-                "S01_SUPPLIER_COMMERCIAL_REQUEST": "__parameters__",
-            },
-            "parameters_by_node": {
-                "S01_SUPPLIER_COMMERCIAL_REQUEST": {
-                    "price_amendment_request": 600000,
-                    "delivery_date_amendment_request": 18,
-                    "advance_payment_request": 0,
-                }
-            },
+            "decisions": [
+                {
+                    "node_id": "S01_SUPPLIER_SOURCE_PLAN",
+                    "option_id": "current_source",
+                    "parameters": {},
+                },
+                {
+                    "node_id": "S01_SUPPLIER_COMMERCIAL_REQUEST",
+                    "option_id": "__parameters__",
+                    "parameters": {
+                        "price_amendment_request": 600000,
+                        "delivery_date_amendment_request": 18,
+                        "advance_payment_request": 0,
+                    },
+                },
+            ],
             "communications": [],
             "assessment_updates": [],
             "assessment_reviews": [],
             "private_notes": "Current source standard delivery means tick 18.",
         }
     )
-    policy = LLMPolicy(FakeAdapter([response]), "steel_supplier", prompt_style="gemma_compact")
+    policy = LLMPolicy(FakeAdapter([response]), "steel_supplier")
 
     submission = policy.decide(observation)
 

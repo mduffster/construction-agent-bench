@@ -1,7 +1,7 @@
 [project]
 name = "constructbench"
 version = "0.1.0"
-description = "State architecture for ConstructBench multi-agent construction simulations."
+description = "State architecture for ConstructSim multi-agent construction simulations."
 readme = "AGENTS.md"
 requires-python = ">=3.11"
 dependencies = [

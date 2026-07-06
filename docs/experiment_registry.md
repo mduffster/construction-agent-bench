@@ -1,7 +1,7 @@
 # Experiment Registry
 
 This registry identifies the runnable experiment infrastructure that matches the current
-stateful ConstructBench harness. The previous feedback-cascade suite is legacy and should not be
+stateful ConstructSim harness. The previous feedback-cascade suite is legacy and should not be
 used as the current experiment source.
 
 ## Current Baseline: Stateful Five-Scenario Harness
@@ -74,7 +74,12 @@ Current implemented components:
 - Component 7: run-level analysis rows, deterministic payoff/regret/Pareto/claim metrics,
   fixed analysis tables and figures, and a deterministic S01 experiment runner.
 - Component 8: validity-ladder runner with scripted supplier controls, cheap-model smoke/pilot
-  gates, live-model opt-in guardrails, and deterministic gate reports.
+  gates, live-model opt-in guardrails, and deterministic gate reports. The 8C pilot is staged
+  and adaptive (Stage A temperature-0 stability read, then instance-variant robustness or a
+  temperature-1 distributional read) per the transition plan; `run_validity_ladder.py` exposes
+  `--replicates-per-cell` and `--temperature`, and sampling temperature is recorded in every
+  run manifest. Local small-model (Ollama/Gemma) support is retired; live runs use hosted
+  Anthropic models with Claude Haiku as the minimum tier.
 - S01 V2 marginal update: staged `S01_V2_OFFSITE_STEEL_DRAW` with 18 explicit decisions, three
   deterministic resolution handlers, explicit communication/assessment abstentions, five
   deterministic witnesses, V2 payoff/reporting records, and bounded choice-consequence audit

@@ -1,10 +1,10 @@
-# ConstructBench Design and Very Early Output Summary
+# ConstructSim Design and Very Early Output Summary
 
 Last updated: 2026-06-21
 
 ## Purpose
 
-ConstructBench is an early-stage stateful business-agent simulation for a toy large construction project. The current system is intended to test whether persistent organization-level agents can make consequential business decisions under public and private information, communicate with counterparties, and update directed assessments from observed outcomes.
+ConstructSim is an early-stage stateful business-agent simulation for a toy large construction project. The current system is intended to test whether persistent organization-level agents can make consequential business decisions under public and private information, communicate with counterparties, and update directed assessments from observed outcomes.
 
 This is not yet evidence of stable behavioral distributions. The current results are better read as a harness-validity and prompt-contract check: do the agents receive meaningful business situations, make structured choices, communicate, and produce private counterparty assessments that the harness can validate and replay?
 
@@ -270,6 +270,6 @@ This is still early-stage. Important limitations:
 
 ## Current Interpretation
 
-At this stage, ConstructBench appears useful as a controlled harness for studying whether business-role agents can maintain state, make structured project decisions, communicate, and update directed expectations from outcome evidence. The strongest current evidence is harness-level: scripted success/failure witnesses, replayable outputs, nonempty live agent decisions, and plausible assessment movement in a small Haiku run set.
+At this stage, ConstructSim appears useful as a controlled harness for studying whether business-role agents can maintain state, make structured project decisions, communicate, and update directed expectations from outcome evidence. The strongest current evidence is harness-level: scripted success/failure witnesses, replayable outputs, nonempty live agent decisions, and plausible assessment movement in a small Haiku run set.
 
 The project is not yet ready to support broad claims about agent behavior. The next validity step is to run repeated batches across behavior profiles and scenario variants, exclude invalid runs from behavioral distributions, and report decisions, communications, assessment updates, no-update reviews, repairs, invalid outputs, project outcomes, and model cost separately.

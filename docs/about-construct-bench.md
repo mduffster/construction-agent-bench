@@ -1,8 +1,10 @@
 ## About
 
-Construction bench starts in the world of construction but doesn't stop there. It simulates normal but complex multi-firm coordination and transaction structures simulated by AI agents. 
+ConstructSim starts in the world of construction but the idea is to test on many multi-firm coordination tasks. These are simulations of normal but complex multi-firm coordination and transaction structures with AI agents.
 
-The aim is to understand how AI agents manage coordination on a shared goal under private and public constraints. This differs from existing benchmarks narrowly, in focusing on project-level completion and tradeoff management. I'm open to collaboration on this project. 
+I'm focused on understanding how AI agents manage coordination on a shared goal while managing private and public constraints. In these scenarios, switching costs are high, and acting overly cooperative or overly competitive will cause projects to fail, or generate massive private losses. In these scenarios, project completion, private incentives, and realistic tradeoffs matter.
+
+I'm open to collaboration on this project.
 
 ## Goals
 
@@ -10,4 +12,4 @@ Ideally this project expands to many other complex transactions, where agents de
 
 ## Try It
 
-Play as one of the six firms involved in the simulated construction ecosystem. You will have the same private information and public information as the AI agents, and you'll be able to make decisions to benefit you privately, or benefit the broader project. 
+Play as one of the firms involved in the simulated construction ecosystem. The game is a simplified version of the full simulation: you face the same kind of public and private information problem the AI agents face, and your decisions can benefit you privately or benefit the broader project. The AI agents work through much larger structured decision spaces than the choices shown in the game.

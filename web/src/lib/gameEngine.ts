@@ -200,6 +200,42 @@ export function evaluateGame(data: GameData, state: GameState): GameEvaluation {
   };
 }
 
+export interface SimulatedPathOutcome {
+  state: ProjectGameState;
+  status: ProjectStatus;
+  statusReason: string;
+  projectSuccess: boolean;
+}
+
+export function simulatePath(
+  data: GameData,
+  choiceByNode: Record<string, ChoiceId>
+): SimulatedPathOutcome {
+  let projectState = cloneProjectState(data.initial_game_state);
+  for (const round of data.rounds) {
+    for (const node of nodesForRound(data, round.round_id)) {
+      const choiceId = choiceByNode[node.node_id];
+      if (!choiceId) {
+        throw new Error(`simulatePath is missing a choice for ${node.node_id}`);
+      }
+      const choice = findChoice(data, node.node_id, choiceId);
+      projectState = applyEffect(projectState, choice.web_effect);
+    }
+  }
+  const finalState = finalizeProjectState(projectState);
+  const assessed = assessStatus(finalState, true);
+  const projectSuccess =
+    assessed.status !== "non_viable" &&
+    finalState.cost_usd <= finalState.success_cost_ceiling_usd &&
+    finalState.completion_week <= finalState.success_deadline_week;
+  return {
+    state: finalState,
+    status: assessed.status,
+    statusReason: assessed.reason,
+    projectSuccess,
+  };
+}
+
 export function visibleRoundId(data: GameData, state: GameState): RoundId | "DONE" {
   return data.rounds[state.roundIndex]?.round_id ?? "DONE";
 }

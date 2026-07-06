@@ -9,7 +9,7 @@ from constructbench.analysis import load_run_summaries, write_analysis_outputs
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Build fixed ConstructBench analysis rows, tables, and figures from run outputs."
+        description="Build fixed ConstructSim analysis rows, tables, and figures from run outputs."
     )
     parser.add_argument(
         "paths",

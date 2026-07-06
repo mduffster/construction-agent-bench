@@ -224,6 +224,7 @@ def run_cheap_model_matrix(
     provider: Literal["anthropic"] = "anthropic",
     model: str = DEFAULT_ANTHROPIC_HAIKU_MODEL,
     variant: Literal["normal", "stressed"] = "normal",
+    temperature: float = 0.0,
 ) -> dict[str, Any]:
     if not allow_live_model:
         raise RuntimeError("cheap-model matrix requires allow_live_model=True")
@@ -231,7 +232,11 @@ def run_cheap_model_matrix(
     raw_root.mkdir(parents=True, exist_ok=True)
     for instance_id in S01_TREATMENT_CELLS:
         for replicate_index in range(replicates_per_cell):
-            focal_policy = _focal_llm_policy(provider=provider, model=model)
+            focal_policy = _focal_llm_policy(
+                provider=provider,
+                model=model,
+                temperature=temperature,
+            )
             _run_focal_supplier_policy(
                 focal_policy,
                 output_dir=raw_root / f"{instance_id}_replicate_{replicate_index:02d}",
@@ -241,6 +246,7 @@ def run_cheap_model_matrix(
                     "policy": "focal",
                     "provider": provider,
                     "model": model,
+                    "temperature": temperature,
                     "focal_agent_id": "steel_supplier",
                     "counterparty_policy_id": S01_COMMERCIAL_NEUTRAL_POLICY_ID,
                     "scenario_instance_id": instance_id,
@@ -390,11 +396,16 @@ def _run_focal_supplier_policy(
     )
 
 
-def _focal_llm_policy(*, provider: Literal["anthropic"], model: str) -> LLMPolicy:
+def _focal_llm_policy(
+    *,
+    provider: Literal["anthropic"],
+    model: str,
+    temperature: float = 0.0,
+) -> LLMPolicy:
     if provider != "anthropic":
         raise ValueError("Component 8 cheap-model runs currently use the Anthropic adapter")
     return LLMPolicy(
-        AnthropicModelAdapter(model=model),
+        AnthropicModelAdapter(model=model, temperature=temperature),
         "steel_supplier",
         prompt_style="anthropic_structured",
     )

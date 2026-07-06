@@ -1,4 +1,4 @@
-# ConstructBench: Low-Budget Transition Plan
+# ConstructSim: Low-Budget Transition Plan
 
 **Objective:** transition the existing stateful construction-agent harness into a controlled evaluation of multi-firm project behavior and capability, while producing a minimum viable interesting result before expanding scope.
 
@@ -16,7 +16,7 @@ The project becomes weak if it remains:
 - a collection of plausible transcripts;
 - a set of all-success collaborative demonstrations;
 - a broad platform without a controlled research question;
-- or a deception benchmark that duplicates simpler market experiments.
+- or a deception evaluation that duplicates simpler market experiments.
 
 It becomes strong if it demonstrates:
 
@@ -48,13 +48,13 @@ Two corrections are important:
 
 ### Positioning sentence
 
-> ConstructBench is a controlled evaluation of autonomous firms coordinating on a shared, consequential project under asymmetric information, partially aligned utilities, distributed authority, repeated ties, and costly outside options.
+> ConstructSim is a controlled evaluation of autonomous firms coordinating on a shared, consequential project under asymmetric information, partially aligned utilities, distributed authority, repeated ties, and costly outside options.
 
 ## 2. Why the niche is real
 
-The nearby evaluation landscape is active but does not make ConstructBench redundant.
+The nearby evaluation landscape is active but does not make ConstructSim redundant.
 
-| Neighbor | Primary object | Main difference from ConstructBench |
+| Neighbor | Primary object | Main difference from ConstructSim |
 |---|---|---|
 | MultiAgentBench | Broad collaboration and competition across games and tasks | Broad coordination benchmark; not a controlled inter-firm project network |
 | EntCollabBench | Permission-isolated roles inside one enterprise | Intra-organizational workflow with a shared organizational objective |
@@ -63,7 +63,7 @@ The nearby evaluation landscape is active but does not make ConstructBench redun
 | M3-Bench | Mixed-motive social games | Strong process-aware behavioral evaluation, but stylized games rather than consequential business production |
 | TruthMarketTwin | Bilateral e-commerce under private quality and reputation | Focused market trust and deception experiment rather than multi-party project production |
 
-ConstructBench’s defensible gap is the combination of:
+ConstructSim’s defensible gap is the combination of:
 
 - independent firms rather than departments;
 - one shared asset rather than a whole economy;
@@ -82,7 +82,7 @@ None of those ingredients is individually novel. The contribution must be the **
 
 > When a familiar supplier experiences a private cost and liquidity shock, how do verified relationship history and credible switching options change disclosure, bargaining, and project performance?
 
-This question is preferable to making deception the center of the benchmark. It can reveal truthfulness, opportunism, negotiation capability, forecast quality, switching behavior, and joint-value preservation.
+This question is preferable to making deception the center of the evaluation. It can reveal truthfulness, opportunism, negotiation capability, forecast quality, switching behavior, and joint-value preservation.
 
 ### Use one scenario family
 
@@ -127,7 +127,7 @@ Do not initially add audit probability, public reputation, different contract fo
 
 ### Evaluation modes
 
-**Mode A — Focal-agent benchmark**
+**Mode A — Focal-agent evaluation**
 
 - One LLM controls the steel supplier.
 - GC, owner, lender, inspector, and labor use fixed, deterministic policies.
@@ -138,7 +138,7 @@ Do not initially add audit probability, public reputation, different contract fo
 
 - Use LLM agents for all active organizations only after Mode A works.
 - Run only the two most diagnostic conditions.
-- Treat this as evidence that the focal-agent result survives interactive adaptation, not as the primary benchmark score.
+- Treat this as evidence that the focal-agent result survives interactive adaptation, not as the primary evaluation score.
 
 ### Primary outcomes
 
@@ -487,7 +487,7 @@ Use truthful, opportunistic, inactive, and random supplier policies.
 
 #### 8B. Cheap-model smoke test
 
-Run two independent replicates per cell with the already integrated cheap model.
+Run two independent replicates per cell with the already integrated cheap model at temperature 0.
 
 **Pass when**
 
@@ -496,20 +496,21 @@ Run two independent replicates per cell with the already integrated cheap model.
 - no prompt or schema defect dominates behavior;
 - cost telemetry is complete.
 
-#### 8C. Cheap-model main pilot
+Because the harness runs at temperature 0, 8B doubles as the Stage A pilot read described in 8C: if the two replicates within each cell agree, the smoke matrix already contains the modal strategy per cell.
 
-Run ten independent replicates per cell: 40 focal-agent runs total.
+#### 8C. Cheap-model main pilot (staged, adaptive)
 
-Report:
+Do not run a flat 40-run matrix by default. At temperature 0 the model's behavior is near-deterministic per cell, so replicates beyond stability confirmation measure API jitter, not behavioral distribution. Stage the pilot and let each stage's outcome pick the next spend. Temperature is a recorded manifest parameter for every run.
 
-- complete distributions;
-- paired or blocked treatment effects where possible;
-- bootstrap intervals;
-- invalid-run rate;
-- cost per valid run;
-- trajectory clusters.
+**Stage A — deterministic read (default first pilot).** Temperature 0, two to three replicates per cell (8–12 runs). Replicates exist only to confirm stability. The result is one modal strategy per cell and the question "does the treatment flip the modal strategy?" Report it plainly as greedy-decoding modal behavior.
 
-This is preliminary evidence, not a definitive benchmark leaderboard.
+Then branch on the Stage A outcome:
+
+- **Clean contrast between cells → Stage C, robustness.** Hold temperature 0 and vary scenario-instance economics instead of adding replicates: two to three instance variants per cell (for example, shifted liquidity gap or switch cost), one replicate each. This tests whether the contrast survives economically meaningful perturbation, which is a stronger claim than replicate-counting.
+- **No contrast → Stage B, distributional read.** Temperature approximately 1.0, five replicates per cell to start. This tests whether the effect lives in the sampling distribution rather than the mode before concluding null. Report distributions, blocked treatment effects, bootstrap intervals, invalid-run rate, and cost per valid run.
+- **Same strategy in every cell regardless of treatment → pivot rule.** Retune payoff differences and outside-option economics; do not buy more runs.
+
+Topping up replicates after a stage is legitimate for this preliminary-evidence purpose; report the sampling plan and staging decisions in the limitations section. This is preliminary evidence, not a definitive simulation leaderboard.
 
 #### 8D. Stronger-model confirmation
 
@@ -541,13 +542,13 @@ The minimum public or funder-facing package should contain:
 7. scripted positive and negative controls;
 8. a reproducibility manifest and replay artifact;
 9. a complete inference-cost report;
-10. a limitations section that distinguishes preliminary evidence from benchmark validation.
+10. a limitations section that distinguishes preliminary evidence from simulation validation.
 
 The funding claim should be:
 
 > We have built a low-cost, causally controlled testbed for evaluating autonomous firms in consequential interorganizational project networks, and we have demonstrated that a manipulable relationship or market condition changes measurable agent strategy and project outcomes.
 
-Do not claim that the benchmark broadly measures “multi-agent intelligence” from one scenario.
+Do not claim that the simulation broadly measures “multi-agent intelligence” from one scenario.
 
 ## 6. Cost plan
 
@@ -682,7 +683,7 @@ Issue the next tasks in this exact order:
 7. **Relationship-history and outside-option treatment records.**
 8. **Run-level analysis row and fixed metric calculations.**
 9. **Eight-run cheap-model smoke matrix.**
-10. **Forty-run frozen pilot and evidence report.**
+10. **Staged frozen pilot (Stage A, then Stage B or C per the 8C branch rules) and evidence report.**
 
 A coding agent should receive only one numbered task at a time, along with the corresponding acceptance checkpoint and non-goals from this document.
 

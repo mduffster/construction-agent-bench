@@ -325,7 +325,7 @@
           "public_meaning": "The team receives a complete package and no early payment request.",
           "risk_levels": {
             "cost": "low",
-            "delay": "high",
+            "delay": "medium",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -339,7 +339,7 @@
             "blocker_add": "Supplier did not request early project cash; later decisions need another funding path.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
-            "completion_delta_weeks": 2,
+            "completion_delta_weeks": 1,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 0,
             "flags_add": [
@@ -636,7 +636,7 @@
           "public_meaning": "The backup option is preserved and the review is stronger.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -650,7 +650,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 0,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 150000,
             "flags_add": [
@@ -1408,7 +1408,7 @@
           "public_meaning": "The owner keeps support possible only if controls clear.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -1422,7 +1422,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 200000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 50000,
             "flags_add": [
@@ -1675,7 +1675,7 @@
           "public_meaning": "Money may move only under escrow and reserve controls.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -1689,7 +1689,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 300000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 50000,
             "flags_add": [
@@ -1972,7 +1972,7 @@
           "public_meaning": "You use outside financing to keep the full sequence possible, reducing delay risk but hurting your own economics.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -1986,7 +1986,7 @@
             "blocker_add": null,
             "blocker_remove": "Lot B has a known cure issue.",
             "cash_delta_usd": 500000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": 0,
             "cost_delta_usd": 250000,
             "flags_add": [
@@ -2261,7 +2261,7 @@
           "public_meaning": "The package keeps backup alive and asks for stronger controls, making recovery more expensive but more protected.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -2275,7 +2275,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 250000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": 0,
             "cost_delta_usd": 300000,
             "flags_add": [
@@ -2789,7 +2789,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 0,
-            "completion_delta_weeks": 2,
+            "completion_delta_weeks": 1,
             "compliance_risk_delta": -2,
             "cost_delta_usd": 50000,
             "flags_add": [
@@ -3047,7 +3047,7 @@
           "public_meaning": "The owner approves support only inside a tighter, more controlled package.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -3061,7 +3061,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 450000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 300000,
             "flags_add": [
@@ -3310,7 +3310,7 @@
           "public_meaning": "Funds move only through escrow, keeping control but limiting immediate supplier liquidity.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -3324,7 +3324,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 300000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 50000,
             "flags_add": [
@@ -3577,7 +3577,7 @@
           "public_meaning": "Both lots ship after the cleaner cure path, preserving the full sequence.",
           "risk_levels": {
             "cost": "low",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -3591,7 +3591,7 @@
             "blocker_add": null,
             "blocker_remove": "Lot B has a known cure issue.",
             "cash_delta_usd": 0,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 80000,
             "flags_add": [
@@ -4325,7 +4325,7 @@
           "public_meaning": "The owner authorizes a larger controlled recovery and assigns cost shares.",
           "risk_levels": {
             "cost": "high",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -4339,7 +4339,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 0,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 700000,
             "flags_add": [
@@ -4564,7 +4564,7 @@
           "public_meaning": "Any further lending support requires more owner equity and reserve protection.",
           "risk_levels": {
             "cost": "medium",
-            "delay": "medium",
+            "delay": "low",
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
@@ -4578,7 +4578,7 @@
             "blocker_add": null,
             "blocker_remove": null,
             "cash_delta_usd": 300000,
-            "completion_delta_weeks": 1,
+            "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
             "cost_delta_usd": 50000,
             "flags_add": [
@@ -5441,7 +5441,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "54d3a398da505118d22bb060a356215bbe60876ce2cad99b17d07f851383072f",
+    "content_hash": "f1354c58325042ed62dd78105246259f29f8ad6fac2571d312661a0367c0912d",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",

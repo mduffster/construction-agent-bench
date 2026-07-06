@@ -10,7 +10,7 @@ from constructbench.scenarios import SCENARIOS
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run a shared-state combined ConstructBench fixture set.")
+    parser = argparse.ArgumentParser(description="Run a shared-state combined ConstructSim fixture set.")
     parser.add_argument(
         "--case",
         action="append",

@@ -1,4 +1,4 @@
-# ConstructBench Web Game Copy Edit Sheet
+# ConstructSim Web Game Copy Edit Sheet
 
 This file is for editing public-facing web game copy before it gets wired back into the app/export script. Dynamic values are shown in braces, for example `{planned_cost}`.
 

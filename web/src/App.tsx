@@ -36,12 +36,62 @@ import type {
   GameData,
   GameEvaluation,
   GameState,
+  ProjectGameState,
   RiskLevel,
 } from "./lib/types";
 
 const gameData = rawGameData as GameData;
 const playableRoleIds = gameData.playable_roles;
-type PlayView = "decision" | "result" | "trust";
+type PlayView = "decision" | "result";
+type ProjectPhase =
+  | "empty_lot"
+  | "paperwork_dispute"
+  | "steel_delivery"
+  | "delivery_blocked"
+  | "erection_progress"
+  | "erected_structure";
+
+const projectPhaseImages: Record<
+  ProjectPhase,
+  { alt: string; src: string; summary: string }
+> = {
+  empty_lot: {
+    alt: "Empty graded construction lot waiting for steel delivery",
+    src: "/images/s01-phase-empty-lot.png",
+    summary:
+      "The project is waiting for cash, inspection, and release controls before steel can move.",
+  },
+  paperwork_dispute: {
+    alt: "Construction paperwork and payment documents with held steel behind the site fence",
+    src: "/images/s01-phase-paperwork-dispute.png",
+    summary:
+      "The action is still in the payment, documentation, and release-review lane.",
+  },
+  steel_delivery: {
+    alt: "Flatbed truck delivering steel beams to a construction site",
+    src: "/images/s01-phase-steel-delivery.png",
+    summary:
+      "Steel is moving toward the site, but the full sequence still depends on release and coordination.",
+  },
+  delivery_blocked: {
+    alt: "Steel delivery truck stopped at a blocked construction gate with paperwork in view",
+    src: "/images/s01-phase-delivery-blocked.png",
+    summary:
+      "The steel path is blocked by a gate, paperwork, funding, labor, or release problem.",
+  },
+  erection_progress: {
+    alt: "Crane lifting steel beams into a partially erected structure",
+    src: "/images/s01-phase-erection-progress.png",
+    summary:
+      "Released steel and field capacity have turned into active erection work.",
+  },
+  erected_structure: {
+    alt: "Completed steel frame standing on the construction site",
+    src: "/images/s01-phase-erected-structure.png",
+    summary:
+      "The steel sequence is substantially erected and the project has a viable path forward.",
+  },
+};
 
 const similarWork = [
   {
@@ -77,6 +127,13 @@ const similarWork = [
 ];
 
 export default function App() {
+  useEffect(() => {
+    Object.values(projectPhaseImages).forEach((phaseImage) => {
+      const image = new Image();
+      image.src = phaseImage.src;
+    });
+  }, []);
+
   const route = useRoute();
   if (route.pathname === "/play/s01") {
     return <GameRoute role={route.params.get("role") as AgentId | null} />;
@@ -96,17 +153,20 @@ function HomePage() {
       <section className="overview-hero">
         <div className="overview-copy">
           <p className="eyebrow">About</p>
-          <h1>ConstructBench</h1>
+          <h1>ConstructSim</h1>
           <p className="lede">
-            ConstructBench starts in the world of construction but does not stop
-            there. It simulates normal but complex multi-firm coordination and
-            transaction structures with AI agents.
+            ConstructSim starts in the world of construction but the idea is to
+            test on many multi-firm coordination tasks. These are simulations of
+            normal but complex multi-firm coordination and transaction
+            structures with AI agents.
           </p>
           <p>
-            The aim is to understand how AI agents manage coordination on a
-            shared goal under private and public constraints. This differs from
-            existing benchmarks narrowly, in focusing on project-level completion
-            and tradeoff management.
+            I'm focused on understanding how AI agents manage coordination on a
+            shared goal while managing private and public constraints. In these
+            scenarios, switching costs are high, and acting overly cooperative
+            or overly competitive will cause projects to fail, or generate
+            massive private losses. In these scenarios, project completion,
+            private incentives, and realistic tradeoffs matter.
           </p>
           <p>I'm open to collaboration on this project.</p>
           <div className="hero-actions">
@@ -151,7 +211,11 @@ function HomePage() {
           In the current public game, you choose one of four firms while the
           lender and inspector remain active system participants. You will have
           public project information, private role information, and decisions
-          that can benefit you privately or benefit the broader project.
+          that can benefit you privately or benefit the broader project. The
+          game is a simplified version of the full simulation: you face the
+          same kind of information problem the AI agents face, but the agents
+          work through much larger structured decision spaces than the choices
+          shown here.
         </p>
       </section>
 
@@ -182,7 +246,9 @@ function PlayLanding() {
         <p className="lede">
           You will play one scenario as one of four firms. The lender and
           inspector remain in the project as system actors, and their decisions
-          can still change the result.
+          can still change the result. Each choice you make is a simplified
+          stand-in for a much larger structured decision the AI agents must
+          construct in the full simulation.
         </p>
       </section>
       <section className="role-grid" aria-label="Playable roles">
@@ -263,29 +329,21 @@ function GamePage({ role }: { role: AgentId }) {
       ? node.choices.find((choice) => choice.choice_id === state.decisions[node.node_id])
       : null;
 
-  if (decisionMade && node && selectedChoice && view === "trust") {
-    return (
-      <Shell variant="game">
-        <TrustUpdateScreen
-          complete={complete}
-          state={state}
-          setState={setState}
-          onContinue={() => {
-            setState((current) => advanceRound(gameData, current));
-            setView("decision");
-          }}
-        />
-      </Shell>
-    );
-  }
-
   return (
     <Shell variant="game">
       <section className="game-shell">
         <main className="play-surface">
           <StageHeader roundLabel={round?.label ?? ""} title={node?.title ?? ""} />
 
-          {node && !decisionMade && <DecisionBrief node={node} />}
+          {node && !decisionMade && (
+            <>
+              <ProjectScene
+                state={evaluation.state}
+                title="Site view before your decision"
+              />
+              <DecisionBrief node={node} />
+            </>
+          )}
 
           {!decisionMade && node && (
             <section className="choice-grid" aria-label="Decision choices">
@@ -319,9 +377,15 @@ function GamePage({ role }: { role: AgentId }) {
 
           {decisionMade && node && selectedChoice && (
             <DecisionResult
+              complete={complete}
               evaluation={evaluation}
               selectedChoice={selectedChoice}
-              onContinue={() => setView("trust")}
+              state={state}
+              setState={setState}
+              onContinue={() => {
+                setState((current) => advanceRound(gameData, current));
+                setView("decision");
+              }}
             />
           )}
         </main>
@@ -466,96 +530,198 @@ function DecisionBrief({
 }
 
 function DecisionResult({
+  complete,
   evaluation,
   selectedChoice,
-  onContinue,
-}: {
-  evaluation: GameEvaluation;
-  selectedChoice: Choice;
-  onContinue: () => void;
-}) {
-  const trace = evaluation.currentRoundTrace;
-  const playerMove = trace?.moves.find((move) => move.isPlayer);
-  return (
-    <section className="result-panel">
-      <div className="section-title">
-        <CheckCircle2 size={20} />
-        <h2>What happened</h2>
-      </div>
-      <p className="result-choice">You chose: {selectedChoice.label}</p>
-      <p>{playerMove?.summary ?? selectedChoice.after_choice}</p>
-      <RoundMoveList trace={trace} />
-      <button className="primary-button primary-button--game" onClick={onContinue}>
-        Update partner trust <ArrowRight size={18} />
-      </button>
-    </section>
-  );
-}
-
-function RoundMoveList({ trace }: { trace: GameEvaluation["currentRoundTrace"] }) {
-  if (!trace) {
-    return null;
-  }
-  return (
-    <section className="response-panel" aria-label="Visible round responses">
-      <div className="section-title">
-        <Users size={20} />
-        <h2>Project impacts this round</h2>
-      </div>
-      <div className="response-list">
-        {trace.moves.map((move) => (
-          <div className={move.isPlayer ? "response-row response-row--you" : "response-row"} key={move.nodeId}>
-            <strong>{roleLabel(move.actorId)}</strong>
-            <span>
-              {move.choiceLabel}
-              <small>{move.summary}</small>
-            </span>
-            <em>{move.isPlayer ? "you" : "partner"}</em>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function TrustUpdateScreen({
-  complete,
   state,
   setState,
   onContinue,
 }: {
   complete: boolean;
+  evaluation: GameEvaluation;
+  selectedChoice: Choice;
   state: GameState;
   setState: Dispatch<SetStateAction<GameState>>;
   onContinue: () => void;
 }) {
+  const trace = evaluation.currentRoundTrace;
+  const playerMove = trace?.moves.find((move) => move.isPlayer);
   return (
-    <section className="trust-screen">
-      <MessageSquare size={28} />
-      <h1>Has your counterparty trust changed?</h1>
-      <p>Based on the information you got this round, update any partner rating.</p>
-      {(Object.keys(state.trustRatings) as AgentId[]).map((agentId) => (
-        <label className="trust-row" key={agentId}>
-          <span>{roleLabel(agentId)}</span>
-          <input
-            aria-label={`Trust rating for ${agentId}`}
-            max={5}
-            min={1}
-            type="range"
-            value={state.trustRatings[agentId]}
-            onChange={(event) =>
-              setState((current) =>
-                recordTrust(gameData, current, agentId, Number(event.target.value))
-              )
-            }
-          />
-          <strong>{state.trustRatings[agentId]}</strong>
-        </label>
-      ))}
+    <>
+      <ProjectScene
+        state={trace?.stateAfter ?? evaluation.state}
+        title="Site view after the round"
+      />
+      <section className="result-panel">
+        <div className="section-title">
+          <CheckCircle2 size={20} />
+          <h2>What happened</h2>
+        </div>
+        <p className="result-choice">You chose: {selectedChoice.label}</p>
+        <p>{playerMove?.summary ?? selectedChoice.after_choice}</p>
+      </section>
+      <PartnerDecisionReview
+        trace={trace}
+        state={state}
+        setState={setState}
+      />
       <button className="primary-button primary-button--game" onClick={onContinue}>
         {complete ? "Show final outcome" : "Continue to next decision"}
         <ArrowRight size={18} />
       </button>
+    </>
+  );
+}
+
+function ProjectScene({
+  state,
+  title,
+}: {
+  state: ProjectGameState;
+  title: string;
+}) {
+  const tone = projectSceneTone(state);
+  const phase = projectPhaseFor(state);
+  const phaseImage = projectPhaseImages[phase];
+  const headline = criticalBlocker(state) ?? phaseImage.summary;
+  return (
+    <section className={`project-scene project-scene--${tone}`} aria-label={title}>
+      <div className="project-scene__header">
+        <p className="eyebrow">Project scene</p>
+        <h2>{title}</h2>
+        <p>{headline}</p>
+      </div>
+
+      <figure className={`project-postcard project-postcard--${phase}`}>
+        <img
+          alt={phaseImage.alt}
+          className="project-postcard__image"
+          decoding="sync"
+          loading="eager"
+          src={phaseImage.src}
+        />
+      </figure>
+
+      <div className="scene-bars" aria-label="Risk meters">
+        <SceneBar
+          label="Payment path"
+          status={paymentPathLabel(state)}
+          tone="cash"
+          value={paymentPathScore(state)}
+        />
+        <SceneBar
+          label="Steel release"
+          status={releasePathLabel(state)}
+          tone="release"
+          value={releasePathScore(state)}
+        />
+        <SceneBar
+          label="Project pressure"
+          status={pressureLabel(state)}
+          tone="risk"
+          value={pressureScore(state)}
+        />
+      </div>
+    </section>
+  );
+}
+
+function SceneBar({
+  label,
+  status,
+  value,
+  tone,
+}: {
+  label: string;
+  status: string;
+  value: number;
+  tone: "cash" | "release" | "risk";
+}) {
+  const clampedValue = Math.round(Math.max(0, Math.min(100, value)));
+  return (
+    <div
+      aria-label={`${label}: ${status}`}
+      aria-valuemax={100}
+      aria-valuemin={0}
+      aria-valuenow={clampedValue}
+      className={`scene-bar scene-bar--${tone}`}
+      role="meter"
+    >
+      <span>
+        {label}
+        <strong>{status}</strong>
+      </span>
+      <div>
+        <i style={{ width: `${clampedValue}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function PartnerDecisionReview({
+  trace,
+  state,
+  setState,
+}: {
+  trace: GameEvaluation["currentRoundTrace"];
+  state: GameState;
+  setState: Dispatch<SetStateAction<GameState>>;
+}) {
+  if (!trace) {
+    return null;
+  }
+  const partnerMoves = trace.moves.filter((move) => !move.isPlayer);
+  return (
+    <section className="partner-review-panel" aria-label="Partner decisions and trust">
+      <div className="section-title">
+        <Users size={20} />
+        <h2>Partner decisions and trust</h2>
+      </div>
+      <p className="trust-update-prompt">
+        This is the best public and private information you have about the actions
+        your business partners have taken. Do you want to adjust how much you trust
+        each partner?
+      </p>
+      <div className="partner-review-list">
+        {partnerMoves.map((move) => {
+          const reads = partnerDecisionReads(move);
+          return (
+            <article className="partner-review-card" key={move.nodeId}>
+              <header>
+                <strong>{roleLabel(move.actorId)}</strong>
+                <em>{move.choiceLabel}</em>
+              </header>
+              <p>{move.summary}</p>
+              <div className="decision-read-grid">
+                <div>
+                  <span>Charitable read</span>
+                  <p>{reads.charitable}</p>
+                </div>
+                <div>
+                  <span>Uncharitable read</span>
+                  <p>{reads.uncharitable}</p>
+                </div>
+              </div>
+              <label className="partner-trust-row">
+                <span>Trust</span>
+                <input
+                  aria-label={`Trust rating for ${move.actorId}`}
+                  max={5}
+                  min={1}
+                  type="range"
+                  value={state.trustRatings[move.actorId]}
+                  onChange={(event) =>
+                    setState((current) =>
+                      recordTrust(gameData, current, move.actorId, Number(event.target.value))
+                    )
+                  }
+                />
+                <strong>{state.trustRatings[move.actorId]}</strong>
+              </label>
+            </article>
+          );
+        })}
+      </div>
     </section>
   );
 }
@@ -567,6 +733,8 @@ function EndScreen({ state }: { state: GameState }) {
   const trustRatings = Object.values(state.trustRatings);
   const averageTrust =
     trustRatings.reduce((total, rating) => total + rating, 0) / trustRatings.length;
+  const scheduleDelta =
+    evaluation.state.completion_week - evaluation.state.baseline_completion_week;
   return (
     <section className="end-screen">
       <div className="outcome-header">
@@ -579,10 +747,11 @@ function EndScreen({ state }: { state: GameState }) {
       </div>
       <div className="metric-grid">
         <Metric icon={<DollarSign />} label="Your payoff" value={formatMoney(evaluation.playerPayoff)} />
-        <Metric icon={<ShieldCheck />} label="Private result" value={evaluation.playerPrivateSuccess ? "Success" : "Failure"} />
-        <Metric icon={<Users />} label="Coalition" value={evaluation.coalitionSuccess ? "Success" : "Failure"} />
-        <Metric icon={<Gauge />} label="Schedule delta" value={`+${evaluation.state.completion_week - evaluation.state.baseline_completion_week}`} />
+        <Metric icon={<ShieldCheck />} label="Organization target" value={evaluation.playerPrivateSuccess ? "Met" : "Missed"} />
+        <Metric icon={<Users />} label="Outcome mix" value={outcomeMixValue(evaluation)} />
+        <Metric icon={<Gauge />} label="Schedule vs baseline" value={formatDelta(scheduleDelta, "week")} />
       </div>
+      <OutcomeExplanation evaluation={evaluation} role={state.selectedRole} />
       <ComparisonPanel evaluation={evaluation} />
 
       <section className="timeline">
@@ -603,9 +772,9 @@ function EndScreen({ state }: { state: GameState }) {
           );
         })}
         <div className="timeline-row timeline-row--muted">
-          <strong>Policy</strong>
-          <span>{counterparties.length} counterparty decisions responded to your state</span>
-          <em>branching script</em>
+          <strong>Partners</strong>
+          <span>{counterparties.length} counterparty decisions responded to your project state</span>
+          <em>state-reactive decisions</em>
         </div>
       </section>
 
@@ -639,6 +808,32 @@ function EndScreen({ state }: { state: GameState }) {
   );
 }
 
+function OutcomeExplanation({
+  evaluation,
+  role,
+}: {
+  evaluation: GameEvaluation;
+  role: AgentId;
+}) {
+  const privateTarget = gameData.private_success_thresholds[role];
+  const privateGap = evaluation.playerPayoff - privateTarget;
+  const projectText = evaluation.projectSuccess
+    ? "The project stayed within the public cost and schedule limits."
+    : "The project missed the public cost or schedule limits.";
+  const privateText = evaluation.playerPrivateSuccess
+    ? `Your organization also met its private target of ${formatMoney(privateTarget)}.`
+    : `Your organization missed its private target of ${formatMoney(privateTarget)} by ${formatMoney(Math.abs(privateGap))}.`;
+
+  return (
+    <section className="outcome-explanation" aria-label="Outcome explanation">
+      <strong>{evaluation.projectSuccess && !evaluation.playerPrivateSuccess ? "Project success, private miss" : outcomeMixValue(evaluation)}</strong>
+      <p>
+        {projectText} {privateText}
+      </p>
+    </section>
+  );
+}
+
 function ResultsPage() {
   const state = createInitialGameState(gameData, "steel_supplier");
   const evaluation = evaluateGame(gameData, state);
@@ -652,7 +847,7 @@ function ResultsPage() {
         <p>
           The ideal row shows what happens when every party coordinates well even
           after the steel problem appears. The model row shows one Claude Haiku
-          all-agent run from the benchmark outputs.
+          all-agent run from the simulation outputs.
         </p>
         <ComparisonPanel evaluation={evaluation} playerOnly={false} />
       </section>
@@ -716,6 +911,19 @@ function plainOutcomeNote(pathLabel: string | null) {
   return labels[pathLabel ?? ""] ?? "Model-produced project outcome";
 }
 
+function outcomeMixValue(evaluation: GameEvaluation) {
+  if (evaluation.projectSuccess && evaluation.playerPrivateSuccess) {
+    return "Aligned";
+  }
+  if (evaluation.projectSuccess) {
+    return "Mixed";
+  }
+  if (evaluation.playerPrivateSuccess) {
+    return "Private only";
+  }
+  return "Missed";
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
@@ -737,7 +945,7 @@ function Shell({
       <header className="topbar">
         <a href="/" className="brand">
           <span className="brand-mark" />
-          ConstructBench
+          ConstructSim
         </a>
         <nav>
           <a href="/">Overview</a>
@@ -802,6 +1010,178 @@ function plainObjective(role: AgentId) {
   }[role];
 }
 
+function projectSceneTone(state: ProjectGameState) {
+  if (
+    criticalBlocker(state) ||
+    state.schedule_risk >= 5 ||
+    state.compliance_risk >= 5 ||
+    state.completion_week > state.success_deadline_week
+  ) {
+    return "blocked";
+  }
+  if (
+    state.schedule_risk >= 3 ||
+    state.compliance_risk >= 3 ||
+    state.cash_secured_usd < 900_000 ||
+    !state.lot_b_ready ||
+    !state.lot_b_released
+  ) {
+    return "watch";
+  }
+  return "clear";
+}
+
+function projectPhaseFor(state: ProjectGameState): ProjectPhase {
+  if (isOpeningWaitingState(state)) {
+    return "empty_lot";
+  }
+  if (
+    criticalBlocker(state) ||
+    state.labor_capacity === "released" ||
+    state.schedule_risk >= 5 ||
+    state.compliance_risk >= 5 ||
+    hasStoryFlag(state, "loan_unavailable") ||
+    hasStoryFlag(state, "owner_no_support") ||
+    hasStoryFlag(state, "gc_rejected_supplier_path")
+  ) {
+    return "delivery_blocked";
+  }
+  if (
+    state.lot_a_released &&
+    state.lot_b_released &&
+    state.lot_b_ready &&
+    state.labor_capacity !== "uncommitted"
+  ) {
+    return "erected_structure";
+  }
+  if (state.lot_a_released && state.lot_b_released) {
+    return "erection_progress";
+  }
+  if (state.lot_a_released || state.lot_b_released) {
+    return "steel_delivery";
+  }
+  if (
+    state.cash_secured_usd > 0 ||
+    state.compliance_risk > 0 ||
+    state.schedule_risk > 0 ||
+    state.backup_status !== "none" ||
+    hasStoryFlag(state, "supplier_thin_disclosure") ||
+    hasStoryFlag(state, "inspection_deeper_review")
+  ) {
+    return "paperwork_dispute";
+  }
+  return "empty_lot";
+}
+
+function isOpeningWaitingState(state: ProjectGameState) {
+  return (
+    state.cash_secured_usd === 0 &&
+    state.verified_value_usd === 0 &&
+    state.release_value_usd === 0 &&
+    state.backup_status === "none" &&
+    state.labor_capacity === "uncommitted" &&
+    !state.lot_a_released &&
+    !state.lot_b_released
+  );
+}
+
+function criticalBlocker(state: ProjectGameState) {
+  return (
+    state.blockers.find((blocker) =>
+      /never|blocked|not available|not released|cash gap|compliance failure|schedule failure|miss/i.test(
+        blocker
+      )
+    ) ?? null
+  );
+}
+
+function paymentPathScore(state: ProjectGameState) {
+  return Math.min(100, (state.cash_secured_usd / 900_000) * 100);
+}
+
+function releasePathScore(state: ProjectGameState) {
+  if (state.backup_status === "active") {
+    return 90;
+  }
+  let score = 0;
+  if (state.lot_a_released) {
+    score += 45;
+  }
+  if (state.lot_b_released) {
+    score += 45;
+  }
+  if (state.release_value_usd > 0) {
+    score += 10;
+  }
+  return Math.min(100, score);
+}
+
+function pressureScore(state: ProjectGameState) {
+  return Math.min(100, (Math.max(state.schedule_risk, state.compliance_risk) / 6) * 100);
+}
+
+function paymentPathLabel(state: ProjectGameState) {
+  if (paymentPathScore(state) >= 100) {
+    return "ready";
+  }
+  if (state.cash_secured_usd > 0) {
+    return "partial";
+  }
+  return "unfunded";
+}
+
+function releasePathLabel(state: ProjectGameState) {
+  if (state.backup_status === "active") {
+    return "backup active";
+  }
+  if (state.lot_a_released && state.lot_b_released) {
+    return "released";
+  }
+  if (state.lot_a_released || state.lot_b_released || state.release_value_usd > 0) {
+    return "partial";
+  }
+  return "held";
+}
+
+function pressureLabel(state: ProjectGameState) {
+  const score = pressureScore(state);
+  if (score >= 80) {
+    return "high";
+  }
+  if (score >= 45) {
+    return "watch";
+  }
+  return "low";
+}
+
+function hasStoryFlag(state: ProjectGameState, flag: string) {
+  return state.story_flags.includes(flag);
+}
+
+function partnerDecisionReads(move: { actorId: AgentId; choiceId: ChoiceId }) {
+  const actor = roleLabel(move.actorId).toLowerCase();
+  return {
+    balanced: {
+      charitable:
+        `The ${actor} is treating the recovery path as workable and is keeping the project moving while accepting some exposure.`,
+      uncharitable:
+        `The ${actor} may be pushing ahead before every condition is fully settled because momentum helps their own position.`,
+    },
+    conservative: {
+      charitable:
+        `The ${actor} is adding controls because the current package still has real payment, release, or schedule risk.`,
+      uncharitable:
+        `The ${actor} may be slowing the job and shifting cost, delay, or proof burdens to other players.`,
+    },
+    self_protective: {
+      charitable:
+        `The ${actor} is protecting itself from a package that may not be supportable yet.`,
+      uncharitable:
+        `The ${actor} may be prioritizing its own downside over the shared project schedule.`,
+    },
+  }[move.choiceId];
+}
+
 function projectStatusLabel(evaluation: GameEvaluation) {
   if (evaluation.status === "viable") {
     return "Viable as planned";
@@ -838,6 +1218,14 @@ function formatMoney(value: number) {
     return `${sign}$${(amount / 1_000_000).toFixed(2)}M`;
   }
   return `${sign}$${amount.toLocaleString()}`;
+}
+
+function formatDelta(value: number, unit: string) {
+  const label = Math.abs(value) === 1 ? unit : `${unit}s`;
+  if (value === 0) {
+    return `0 ${label}`;
+  }
+  return `${value > 0 ? "+" : ""}${value} ${label}`;
 }
 
 function useRoute() {

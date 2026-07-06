@@ -1,4 +1,4 @@
-"""ConstructBench stateful multi-agent construction simulation."""
+"""ConstructSim stateful multi-agent construction simulation."""
 
 from constructbench.combined import CombinedCase, CombinedRunResult, run_combined_fixtures
 from constructbench.runner import RunResult, run_fixture, run_policy

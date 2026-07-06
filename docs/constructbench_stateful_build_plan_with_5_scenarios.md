@@ -1,4 +1,4 @@
-# ConstructBench Stateful Multi-Agent Simulation
+# ConstructSim Stateful Multi-Agent Simulation
 
 ## Implementation Plan and Five-Scenario Pack
 

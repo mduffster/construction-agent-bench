@@ -1,4 +1,4 @@
-# ConstructBench: Initial Build Brief
+# ConstructSim: Initial Build Brief
 
 ## 1. Project Objective
 

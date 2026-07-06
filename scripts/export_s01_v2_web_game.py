@@ -841,7 +841,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("supplier_high_request", "supplier_thin_disclosure")
                 remove_flags("supplier_disclosed_lot_b", "supplier_no_upfront_request")
             else:
-                update(verified_value_delta_usd=1_350_000, completion_delta_weeks=2, schedule_risk_delta=1, compliance_risk_delta=-1, blocker_add="Supplier did not request early project cash; later decisions need another funding path.")
+                update(verified_value_delta_usd=1_350_000, completion_delta_weeks=1, schedule_risk_delta=1, compliance_risk_delta=-1, blocker_add="Supplier did not request early project cash; later decisions need another funding path.")
                 add_flags("supplier_no_upfront_request", "supplier_disclosed_lot_b")
                 remove_flags("supplier_high_request", "supplier_thin_disclosure")
         elif node_id.endswith("COMMITMENT"):
@@ -854,7 +854,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("supplier_outside_work", "lot_b_late")
                 remove_flags("supplier_committed_cure")
             else:
-                update(cash_delta_usd=500_000, cost_delta_usd=250_000, completion_delta_weeks=1, lot_b_ready=True, blocker_remove="Lot B has a known cure issue.")
+                update(cash_delta_usd=500_000, cost_delta_usd=250_000, lot_b_ready=True, blocker_remove="Lot B has a known cure issue.")
                 add_flags("supplier_self_financed_cure", "supplier_committed_cure")
                 remove_flags("supplier_outside_work", "lot_b_late")
         else:
@@ -867,7 +867,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("supplier_shipped_only_lot_a", "lot_b_late")
                 remove_flags("supplier_shipped_both_lots")
             else:
-                update(cost_delta_usd=80_000, completion_delta_weeks=1, lot_b_ready=True, compliance_risk_delta=-1, blocker_remove="Lot B has a known cure issue.")
+                update(cost_delta_usd=80_000, lot_b_ready=True, compliance_risk_delta=-1, blocker_remove="Lot B has a known cure issue.")
                 add_flags("supplier_shipped_both_lots", "supplier_extra_cleanup")
                 remove_flags("supplier_shipped_only_lot_a", "lot_b_late")
 
@@ -882,7 +882,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("gc_overcertified_no_backup")
                 remove_flags("backup_reserved")
             else:
-                update(verified_value_delta_usd=1_350_000, backup_status="reserved", cost_delta_usd=150_000, completion_delta_weeks=1, compliance_risk_delta=-1)
+                update(verified_value_delta_usd=1_350_000, backup_status="reserved", cost_delta_usd=150_000, compliance_risk_delta=-1)
                 add_flags("gc_full_review_backup", "backup_reserved")
                 remove_flags("gc_overcertified_no_backup")
         elif node_id.endswith("INTEGRATED_PACKAGE"):
@@ -895,7 +895,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("gc_rejected_supplier_path")
                 remove_flags("gc_shared_recovery_package")
             else:
-                update(cash_delta_usd=250_000, gc_bridge_delta_usd=250_000, backup_status="reserved", cost_delta_usd=300_000, completion_delta_weeks=1)
+                update(cash_delta_usd=250_000, gc_bridge_delta_usd=250_000, backup_status="reserved", cost_delta_usd=300_000)
                 add_flags("gc_controlled_backup_package", "backup_reserved")
                 remove_flags("gc_rejected_supplier_path")
         else:
@@ -920,7 +920,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("owner_no_support")
                 remove_flags("owner_limited_support")
             else:
-                update(cash_delta_usd=200_000, owner_support_delta_usd=200_000, cost_delta_usd=50_000, completion_delta_weeks=1, compliance_risk_delta=-1)
+                update(cash_delta_usd=200_000, owner_support_delta_usd=200_000, cost_delta_usd=50_000, compliance_risk_delta=-1)
                 add_flags("owner_controlled_support")
                 remove_flags("owner_no_support")
         elif node_id.endswith("PACKAGE_DECISION"):
@@ -933,7 +933,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 add_flags("owner_package_rejected", "owner_no_support")
                 remove_flags("owner_package_funded")
             else:
-                update(cash_delta_usd=450_000, owner_support_delta_usd=450_000, cost_delta_usd=300_000, completion_delta_weeks=1, compliance_risk_delta=-1)
+                update(cash_delta_usd=450_000, owner_support_delta_usd=450_000, cost_delta_usd=300_000, compliance_risk_delta=-1)
                 add_flags("owner_controlled_package")
                 remove_flags("owner_package_rejected")
         else:
@@ -944,7 +944,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 update(cash_delta_usd=-100_000, cost_delta_usd=-100_000, completion_delta_weeks=4, schedule_risk_delta=3)
                 add_flags("owner_refuses_final_cost")
             else:
-                update(cost_delta_usd=700_000, completion_delta_weeks=1, compliance_risk_delta=-1)
+                update(cost_delta_usd=700_000, compliance_risk_delta=-1)
                 add_flags("owner_controlled_final_recovery")
 
     elif actor_id == "labor_subcontractor":
@@ -971,7 +971,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
             add_flags("loan_unavailable")
             remove_flags("loan_draw_released")
         else:
-            update(cash_delta_usd=300_000, lender_release_delta_usd=300_000, cost_delta_usd=50_000, completion_delta_weeks=1, compliance_risk_delta=-1)
+            update(cash_delta_usd=300_000, lender_release_delta_usd=300_000, cost_delta_usd=50_000, compliance_risk_delta=-1)
             add_flags("loan_escrow_controls")
             remove_flags("loan_unavailable")
 
@@ -1006,7 +1006,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 update(completion_delta_weeks=6, schedule_risk_delta=4, blocker_add="No steel has been released for the field.")
                 add_flags("inspection_blocks_release")
             else:
-                update(release_value_delta_usd=950_000, lot_a_released=True, cost_delta_usd=50_000, completion_delta_weeks=2, compliance_risk_delta=-2)
+                update(release_value_delta_usd=950_000, lot_a_released=True, cost_delta_usd=50_000, completion_delta_weeks=1, compliance_risk_delta=-2)
                 add_flags("inspection_deeper_lot_a_review")
 
     return effect

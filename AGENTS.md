@@ -2,7 +2,7 @@
 
 ## Project Scope
 
-ConstructBench is now a stateful business-agent simulation for construction-project decision cascades. The source of truth for scenario content is:
+ConstructSim is now a stateful business-agent simulation for construction-project decision cascades. The source of truth for scenario content is:
 
 ```text
 docs/constructbench_stateful_build_plan_with_5_scenarios.md
@@ -160,12 +160,12 @@ All scenario and live-agent run outputs should go under `outputs/`.
 ## Public Web App
 
 The `web/` directory is a static Vite + React + TypeScript dissemination app.
-It is not the benchmark runtime and must not become a parallel source of
+It is not the harness runtime and must not become a parallel source of
 scenario truth.
 
 The web app currently exposes:
 
-- `/` overview page for ConstructBench
+- `/` overview page for ConstructSim
 - `/play` actor selection
 - `/play/s01` playable human version of `S01_V2_OFFSITE_STEEL_DRAW`
 - `/results` comparison page for ideal fixture, Claude Haiku run, and player outcome
@@ -187,11 +187,11 @@ decision schemas, role briefs, payoff thresholds, witness outcomes, and content
 hashes should come through the export script. Frontend copy may simplify those
 facts for humans, but it should preserve the underlying harness semantics.
 
-The public human game is intentionally smaller than the benchmark simulation:
+The public human game is intentionally smaller than the full simulation:
 
 - humans can play four roles: steel supplier, GC, owner, and labor subcontractor
 - lender and inspector remain system-controlled roles in the web game
-- the benchmark harness still models all six organizations as agents
+- the simulation harness still models all six organizations as agents
 
 The web game is static and client-side only. It uses an authored TypeScript
 state engine to mirror the S01 V2 coordination problem. Player choices should
@@ -247,20 +247,14 @@ This audit checks every reachable decision option and parameter value across all
 
 Current combined-scenario support is `shared_state_additive_timing`: S00 supplies the implicit base project state, while perturbation modules contribute events, decisions, checkpoint rules, cost deltas, and schedule-delay deltas to one run. Cost deltas add directly to the S00 base cost. Completion is computed as the S00 baseline completion tick plus the sum of module schedule-delay deltas, so timing impacts stack instead of one module overwriting another with an absolute completion date.
 
-## Local LLM Gate
+## Hosted Model Gate
 
-Use local Ollama models only in the 3B-7B range. Do not use smaller or larger models for live agent tests.
+Local small-model (Ollama/Gemma) support is retired. Live agent runs use hosted Anthropic models, with Claude Haiku as the minimum model tier. Their earlier role — confirming that agents receive the right observations and trigger correctly — is covered without model calls by the deterministic fixture suite and by rendering the exact initialization prompts.
 
-The current Gemma smoke model is:
-
-```bash
-gemma4:e2b
-```
-
-Before hosted-model batches, run the isolated Gemma action smokes:
+Before hosted-model batches, the deterministic suite must be green and, optionally, run one single-scenario Haiku smoke:
 
 ```bash
-uv run python scripts/run_smoke.py --model gemma4:e2b
+uv run python scripts/run_one.py --scenario S01 --variant normal --policy llm
 ```
 
 Pass condition is valid required agent action, not project success.
@@ -268,10 +262,8 @@ Pass condition is valid required agent action, not project success.
 Live LLM batch runs require an explicit opt-in:
 
 ```bash
-uv run python scripts/run_batch.py --policy llm --provider ollama --model gemma4:e2b --allow-live-batch
+uv run python scripts/run_batch.py --policy llm --provider anthropic --allow-live-batch
 ```
-
-Do not run Haiku or other hosted batches until deterministic tests and Gemma smokes pass.
 
 To inspect exact persistent initialization prompts without calling a model:
 

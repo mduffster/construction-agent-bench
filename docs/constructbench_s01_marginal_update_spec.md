@@ -1,8 +1,8 @@
-# ConstructBench S01 Marginal Update Specification
+# ConstructSim S01 Marginal Update Specification
 
 **Status:** implementation specification  
 **Scope:** replace only the current S01 scenario logic with a denser Normal scenario  
-**Primary constraint:** preserve the existing ConstructBench architecture
+**Primary constraint:** preserve the existing ConstructSim architecture
 
 ## 1. Task for the coding agent
 
@@ -1400,6 +1400,6 @@ Do not include any of the following in this task:
 - additional agents;
 - a full economy;
 - refactoring unrelated scenarios;
-- benchmark-scale model runs.
+- batch-scale model runs.
 
-The immediate deliverable is one realistic, replayable, six-agent Normal scenario implemented as a marginal extension of the current ConstructBench harness.
+The immediate deliverable is one realistic, replayable, six-agent Normal scenario implemented as a marginal extension of the current ConstructSim harness.

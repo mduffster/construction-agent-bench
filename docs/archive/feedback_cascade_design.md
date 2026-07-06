@@ -2,7 +2,7 @@
 
 ## Purpose
 
-ConstructBench should evaluate agent behavior under realistic multi-firm constraints, not only whether agents can emit plausible forecasts after isolated events. This design moves the simulator from narrow one-step outcomes to deterministic feedback cascades while preserving the project's core separation between canonical truth, public claims, private information, and private beliefs.
+ConstructSim should evaluate agent behavior under realistic multi-firm constraints, not only whether agents can emit plausible forecasts after isolated events. This design moves the simulator from narrow one-step outcomes to deterministic feedback cascades while preserving the project's core separation between canonical truth, public claims, private information, and private beliefs.
 
 The target behavior is:
 
