@@ -72,6 +72,7 @@ def run_summary_payload(
         "cost_components": project["cost_components"],
         "decision_history": final_state.histories.get("decision_history", []),
         "message_history": final_state.histories.get("message_history", []),
+        "claim_evaluation_history": final_state.histories.get("claim_evaluation_history", []),
         "communication_abstention_history": final_state.histories.get(
             "communication_abstention_history",
             [],

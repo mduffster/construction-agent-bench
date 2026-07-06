@@ -61,6 +61,9 @@ def accommodation_policy(price_relief: int = 600_000):
                     "price_amendment_request": price_relief,
                     "delivery_date_amendment_request": None,
                     "advance_payment_request": 0,
+                    "claimed_incremental_cost_usd": 800_000,
+                    "claimed_liquidity_requirement_usd": 0,
+                    "claimed_on_time_probability": 1.0,
                 },
             ),
             "S01_GC_PROCUREMENT_PLAN": ("accept_selected_plan", {}),
@@ -87,6 +90,9 @@ def switching_policy():
                     "price_amendment_request": 0,
                     "delivery_date_amendment_request": None,
                     "advance_payment_request": 0,
+                    "claimed_incremental_cost_usd": 800_000,
+                    "claimed_liquidity_requirement_usd": 0,
+                    "claimed_on_time_probability": 1.0,
                 },
             ),
             "S01_GC_PROCUREMENT_PLAN": ("replace_supplier", {}),
@@ -109,8 +115,19 @@ def _run(instance_id: str, policies):
 
 def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
     instances = list_scenario_instances(S01_SCENARIO_ID)
+    variant_ids = {
+        f"{base_id}_{suffix}"
+        for base_id in INSTANCE_IDS
+        for suffix in ["SWITCH_MID", "GAP_HIGH"]
+    }
 
-    assert {instance["instance_id"] for instance in instances} == INSTANCE_IDS
+    assert {instance["instance_id"] for instance in instances} == INSTANCE_IDS | variant_ids
+    for instance in instances:
+        economic_variant = instance["treatment"].get("economic_variant")
+        if instance["instance_id"] in INSTANCE_IDS:
+            assert economic_variant is None
+        else:
+            assert economic_variant in {"switch_cost_mid", "liquidity_gap_high"}
     assert {
         (
             instance["treatment"]["relationship_history_condition"],

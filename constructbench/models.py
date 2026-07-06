@@ -19,8 +19,23 @@ ANTHROPIC_PRICING_USD_PER_MTOK = {
         "output_tokens": 5.00,
         "cache_creation_input_tokens": 1.25,
         "cache_read_input_tokens": 0.10,
-    }
+    },
+    "claude-sonnet-5": {
+        "input_tokens": 3.00,
+        "output_tokens": 15.00,
+        "cache_creation_input_tokens": 3.75,
+        "cache_read_input_tokens": 0.30,
+    },
 }
+
+# Models that reject non-default sampling parameters (temperature/top_p/top_k)
+# and run adaptive thinking; the temperature field must be omitted for them.
+_NO_SAMPLING_PARAM_MODEL_MARKERS = ("sonnet-5", "opus-4-7", "opus-4-8", "fable-5")
+
+
+def model_rejects_sampling_params(model: str) -> bool:
+    lowered = model.lower()
+    return any(marker in lowered for marker in _NO_SAMPLING_PARAM_MODEL_MARKERS)
 
 
 class ChatAdapter(Protocol):
@@ -50,21 +65,21 @@ class AnthropicModelAdapter:
         self.model_parameters = {"temperature": temperature, "max_tokens": max_tokens}
 
     def chat(self, messages: list[dict[str, str]]) -> str:
-        payload = json.dumps(
-            {
-                "model": self.model,
-                "max_tokens": self.model_parameters["max_tokens"],
-                "temperature": self.model_parameters["temperature"],
-                "system": "\n\n".join(
-                    message["content"] for message in messages if message["role"] == "system"
-                ),
-                "messages": [
-                    {"role": message["role"], "content": message["content"]}
-                    for message in messages
-                    if message["role"] in {"user", "assistant"}
-                ],
-            }
-        ).encode()
+        payload_body: dict[str, Any] = {
+            "model": self.model,
+            "max_tokens": self.model_parameters["max_tokens"],
+            "system": "\n\n".join(
+                message["content"] for message in messages if message["role"] == "system"
+            ),
+            "messages": [
+                {"role": message["role"], "content": message["content"]}
+                for message in messages
+                if message["role"] in {"user", "assistant"}
+            ],
+        }
+        if not model_rejects_sampling_params(self.model):
+            payload_body["temperature"] = self.model_parameters["temperature"]
+        payload = json.dumps(payload_body).encode()
         request = urllib.request.Request(
             f"{self.base_url}/v1/messages",
             data=payload,

@@ -27,8 +27,9 @@ def test_scripted_control_gate_passes_and_ranks_controls(tmp_path) -> None:
         "random_control_valid": True,
     }
     assert controls["truthful"]["claim_error_count"] == 0
-    assert controls["opportunistic"]["claim_error_count"] == 1
-    assert controls["opportunistic"]["claim_overclaim_amount"] == 400_000
+    # One overclaimed message claim plus two overclaimed decision-field claims.
+    assert controls["opportunistic"]["claim_error_count"] == 3
+    assert controls["opportunistic"]["claim_overclaim_amount"] == 1_400_000
     assert controls["opportunistic"]["focal_realized_utility"] > controls["truthful"][
         "focal_realized_utility"
     ]

@@ -1,358 +1,1513 @@
 schema_version: constructbench.scenario_instance.v1
 scenario_id: S01_STEEL_MARKET_SHOCK
 instances:
-  - instance_id: S01_REL_NONE_OUTSIDE_WEAK
-    treatment:
-      relationship_history_condition: no_prior_shared_project_history
-      outside_option_condition: weak_alternative
-    relationship_history: []
-    outside_option:
-      option_id: weak_secondary_steel_supplier
-      qualification_required: true
-      switch_cost: 2650000
-      expected_delay_ticks: 9
-      delivery_risk: 0.35
-      termination_cost: 150000
-      known_to: [owner, gc, lender]
-    public_context:
-      summary: The project parties have no prior shared delivery history, and fallback steel supply is weak.
-    variant_overrides:
-      normal:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000]
-        steel_supplier:
-          current_input_cost: 11300000
-          current_source_standard_delivery_tick: 18
-          current_source_expedite_fee: 650000
-          current_source_expedited_delivery_tick: 14
-          approved_alternate_deposit: 500000
-          approved_alternate_delivery_tick: 16
-          nonapproved_alternate_deposit: 400000
-          nonapproved_alternate_delivery_tick: 15
-          liquidity_gap: 500000
-          liquidity_financing_cost: 120000
-        project_parameters:
-          replacement_supplier_cost: 2800000
-          replacement_supplier_lead_time_ticks: 9
-          secondary_supplier_cost: 1500000
-          secondary_supplier_lead_time_ticks: 3
-          emergency_split_package_cost: 2100000
-          emergency_split_package_lead_time_ticks: 8
-          emergency_replacement_cost: 3200000
-          emergency_replacement_lead_time_ticks: 10
-          source_testing_cost: 250000
-          source_testing_delay_ticks: 1
-          resequencing_cost: 300000
-          labor_flexible_hold_cost: 200000
-          missed_delivery_recovery_coordination_cost: 150000
-          secondary_source_after_miss_cost: 1300000
-          secondary_source_after_miss_delay_ticks: 4
-          project_delay_overhead_per_tick: 250000
-      stressed:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000]
-        steel_supplier:
-          current_input_cost: 12250000
-          current_source_standard_delivery_tick: 19
-          current_source_expedite_fee: 750000
-          current_source_expedited_delivery_tick: 15
-          approved_alternate_deposit: 700000
-          approved_alternate_delivery_tick: 17
-          nonapproved_alternate_deposit: 500000
-          nonapproved_alternate_delivery_tick: 16
-          liquidity_gap: 950000
-          liquidity_financing_cost: 180000
-        project_parameters:
-          replacement_supplier_cost: 3200000
-          replacement_supplier_lead_time_ticks: 10
-          secondary_supplier_cost: 1800000
-          secondary_supplier_lead_time_ticks: 3
-          emergency_split_package_cost: 2400000
-          emergency_split_package_lead_time_ticks: 8
-          emergency_replacement_cost: 3600000
-          emergency_replacement_lead_time_ticks: 11
-          source_testing_cost: 250000
-          source_testing_delay_ticks: 1
-          resequencing_cost: 300000
-          labor_flexible_hold_cost: 200000
-          missed_delivery_recovery_coordination_cost: 150000
-          secondary_source_after_miss_cost: 1500000
-          secondary_source_after_miss_delay_ticks: 4
-          project_delay_overhead_per_tick: 250000
-
-  - instance_id: S01_REL_NONE_OUTSIDE_CREDIBLE
-    treatment:
-      relationship_history_condition: no_prior_shared_project_history
-      outside_option_condition: credible_alternative
-    relationship_history: []
-    outside_option:
-      option_id: qualified_secondary_steel_supplier
-      qualification_required: false
-      switch_cost: 0
-      expected_delay_ticks: 0
-      delivery_risk: 0.08
-      termination_cost: 150000
-      known_to: [owner, gc, lender]
-    public_context:
-      summary: The project parties have no prior shared delivery history, and fallback steel supply is credible.
-    variant_overrides:
-      normal:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000]
-        steel_supplier:
-          current_input_cost: 11300000
-          current_source_standard_delivery_tick: 18
-          current_source_expedite_fee: 650000
-          current_source_expedited_delivery_tick: 14
-          approved_alternate_deposit: 500000
-          approved_alternate_delivery_tick: 16
-          nonapproved_alternate_deposit: 400000
-          nonapproved_alternate_delivery_tick: 15
-          liquidity_gap: 500000
-          liquidity_financing_cost: 120000
-        project_parameters:
-          replacement_supplier_cost: 150000
-          replacement_supplier_lead_time_ticks: 0
-          secondary_supplier_cost: 450000
-          secondary_supplier_lead_time_ticks: 1
-          emergency_split_package_cost: 700000
-          emergency_split_package_lead_time_ticks: 3
-          emergency_replacement_cost: 900000
-          emergency_replacement_lead_time_ticks: 4
-          source_testing_cost: 100000
-          source_testing_delay_ticks: 0
-          resequencing_cost: 200000
-          labor_flexible_hold_cost: 200000
-          missed_delivery_recovery_coordination_cost: 100000
-          secondary_source_after_miss_cost: 550000
-          secondary_source_after_miss_delay_ticks: 2
-          project_delay_overhead_per_tick: 250000
-      stressed:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000]
-        steel_supplier:
-          current_input_cost: 12250000
-          current_source_standard_delivery_tick: 19
-          current_source_expedite_fee: 750000
-          current_source_expedited_delivery_tick: 15
-          approved_alternate_deposit: 700000
-          approved_alternate_delivery_tick: 17
-          nonapproved_alternate_deposit: 500000
-          nonapproved_alternate_delivery_tick: 16
-          liquidity_gap: 950000
-          liquidity_financing_cost: 180000
-        project_parameters:
-          replacement_supplier_cost: 250000
-          replacement_supplier_lead_time_ticks: 1
-          secondary_supplier_cost: 650000
-          secondary_supplier_lead_time_ticks: 1
-          emergency_split_package_cost: 900000
-          emergency_split_package_lead_time_ticks: 3
-          emergency_replacement_cost: 1100000
-          emergency_replacement_lead_time_ticks: 4
-          source_testing_cost: 100000
-          source_testing_delay_ticks: 0
-          resequencing_cost: 200000
-          labor_flexible_hold_cost: 200000
-          missed_delivery_recovery_coordination_cost: 100000
-          secondary_source_after_miss_cost: 650000
-          secondary_source_after_miss_delay_ticks: 2
-          project_delay_overhead_per_tick: 250000
-
-  - instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK
-    treatment:
-      relationship_history_condition: prior_success_with_remediated_issue
-      outside_option_condition: weak_alternative
-    relationship_history:
-      - counterparty: steel_supplier
-        events:
-          - event_id: prior_project_on_time_delivery
-            type: delivery
-            outcome: on_time
-            verified: true
-            visible_to: [owner, gc, steel_supplier, lender]
-          - event_id: prior_submittal_issue_remediated
-            type: quality_issue
-            outcome: remediated
-            verified: true
-            visible_to: [gc, steel_supplier, inspector]
-    outside_option:
-      option_id: weak_secondary_steel_supplier
-      qualification_required: true
-      switch_cost: 2650000
-      expected_delay_ticks: 9
-      delivery_risk: 0.35
-      termination_cost: 150000
-      known_to: [owner, gc, lender]
-    public_context:
-      summary: The supplier has a positive remediated history, and fallback steel supply is weak.
-    variant_overrides:
-      normal:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1200000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000, 800000]
-        steel_supplier:
-          current_input_cost: 11300000
-          current_source_standard_delivery_tick: 18
-          current_source_expedite_fee: 650000
-          current_source_expedited_delivery_tick: 14
-          approved_alternate_deposit: 500000
-          approved_alternate_delivery_tick: 16
-          nonapproved_alternate_deposit: 400000
-          nonapproved_alternate_delivery_tick: 15
-          liquidity_gap: 350000
-          liquidity_financing_cost: 80000
-        project_parameters:
-          replacement_supplier_cost: 2800000
-          replacement_supplier_lead_time_ticks: 9
-          secondary_supplier_cost: 1500000
-          secondary_supplier_lead_time_ticks: 3
-          emergency_split_package_cost: 2100000
-          emergency_split_package_lead_time_ticks: 8
-          emergency_replacement_cost: 3200000
-          emergency_replacement_lead_time_ticks: 10
-          source_testing_cost: 200000
-          source_testing_delay_ticks: 1
-          resequencing_cost: 250000
-          labor_flexible_hold_cost: 180000
-          missed_delivery_recovery_coordination_cost: 125000
-          secondary_source_after_miss_cost: 1300000
-          secondary_source_after_miss_delay_ticks: 4
-          project_delay_overhead_per_tick: 250000
-      stressed:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1200000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000, 800000]
-        steel_supplier:
-          current_input_cost: 12250000
-          current_source_standard_delivery_tick: 19
-          current_source_expedite_fee: 750000
-          current_source_expedited_delivery_tick: 15
-          approved_alternate_deposit: 700000
-          approved_alternate_delivery_tick: 17
-          nonapproved_alternate_deposit: 500000
-          nonapproved_alternate_delivery_tick: 16
-          liquidity_gap: 800000
-          liquidity_financing_cost: 150000
-        project_parameters:
-          replacement_supplier_cost: 3200000
-          replacement_supplier_lead_time_ticks: 10
-          secondary_supplier_cost: 1800000
-          secondary_supplier_lead_time_ticks: 3
-          emergency_split_package_cost: 2400000
-          emergency_split_package_lead_time_ticks: 8
-          emergency_replacement_cost: 3600000
-          emergency_replacement_lead_time_ticks: 11
-          source_testing_cost: 200000
-          source_testing_delay_ticks: 1
-          resequencing_cost: 250000
-          labor_flexible_hold_cost: 180000
-          missed_delivery_recovery_coordination_cost: 125000
-          secondary_source_after_miss_cost: 1500000
-          secondary_source_after_miss_delay_ticks: 4
-          project_delay_overhead_per_tick: 250000
-
-  - instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE
-    treatment:
-      relationship_history_condition: prior_success_with_remediated_issue
-      outside_option_condition: credible_alternative
-    relationship_history:
-      - counterparty: steel_supplier
-        events:
-          - event_id: prior_project_on_time_delivery
-            type: delivery
-            outcome: on_time
-            verified: true
-            visible_to: [owner, gc, steel_supplier, lender]
-          - event_id: prior_submittal_issue_remediated
-            type: quality_issue
-            outcome: remediated
-            verified: true
-            visible_to: [gc, steel_supplier, inspector]
-    outside_option:
-      option_id: qualified_secondary_steel_supplier
-      qualification_required: false
-      switch_cost: 0
-      expected_delay_ticks: 0
-      delivery_risk: 0.08
-      termination_cost: 150000
-      known_to: [owner, gc, lender]
-    public_context:
-      summary: The supplier has a positive remediated history, and fallback steel supply is credible.
-    variant_overrides:
-      normal:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1200000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000, 800000]
-        steel_supplier:
-          current_input_cost: 11300000
-          current_source_standard_delivery_tick: 18
-          current_source_expedite_fee: 650000
-          current_source_expedited_delivery_tick: 14
-          approved_alternate_deposit: 500000
-          approved_alternate_delivery_tick: 16
-          nonapproved_alternate_deposit: 400000
-          nonapproved_alternate_delivery_tick: 15
-          liquidity_gap: 350000
-          liquidity_financing_cost: 80000
-        project_parameters:
-          replacement_supplier_cost: 150000
-          replacement_supplier_lead_time_ticks: 0
-          secondary_supplier_cost: 450000
-          secondary_supplier_lead_time_ticks: 1
-          emergency_split_package_cost: 700000
-          emergency_split_package_lead_time_ticks: 3
-          emergency_replacement_cost: 900000
-          emergency_replacement_lead_time_ticks: 4
-          source_testing_cost: 75000
-          source_testing_delay_ticks: 0
-          resequencing_cost: 175000
-          labor_flexible_hold_cost: 180000
-          missed_delivery_recovery_coordination_cost: 90000
-          secondary_source_after_miss_cost: 550000
-          secondary_source_after_miss_delay_ticks: 2
-          project_delay_overhead_per_tick: 250000
-      stressed:
-        owner:
-          price_relief_options: [0, 600000, 900000, 1200000, 1400000]
-          delivery_date_options: [null, 14, 15, 16, 17, 18, 19]
-          advance_payment_options: [0, 500000, 600000, 800000]
-        steel_supplier:
-          current_input_cost: 12250000
-          current_source_standard_delivery_tick: 19
-          current_source_expedite_fee: 750000
-          current_source_expedited_delivery_tick: 15
-          approved_alternate_deposit: 700000
-          approved_alternate_delivery_tick: 17
-          nonapproved_alternate_deposit: 500000
-          nonapproved_alternate_delivery_tick: 16
-          liquidity_gap: 800000
-          liquidity_financing_cost: 150000
-        project_parameters:
-          replacement_supplier_cost: 250000
-          replacement_supplier_lead_time_ticks: 1
-          secondary_supplier_cost: 650000
-          secondary_supplier_lead_time_ticks: 1
-          emergency_split_package_cost: 900000
-          emergency_split_package_lead_time_ticks: 3
-          emergency_replacement_cost: 1100000
-          emergency_replacement_lead_time_ticks: 4
-          source_testing_cost: 75000
-          source_testing_delay_ticks: 0
-          resequencing_cost: 175000
-          labor_flexible_hold_cost: 180000
-          missed_delivery_recovery_coordination_cost: 90000
-          secondary_source_after_miss_cost: 650000
-          secondary_source_after_miss_delay_ticks: 2
-          project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_WEAK
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: weak_alternative
+  relationship_history: []
+  outside_option:
+    option_id: weak_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 2650000
+    expected_delay_ticks: 9
+    delivery_risk: 0.35
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is weak.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 500000
+        liquidity_financing_cost: 120000
+      project_parameters:
+        replacement_supplier_cost: 2800000
+        replacement_supplier_lead_time_ticks: 9
+        secondary_supplier_cost: 1500000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2100000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3200000
+        emergency_replacement_lead_time_ticks: 10
+        source_testing_cost: 250000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 1300000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 3200000
+        replacement_supplier_lead_time_ticks: 10
+        secondary_supplier_cost: 1800000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2400000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3600000
+        emergency_replacement_lead_time_ticks: 11
+        source_testing_cost: 250000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 1500000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_CREDIBLE
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: credible_alternative
+  relationship_history: []
+  outside_option:
+    option_id: qualified_secondary_steel_supplier
+    qualification_required: false
+    switch_cost: 0
+    expected_delay_ticks: 0
+    delivery_risk: 0.08
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is credible.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 500000
+        liquidity_financing_cost: 120000
+      project_parameters:
+        replacement_supplier_cost: 150000
+        replacement_supplier_lead_time_ticks: 0
+        secondary_supplier_cost: 450000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 700000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 900000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 100000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 550000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 250000
+        replacement_supplier_lead_time_ticks: 1
+        secondary_supplier_cost: 650000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 900000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 1100000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 100000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 650000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: weak_alternative
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: weak_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 2650000
+    expected_delay_ticks: 9
+    delivery_risk: 0.35
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is weak.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 350000
+        liquidity_financing_cost: 80000
+      project_parameters:
+        replacement_supplier_cost: 2800000
+        replacement_supplier_lead_time_ticks: 9
+        secondary_supplier_cost: 1500000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2100000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3200000
+        emergency_replacement_lead_time_ticks: 10
+        source_testing_cost: 200000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 1300000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 3200000
+        replacement_supplier_lead_time_ticks: 10
+        secondary_supplier_cost: 1800000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2400000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3600000
+        emergency_replacement_lead_time_ticks: 11
+        source_testing_cost: 200000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 1500000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: credible_alternative
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: qualified_secondary_steel_supplier
+    qualification_required: false
+    switch_cost: 0
+    expected_delay_ticks: 0
+    delivery_risk: 0.08
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is credible.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 350000
+        liquidity_financing_cost: 80000
+      project_parameters:
+        replacement_supplier_cost: 150000
+        replacement_supplier_lead_time_ticks: 0
+        secondary_supplier_cost: 450000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 700000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 900000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 75000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 550000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 250000
+        replacement_supplier_lead_time_ticks: 1
+        secondary_supplier_cost: 650000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 900000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 1100000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 75000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 650000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_WEAK_SWITCH_MID
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: weak_alternative
+    economic_variant: switch_cost_mid
+  relationship_history: []
+  outside_option:
+    option_id: mid_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 900000
+    expected_delay_ticks: 3
+    delivery_risk: 0.18
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is weak.
+      Fallback steel supply economics sit between the weak and credible conditions.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 500000
+        liquidity_financing_cost: 120000
+      project_parameters:
+        replacement_supplier_cost: 1100000
+        replacement_supplier_lead_time_ticks: 3
+        secondary_supplier_cost: 800000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1300000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1600000
+        emergency_replacement_lead_time_ticks: 6
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 800000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 1300000
+        replacement_supplier_lead_time_ticks: 4
+        secondary_supplier_cost: 950000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1500000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1900000
+        emergency_replacement_lead_time_ticks: 7
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 950000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_WEAK_GAP_HIGH
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: weak_alternative
+    economic_variant: liquidity_gap_high
+  relationship_history: []
+  outside_option:
+    option_id: weak_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 2650000
+    expected_delay_ticks: 9
+    delivery_risk: 0.35
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is weak.
+      The supplier's private liquidity shortfall is larger than in the base condition.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 2800000
+        replacement_supplier_lead_time_ticks: 9
+        secondary_supplier_cost: 1500000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2100000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3200000
+        emergency_replacement_lead_time_ticks: 10
+        source_testing_cost: 250000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 1300000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 1200000
+        liquidity_financing_cost: 220000
+      project_parameters:
+        replacement_supplier_cost: 3200000
+        replacement_supplier_lead_time_ticks: 10
+        secondary_supplier_cost: 1800000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2400000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3600000
+        emergency_replacement_lead_time_ticks: 11
+        source_testing_cost: 250000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 300000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 150000
+        secondary_source_after_miss_cost: 1500000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_CREDIBLE_SWITCH_MID
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: credible_alternative
+    economic_variant: switch_cost_mid
+  relationship_history: []
+  outside_option:
+    option_id: mid_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 900000
+    expected_delay_ticks: 3
+    delivery_risk: 0.18
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is credible.
+      Fallback steel supply economics sit between the weak and credible conditions.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 500000
+        liquidity_financing_cost: 120000
+      project_parameters:
+        replacement_supplier_cost: 1100000
+        replacement_supplier_lead_time_ticks: 3
+        secondary_supplier_cost: 800000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1300000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1600000
+        emergency_replacement_lead_time_ticks: 6
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 800000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 1300000
+        replacement_supplier_lead_time_ticks: 4
+        secondary_supplier_cost: 950000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1500000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1900000
+        emergency_replacement_lead_time_ticks: 7
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 950000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_NONE_OUTSIDE_CREDIBLE_GAP_HIGH
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: credible_alternative
+    economic_variant: liquidity_gap_high
+  relationship_history: []
+  outside_option:
+    option_id: qualified_secondary_steel_supplier
+    qualification_required: false
+    switch_cost: 0
+    expected_delay_ticks: 0
+    delivery_risk: 0.08
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The project parties have no prior shared delivery history, and fallback steel supply is credible.
+      The supplier's private liquidity shortfall is larger than in the base condition.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 950000
+        liquidity_financing_cost: 180000
+      project_parameters:
+        replacement_supplier_cost: 150000
+        replacement_supplier_lead_time_ticks: 0
+        secondary_supplier_cost: 450000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 700000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 900000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 100000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 550000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 1200000
+        liquidity_financing_cost: 220000
+      project_parameters:
+        replacement_supplier_cost: 250000
+        replacement_supplier_lead_time_ticks: 1
+        secondary_supplier_cost: 650000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 900000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 1100000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 100000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 200000
+        labor_flexible_hold_cost: 200000
+        missed_delivery_recovery_coordination_cost: 100000
+        secondary_source_after_miss_cost: 650000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_SWITCH_MID
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: weak_alternative
+    economic_variant: switch_cost_mid
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: mid_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 900000
+    expected_delay_ticks: 3
+    delivery_risk: 0.18
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is weak. Fallback
+      steel supply economics sit between the weak and credible conditions.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 350000
+        liquidity_financing_cost: 80000
+      project_parameters:
+        replacement_supplier_cost: 1100000
+        replacement_supplier_lead_time_ticks: 3
+        secondary_supplier_cost: 800000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1300000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1600000
+        emergency_replacement_lead_time_ticks: 6
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 800000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 1300000
+        replacement_supplier_lead_time_ticks: 4
+        secondary_supplier_cost: 950000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1500000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1900000
+        emergency_replacement_lead_time_ticks: 7
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 950000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK_GAP_HIGH
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: weak_alternative
+    economic_variant: liquidity_gap_high
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: weak_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 2650000
+    expected_delay_ticks: 9
+    delivery_risk: 0.35
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is weak. The supplier's
+      private liquidity shortfall is larger than in the base condition.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 2800000
+        replacement_supplier_lead_time_ticks: 9
+        secondary_supplier_cost: 1500000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2100000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3200000
+        emergency_replacement_lead_time_ticks: 10
+        source_testing_cost: 200000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 1300000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 1100000
+        liquidity_financing_cost: 200000
+      project_parameters:
+        replacement_supplier_cost: 3200000
+        replacement_supplier_lead_time_ticks: 10
+        secondary_supplier_cost: 1800000
+        secondary_supplier_lead_time_ticks: 3
+        emergency_split_package_cost: 2400000
+        emergency_split_package_lead_time_ticks: 8
+        emergency_replacement_cost: 3600000
+        emergency_replacement_lead_time_ticks: 11
+        source_testing_cost: 200000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 250000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 125000
+        secondary_source_after_miss_cost: 1500000
+        secondary_source_after_miss_delay_ticks: 4
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE_SWITCH_MID
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: credible_alternative
+    economic_variant: switch_cost_mid
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: mid_secondary_steel_supplier
+    qualification_required: true
+    switch_cost: 900000
+    expected_delay_ticks: 3
+    delivery_risk: 0.18
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is credible. Fallback
+      steel supply economics sit between the weak and credible conditions.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 350000
+        liquidity_financing_cost: 80000
+      project_parameters:
+        replacement_supplier_cost: 1100000
+        replacement_supplier_lead_time_ticks: 3
+        secondary_supplier_cost: 800000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1300000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1600000
+        emergency_replacement_lead_time_ticks: 6
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 800000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 1300000
+        replacement_supplier_lead_time_ticks: 4
+        secondary_supplier_cost: 950000
+        secondary_supplier_lead_time_ticks: 2
+        emergency_split_package_cost: 1500000
+        emergency_split_package_lead_time_ticks: 5
+        emergency_replacement_cost: 1900000
+        emergency_replacement_lead_time_ticks: 7
+        source_testing_cost: 150000
+        source_testing_delay_ticks: 1
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 950000
+        secondary_source_after_miss_delay_ticks: 3
+        project_delay_overhead_per_tick: 250000
+- instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE_GAP_HIGH
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+    outside_option_condition: credible_alternative
+    economic_variant: liquidity_gap_high
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  outside_option:
+    option_id: qualified_secondary_steel_supplier
+    qualification_required: false
+    switch_cost: 0
+    expected_delay_ticks: 0
+    delivery_risk: 0.08
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: The supplier has a positive remediated history, and fallback steel supply is credible. The
+      supplier's private liquidity shortfall is larger than in the base condition.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 11300000
+        current_source_standard_delivery_tick: 18
+        current_source_expedite_fee: 650000
+        current_source_expedited_delivery_tick: 14
+        approved_alternate_deposit: 500000
+        approved_alternate_delivery_tick: 16
+        nonapproved_alternate_deposit: 400000
+        nonapproved_alternate_delivery_tick: 15
+        liquidity_gap: 800000
+        liquidity_financing_cost: 150000
+      project_parameters:
+        replacement_supplier_cost: 150000
+        replacement_supplier_lead_time_ticks: 0
+        secondary_supplier_cost: 450000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 700000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 900000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 75000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 550000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 600000
+        - 900000
+        - 1200000
+        - 1400000
+        delivery_date_options:
+        - null
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        advance_payment_options:
+        - 0
+        - 500000
+        - 600000
+        - 800000
+      steel_supplier:
+        current_input_cost: 12250000
+        current_source_standard_delivery_tick: 19
+        current_source_expedite_fee: 750000
+        current_source_expedited_delivery_tick: 15
+        approved_alternate_deposit: 700000
+        approved_alternate_delivery_tick: 17
+        nonapproved_alternate_deposit: 500000
+        nonapproved_alternate_delivery_tick: 16
+        liquidity_gap: 1100000
+        liquidity_financing_cost: 200000
+      project_parameters:
+        replacement_supplier_cost: 250000
+        replacement_supplier_lead_time_ticks: 1
+        secondary_supplier_cost: 650000
+        secondary_supplier_lead_time_ticks: 1
+        emergency_split_package_cost: 900000
+        emergency_split_package_lead_time_ticks: 3
+        emergency_replacement_cost: 1100000
+        emergency_replacement_lead_time_ticks: 4
+        source_testing_cost: 75000
+        source_testing_delay_ticks: 0
+        resequencing_cost: 175000
+        labor_flexible_hold_cost: 180000
+        missed_delivery_recovery_coordination_cost: 90000
+        secondary_source_after_miss_cost: 650000
+        secondary_source_after_miss_delay_ticks: 2
+        project_delay_overhead_per_tick: 250000

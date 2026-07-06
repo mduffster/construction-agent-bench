@@ -77,9 +77,21 @@ Current implemented components:
   gates, live-model opt-in guardrails, and deterministic gate reports. The 8C pilot is staged
   and adaptive (Stage A temperature-0 stability read, then instance-variant robustness or a
   temperature-1 distributional read) per the transition plan; `run_validity_ladder.py` exposes
-  `--replicates-per-cell` and `--temperature`, and sampling temperature is recorded in every
-  run manifest. Local small-model (Ollama/Gemma) support is retired; live runs use hosted
-  Anthropic models with Claude Haiku as the minimum tier.
+  `--replicates-per-cell`, `--temperature`, `--instance-ids`, and the `stage-c-variants` and
+  `stronger-model` gates. Sampling temperature is recorded in every run manifest, and the
+  Anthropic adapter omits the sampling field for models that reject non-default sampling
+  parameters (Sonnet 5, Opus 4.7/4.8, Fable 5). Local small-model (Ollama/Gemma) support is
+  retired; live runs use hosted Anthropic models with Claude Haiku as the minimum tier.
+- S01 disclosure instrument: the supplier's commercial request carries three required claim
+  fields (`claimed_incremental_cost_usd`, `claimed_liquidity_requirement_usd`,
+  `claimed_on_time_probability`), classified deterministically against the supplier's private
+  truth at submission time. This fires on every focal run, so disclosure/overclaim metrics
+  populate even when the model attaches no free-text message claims.
+- S01 economic-variant grid: per treatment cell, `SWITCH_MID` and `GAP_HIGH` scenario instances
+  perturb the switch-cost and liquidity economics for the Stage C robustness read.
+- Component 9 evidence package: `scripts/build_evidence_package.py` reads named Stage A / Stage C
+  / stronger-model / controls run directories and emits `docs/evidence/` (markdown plus copied
+  figures) with no hand-typed numbers.
 - S01 V2 marginal update: staged `S01_V2_OFFSITE_STEEL_DRAW` with 18 explicit decisions, three
   deterministic resolution handlers, explicit communication/assessment abstentions, five
   deterministic witnesses, V2 payoff/reporting records, and bounded choice-consequence audit
@@ -87,7 +99,7 @@ Current implemented components:
 
 Next queued components:
 
-- Component 9 evidence package.
+- Rotate the focal role from supplier to GC (transition plan section 9).
 
 ## Legacy: Feedback-Cascade Suite
 

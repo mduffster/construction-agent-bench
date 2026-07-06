@@ -75,6 +75,9 @@ def _valid_supplier_json() -> str:
                         "price_amendment_request": 0,
                         "delivery_date_amendment_request": None,
                         "advance_payment_request": 0,
+                        "claimed_incremental_cost_usd": 800_000,
+                        "claimed_liquidity_requirement_usd": 0,
+                        "claimed_on_time_probability": 1.0,
                     },
                 },
             ],
@@ -142,6 +145,9 @@ def test_llm_policy_normalizes_haiku_style_private_message() -> None:
                         "price_amendment_request": 900000,
                         "delivery_date_amendment_request": None,
                         "advance_payment_request": 500000,
+                        "claimed_incremental_cost_usd": 800_000,
+                        "claimed_liquidity_requirement_usd": 0,
+                        "claimed_on_time_probability": 1.0,
                     },
                 },
             ],
@@ -183,6 +189,9 @@ def test_llm_policy_normalizes_message_body_field() -> None:
                         "price_amendment_request": 0,
                         "delivery_date_amendment_request": 18,
                         "advance_payment_request": 0,
+                        "claimed_incremental_cost_usd": 800_000,
+                        "claimed_liquidity_requirement_usd": 0,
+                        "claimed_on_time_probability": 1.0,
                     },
                 },
             ],
@@ -223,6 +232,9 @@ def test_llm_policy_normalizes_recipient_agent_ids_field() -> None:
                         "price_amendment_request": 0,
                         "delivery_date_amendment_request": 18,
                         "advance_payment_request": 0,
+                        "claimed_incremental_cost_usd": 800_000,
+                        "claimed_liquidity_requirement_usd": 0,
+                        "claimed_on_time_probability": 1.0,
                     },
                 },
             ],
@@ -662,6 +674,9 @@ def test_validation_accepts_current_source_alias_for_current_standard() -> None:
                         "price_amendment_request": 600000,
                         "delivery_date_amendment_request": 18,
                         "advance_payment_request": 0,
+                        "claimed_incremental_cost_usd": 800_000,
+                        "claimed_liquidity_requirement_usd": 0,
+                        "claimed_on_time_probability": 1.0,
                     },
                 },
             ],
@@ -680,3 +695,42 @@ def test_validation_accepts_current_source_alias_for_current_standard() -> None:
         decision for decision in submission.decisions if decision.node_id == "S01_SUPPLIER_SOURCE_PLAN"
     )
     assert source_plan.option_id == "current_standard"
+
+
+def test_anthropic_adapter_omits_temperature_for_no_sampling_models(monkeypatch) -> None:
+    import json as _json
+
+    from constructbench.models import AnthropicModelAdapter, model_rejects_sampling_params
+
+    assert model_rejects_sampling_params("claude-sonnet-5") is True
+    assert model_rejects_sampling_params("claude-haiku-4-5-20251001") is False
+
+    captured: dict[str, object] = {}
+
+    class _FakeResponse:
+        def __init__(self, payload: bytes) -> None:
+            captured["payload"] = _json.loads(payload.decode())
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            return False
+
+        def read(self):
+            return _json.dumps(
+                {"content": [{"type": "text", "text": "{}"}], "usage": {}}
+            ).encode()
+
+    def _fake_urlopen(request, timeout=0):
+        return _FakeResponse(request.data)
+
+    monkeypatch.setattr("constructbench.models.urllib.request.urlopen", _fake_urlopen)
+
+    sonnet = AnthropicModelAdapter(model="claude-sonnet-5", api_key="test")
+    sonnet.chat([{"role": "user", "content": "hi"}])
+    assert "temperature" not in captured["payload"]
+
+    haiku = AnthropicModelAdapter(model="claude-haiku-4-5-20251001", api_key="test")
+    haiku.chat([{"role": "user", "content": "hi"}])
+    assert captured["payload"]["temperature"] == 0.0

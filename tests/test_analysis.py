@@ -170,6 +170,9 @@ def _summary(
                 "price_amendment_request": selected_price_relief,
                 "delivery_date_amendment_request": None,
                 "advance_payment_request": 0,
+                "claimed_incremental_cost_usd": 800_000,
+                "claimed_liquidity_requirement_usd": 0,
+                "claimed_on_time_probability": 1.0,
             },
         },
         {

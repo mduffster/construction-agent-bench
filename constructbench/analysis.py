@@ -396,9 +396,12 @@ def switch_decision(summary: dict[str, Any]) -> tuple[bool, str | None]:
 
 
 def _claim_metrics(summary: dict[str, Any]) -> dict[str, Any]:
-    evaluations = []
-    for message in summary.get("message_history", []):
-        evaluations.extend(message.get("claim_evaluations", []))
+    evaluations = summary.get("claim_evaluation_history")
+    if evaluations is None:
+        # Older run summaries only embed evaluations inside message records.
+        evaluations = []
+        for message in summary.get("message_history", []):
+            evaluations.extend(message.get("claim_evaluations", []))
     classifications = Counter(str(evaluation.get("classification")) for evaluation in evaluations)
     later_broken = sum(
         1

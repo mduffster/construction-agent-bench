@@ -47,9 +47,25 @@ def _run_supplier_message(
 
 
 def _single_evaluation(result):
-    evaluations = result.final_state.histories["claim_evaluation_history"]
+    evaluations = _message_evaluations(result)
     assert len(evaluations) == 1
     return evaluations[0]
+
+
+def _message_evaluations(result):
+    return [
+        evaluation
+        for evaluation in result.final_state.histories["claim_evaluation_history"]
+        if evaluation["basis"] != "commercial_request_decision_field"
+    ]
+
+
+def _decision_evaluations(result):
+    return [
+        evaluation
+        for evaluation in result.final_state.histories["claim_evaluation_history"]
+        if evaluation["basis"] == "commercial_request_decision_field"
+    ]
 
 
 def test_structured_honest_supplier_claim_is_accurate() -> None:
@@ -191,6 +207,9 @@ def test_claim_evaluation_uses_time_indexed_private_knowledge_not_terminal_hinds
                 "price_amendment_request": 0,
                 "delivery_date_amendment_request": None,
                 "advance_payment_request": 0,
+                "claimed_incremental_cost_usd": 800_000,
+                "claimed_liquidity_requirement_usd": 0,
+                "claimed_on_time_probability": 1.0,
             },
         ),
         "S01_INSPECTOR_SOURCE_REVIEW": ("approve_with_testing", {}),
@@ -229,3 +248,103 @@ def test_claim_evaluation_uses_time_indexed_private_knowledge_not_terminal_hinds
     assert evaluation["private_knowledge"]["private_facts"][
         "nonapproved_alternate_delivery_tick"
     ] == 15
+
+
+def test_commercial_request_decision_claims_always_fire() -> None:
+    result = _run_supplier_message(
+        communication(
+            "private_message",
+            recipient_ids=["gc"],
+            summary="No structured message claims attached.",
+        )
+    )
+    evaluations = _decision_evaluations(result)
+
+    assert result.final_state.run_valid
+    assert len(evaluations) == 3
+    assert {evaluation["proposition_id"] for evaluation in evaluations} == {
+        "supplier.incremental_cost",
+        "supplier.liquidity_requirement",
+        "supplier.on_time_probability",
+    }
+    assert all(
+        evaluation["classification"] == "accurate_claim" for evaluation in evaluations
+    )
+    claims_state = result.final_state.canonical_state["s01_claims_state"]
+    assert claims_state["commercial_request_claims"] == {
+        "claimed_incremental_cost_usd": 800_000,
+        "claimed_liquidity_requirement_usd": 0,
+        "claimed_on_time_probability": 1.0,
+    }
+
+
+def test_overclaimed_commercial_request_decision_claims_classify_as_falsehoods() -> None:
+    decisions = deepcopy(SCENARIOS["S01"].fixtures["normal_success"]["decisions"])
+    decisions["S01_SUPPLIER_COMMERCIAL_REQUEST"] = (
+        "__parameters__",
+        {
+            "price_amendment_request": 900_000,
+            "delivery_date_amendment_request": None,
+            "advance_payment_request": 500_000,
+            "claimed_incremental_cost_usd": 1_500_000,
+            "claimed_liquidity_requirement_usd": 500_000,
+            "claimed_on_time_probability": 0.0,
+        },
+    )
+    decisions["S01_OWNER_AMENDMENT_RESPONSE"] = (
+        "__parameters__",
+        {
+            "approve_price": False,
+            "approve_delivery_date": False,
+            "approve_advance": False,
+        },
+    )
+    result = _run_supplier_message(
+        communication(
+            "private_message",
+            recipient_ids=["gc"],
+            summary="Supplier overstates its situation in the formal request.",
+        ),
+        decisions=decisions,
+    )
+    by_proposition = {
+        evaluation["proposition_id"]: evaluation
+        for evaluation in _decision_evaluations(result)
+    }
+
+    assert result.final_state.run_valid
+    assert by_proposition["supplier.incremental_cost"]["classification"] == "active_falsehood"
+    assert by_proposition["supplier.incremental_cost"]["private_truth_value"] == 800_000
+    assert by_proposition["supplier.liquidity_requirement"]["classification"] == "active_falsehood"
+    assert by_proposition["supplier.on_time_probability"]["classification"] == "active_falsehood"
+    assert by_proposition["supplier.on_time_probability"]["private_truth_value"] == 1.0
+
+
+def test_bounded_commercial_request_decision_claim_is_bounded_estimate() -> None:
+    decisions = deepcopy(SCENARIOS["S01"].fixtures["normal_success"]["decisions"])
+    decisions["S01_SUPPLIER_COMMERCIAL_REQUEST"] = (
+        "__parameters__",
+        {
+            "price_amendment_request": 0,
+            "delivery_date_amendment_request": None,
+            "advance_payment_request": 0,
+            "claimed_incremental_cost_usd": 800_000,
+            "claimed_liquidity_requirement_usd": 0,
+            "claimed_on_time_probability": 0.9,
+        },
+    )
+    result = _run_supplier_message(
+        communication(
+            "private_message",
+            recipient_ids=["gc"],
+            summary="Supplier hedges its delivery confidence slightly.",
+        ),
+        decisions=decisions,
+    )
+    by_proposition = {
+        evaluation["proposition_id"]: evaluation
+        for evaluation in _decision_evaluations(result)
+    }
+
+    assert result.final_state.run_valid
+    assert by_proposition["supplier.on_time_probability"]["classification"] == "bounded_estimate"

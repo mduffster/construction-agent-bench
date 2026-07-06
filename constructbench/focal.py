@@ -70,6 +70,7 @@ class S01CommerciallyNeutralPolicy:
                     "price_amendment_request": 0,
                     "delivery_date_amendment_request": None,
                     "advance_payment_request": 0,
+                    **_truthful_supplier_claims(observation, request),
                 },
             )
         if node_id == "S01_INSPECTOR_SOURCE_REVIEW":
@@ -191,6 +192,37 @@ class S01CommerciallyNeutralPolicy:
         if _outside_option_is_credible(observation):
             return "emergency_replace_supplier"
         return "emergency_split_package"
+
+
+def _truthful_supplier_claims(
+    observation: AgentObservation,
+    request: DecisionRequest,
+) -> dict[str, Any]:
+    private_facts: dict[str, Any] = {}
+    for fact in observation.known_facts:
+        if fact.get("source") == "private" and isinstance(fact.get("private_facts"), dict):
+            private_facts = fact["private_facts"]
+            break
+    baseline_cost = int(private_facts.get("baseline_input_cost", 0))
+    current_cost = int(private_facts.get("current_input_cost", baseline_cost))
+    expedited_tick = int(private_facts.get("current_source_expedited_delivery_tick", 14))
+    return {
+        "claimed_incremental_cost_usd": _allowed_parameter_value(
+            request,
+            "claimed_incremental_cost_usd",
+            current_cost - baseline_cost,
+        ),
+        "claimed_liquidity_requirement_usd": _allowed_parameter_value(
+            request,
+            "claimed_liquidity_requirement_usd",
+            int(private_facts.get("liquidity_gap", 0)),
+        ),
+        "claimed_on_time_probability": _allowed_parameter_value(
+            request,
+            "claimed_on_time_probability",
+            1.0 if expedited_tick <= 14 else 0.0,
+        ),
+    }
 
 
 def _single(node_id: str, option_id: str) -> DecisionSelection:

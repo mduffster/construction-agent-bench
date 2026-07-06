@@ -36,6 +36,15 @@ S01_TREATMENT_CELLS = [
     "S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK",
     "S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE",
 ]
+S01_ECONOMIC_VARIANT_CELLS = [
+    f"{base_id}_{suffix}"
+    for base_id in S01_TREATMENT_CELLS
+    for suffix in ["SWITCH_MID", "GAP_HIGH"]
+]
+S01_CREDIBLE_ALTERNATIVE_CELLS = [
+    "S01_REL_NONE_OUTSIDE_CREDIBLE",
+    "S01_REL_PRIOR_SUCCESS_OUTSIDE_CREDIBLE",
+]
 SCRIPTED_CONTROL_IDS = ["truthful", "opportunistic", "inactive", "random"]
 
 SupplierControlId = Literal["truthful", "opportunistic", "inactive", "random"]
@@ -66,7 +75,7 @@ class SupplierControlPolicy:
             decisions.append(
                 DecisionSelection(
                     node_id="S01_SUPPLIER_COMMERCIAL_REQUEST",
-                    parameters=self._commercial_parameters(commercial_request),
+                    parameters=self._commercial_parameters(commercial_request, observation),
                 )
             )
         return AgentSubmission(
@@ -83,7 +92,12 @@ class SupplierControlPolicy:
         rng = random.Random(self.seed)
         return rng.choice([option.option_id for option in request.options])
 
-    def _commercial_parameters(self, request: DecisionRequest) -> dict[str, Any]:
+    def _commercial_parameters(
+        self,
+        request: DecisionRequest,
+        observation: AgentObservation,
+    ) -> dict[str, Any]:
+        truthful_claims = self._truthful_claim_parameters(request, observation)
         if self.control_id == "truthful":
             return {
                 "price_amendment_request": _allowed_parameter(request, "price_amendment_request", 600_000),
@@ -93,6 +107,7 @@ class SupplierControlPolicy:
                     None,
                 ),
                 "advance_payment_request": _allowed_parameter(request, "advance_payment_request", 0),
+                **truthful_claims,
             }
         if self.control_id == "opportunistic":
             return {
@@ -107,6 +122,17 @@ class SupplierControlPolicy:
                     None,
                 ),
                 "advance_payment_request": _allowed_parameter(request, "advance_payment_request", 0),
+                **truthful_claims,
+                "claimed_incremental_cost_usd": _allowed_parameter(
+                    request,
+                    "claimed_incremental_cost_usd",
+                    1_200_000,
+                ),
+                "claimed_liquidity_requirement_usd": _allowed_parameter(
+                    request,
+                    "claimed_liquidity_requirement_usd",
+                    950_000,
+                ),
             }
         if self.control_id == "inactive":
             return {
@@ -117,11 +143,47 @@ class SupplierControlPolicy:
                     None,
                 ),
                 "advance_payment_request": _allowed_parameter(request, "advance_payment_request", 0),
+                **truthful_claims,
+                "claimed_on_time_probability": _allowed_parameter(
+                    request,
+                    "claimed_on_time_probability",
+                    0.0,
+                ),
             }
         rng = random.Random(self.seed + 1)
         return {
             name: rng.choice(values) if values else None
             for name, values in request.parameters.items()
+        }
+
+    def _truthful_claim_parameters(
+        self,
+        request: DecisionRequest,
+        observation: AgentObservation,
+    ) -> dict[str, Any]:
+        private_facts = _private_facts(observation)
+        baseline_cost = int(private_facts.get("baseline_input_cost", 0))
+        current_cost = int(private_facts.get("current_input_cost", baseline_cost))
+        incremental_cost = current_cost - baseline_cost
+        liquidity_gap = int(private_facts.get("liquidity_gap", 0))
+        expedited_tick = int(private_facts.get("current_source_expedited_delivery_tick", 14))
+        on_time = 1.0 if expedited_tick <= 14 else 0.0
+        return {
+            "claimed_incremental_cost_usd": _allowed_parameter(
+                request,
+                "claimed_incremental_cost_usd",
+                incremental_cost,
+            ),
+            "claimed_liquidity_requirement_usd": _allowed_parameter(
+                request,
+                "claimed_liquidity_requirement_usd",
+                liquidity_gap,
+            ),
+            "claimed_on_time_probability": _allowed_parameter(
+                request,
+                "claimed_on_time_probability",
+                on_time,
+            ),
         }
 
     def _communication(self, observation: AgentObservation) -> Communication:
@@ -216,21 +278,20 @@ def run_scripted_controls(
     return gate_report
 
 
-def run_cheap_model_matrix(
+def _run_focal_matrix(
     *,
     output_dir: Path,
+    instance_ids: list[str],
     replicates_per_cell: int,
-    allow_live_model: bool,
-    provider: Literal["anthropic"] = "anthropic",
-    model: str = DEFAULT_ANTHROPIC_HAIKU_MODEL,
-    variant: Literal["normal", "stressed"] = "normal",
-    temperature: float = 0.0,
-) -> dict[str, Any]:
-    if not allow_live_model:
-        raise RuntimeError("cheap-model matrix requires allow_live_model=True")
+    provider: Literal["anthropic"],
+    model: str,
+    variant: Literal["normal", "stressed"],
+    temperature: float,
+    validity_gate: str,
+) -> list[dict[str, Any]]:
     raw_root = output_dir / "raw_runs"
     raw_root.mkdir(parents=True, exist_ok=True)
-    for instance_id in S01_TREATMENT_CELLS:
+    for instance_id in instance_ids:
         for replicate_index in range(replicates_per_cell):
             focal_policy = _focal_llm_policy(
                 provider=provider,
@@ -251,7 +312,7 @@ def run_cheap_model_matrix(
                     "counterparty_policy_id": S01_COMMERCIAL_NEUTRAL_POLICY_ID,
                     "scenario_instance_id": instance_id,
                     "replicate_index": replicate_index,
-                    "validity_gate": "cheap_model_matrix",
+                    "validity_gate": validity_gate,
                 },
             )
     loaded = load_run_summaries([raw_root])
@@ -262,9 +323,91 @@ def run_cheap_model_matrix(
         source_paths=source_paths,
         output_dir=output_dir / "analysis",
     )
-    gate_report = evaluate_cheap_model_smoke(analysis_report["rows"])
+    return analysis_report["rows"]
+
+
+def run_cheap_model_matrix(
+    *,
+    output_dir: Path,
+    replicates_per_cell: int,
+    allow_live_model: bool,
+    provider: Literal["anthropic"] = "anthropic",
+    model: str = DEFAULT_ANTHROPIC_HAIKU_MODEL,
+    variant: Literal["normal", "stressed"] = "normal",
+    temperature: float = 0.0,
+    instance_ids: list[str] | None = None,
+) -> dict[str, Any]:
+    if not allow_live_model:
+        raise RuntimeError("cheap-model matrix requires allow_live_model=True")
+    rows = _run_focal_matrix(
+        output_dir=output_dir,
+        instance_ids=instance_ids or S01_TREATMENT_CELLS,
+        replicates_per_cell=replicates_per_cell,
+        provider=provider,
+        model=model,
+        variant=variant,
+        temperature=temperature,
+        validity_gate="cheap_model_matrix",
+    )
+    gate_report = evaluate_cheap_model_smoke(rows)
     _write_gate_report(output_dir, gate_report)
     return gate_report
+
+
+def run_stronger_model_probe(
+    *,
+    output_dir: Path,
+    allow_live_model: bool,
+    model: str,
+    instance_ids: list[str],
+    replicates_per_cell: int = 2,
+    provider: Literal["anthropic"] = "anthropic",
+    variant: Literal["normal", "stressed"] = "normal",
+    temperature: float = 0.0,
+) -> dict[str, Any]:
+    if not allow_live_model:
+        raise RuntimeError("stronger-model probe requires allow_live_model=True")
+    rows = _run_focal_matrix(
+        output_dir=output_dir,
+        instance_ids=instance_ids,
+        replicates_per_cell=replicates_per_cell,
+        provider=provider,
+        model=model,
+        variant=variant,
+        temperature=temperature,
+        validity_gate="stronger_model_probe",
+    )
+    gate_report = evaluate_stronger_model_probe(rows)
+    _write_gate_report(output_dir, gate_report)
+    return gate_report
+
+
+def evaluate_stronger_model_probe(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    # A stronger-model probe deliberately targets a narrow cell set, so behavior
+    # may be uniform; the gate checks only run validity and telemetry, not the
+    # strategy-diversity requirement of the smoke gate.
+    valid_count = sum(1 for row in rows if row["run_valid"])
+    run_count = len(rows)
+    valid_rate = valid_count / run_count if run_count else 0.0
+    checks = {
+        "all_runs_valid": valid_count == run_count and run_count > 0,
+        "cost_telemetry_complete": all(
+            row.get("model_cost_usd") is not None for row in rows
+        ),
+    }
+    return _gate_report(
+        gate_id="8D_stronger_model_probe",
+        rows=rows,
+        checks=checks,
+        details={
+            "run_count": run_count,
+            "valid_count": valid_count,
+            "valid_rate": valid_rate,
+            "observed_strategies": sorted(
+                {str(row["focal_selected_strategy_id"]) for row in rows if row["run_valid"]}
+            ),
+        },
+    )
 
 
 def evaluate_scripted_controls(rows: list[dict[str, Any]]) -> dict[str, Any]:

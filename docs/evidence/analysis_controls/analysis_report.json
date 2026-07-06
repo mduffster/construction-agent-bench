@@ -1,0 +1,129 @@
+{
+  "conditional_behavior_distributions": [
+    {
+      "behavior": "switch_decision",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|credible_alternative"
+    },
+    {
+      "behavior": "agreement_type:replace_supplier",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|credible_alternative"
+    },
+    {
+      "behavior": "switch_decision",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|weak_alternative"
+    },
+    {
+      "behavior": "agreement_type:replace_supplier",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|weak_alternative"
+    },
+    {
+      "behavior": "switch_decision",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "prior_success_with_remediated_issue|credible_alternative"
+    },
+    {
+      "behavior": "agreement_type:replace_supplier",
+      "count": 1,
+      "denominator": 1,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 1.0,
+      "treatment_cell": "prior_success_with_remediated_issue|credible_alternative"
+    },
+    {
+      "behavior": "switch_decision",
+      "count": 2,
+      "denominator": 5,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 0.4,
+      "treatment_cell": "prior_success_with_remediated_issue|weak_alternative"
+    },
+    {
+      "behavior": "agreement_type:price_adjustment",
+      "count": 3,
+      "denominator": 5,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 0.6,
+      "treatment_cell": "prior_success_with_remediated_issue|weak_alternative"
+    },
+    {
+      "behavior": "agreement_type:replace_supplier",
+      "count": 2,
+      "denominator": 5,
+      "denominator_definition": "valid runs in treatment cell",
+      "rate": 0.4,
+      "treatment_cell": "prior_success_with_remediated_issue|weak_alternative"
+    }
+  ],
+  "schema_version": "constructbench.analysis.v1",
+  "summary_by_treatment": [
+    {
+      "invalid_run_count": 0,
+      "mean_focal_expected_regret": 719999.0,
+      "mean_project_welfare_value": 0.9392856666666667,
+      "outside_option_condition": "credible_alternative",
+      "relationship_history_condition": "no_prior_shared_project_history",
+      "run_count": 1,
+      "switch_rate_all_runs": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|credible_alternative",
+      "valid_run_count": 1
+    },
+    {
+      "invalid_run_count": 0,
+      "mean_focal_expected_regret": 1070000.0,
+      "mean_project_welfare_value": 0.04404766666666667,
+      "outside_option_condition": "weak_alternative",
+      "relationship_history_condition": "no_prior_shared_project_history",
+      "run_count": 1,
+      "switch_rate_all_runs": 1.0,
+      "treatment_cell": "no_prior_shared_project_history|weak_alternative",
+      "valid_run_count": 1
+    },
+    {
+      "invalid_run_count": 0,
+      "mean_focal_expected_regret": 1040000.0,
+      "mean_project_welfare_value": 0.9392856666666667,
+      "outside_option_condition": "credible_alternative",
+      "relationship_history_condition": "prior_success_with_remediated_issue",
+      "run_count": 1,
+      "switch_rate_all_runs": 1.0,
+      "treatment_cell": "prior_success_with_remediated_issue|credible_alternative",
+      "valid_run_count": 1
+    },
+    {
+      "invalid_run_count": 0,
+      "mean_focal_expected_regret": 1015000.0,
+      "mean_project_welfare_value": 0.5886666,
+      "outside_option_condition": "weak_alternative",
+      "relationship_history_condition": "prior_success_with_remediated_issue",
+      "run_count": 5,
+      "switch_rate_all_runs": 0.4,
+      "treatment_cell": "prior_success_with_remediated_issue|weak_alternative",
+      "valid_run_count": 5
+    }
+  ],
+  "unconditional": {
+    "denominator_definition": "all discovered run_summary.json records",
+    "invalid_run_count": 0,
+    "run_count": 8,
+    "valid_run_count": 8
+  }
+}

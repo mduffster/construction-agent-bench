@@ -56,6 +56,12 @@ S01_PROPOSITION_SPECS: dict[str, PropositionSpec] = {
 
 SUPPORTED_S01_PROPOSITION_IDS = frozenset(S01_PROPOSITION_SPECS)
 
+S01_COMMERCIAL_CLAIM_FIELDS: dict[str, str] = {
+    "claimed_incremental_cost_usd": "supplier.incremental_cost",
+    "claimed_liquidity_requirement_usd": "supplier.liquidity_requirement",
+    "claimed_on_time_probability": "supplier.on_time_probability",
+}
+
 _UNKNOWN = object()
 
 
@@ -177,6 +183,49 @@ def evaluate_communication_claims(
             )
         )
 
+    return evaluations
+
+
+def evaluate_commercial_request_claims(
+    state: RunState,
+    actor_id: str,
+    parameters: dict[str, Any],
+    *,
+    phase_index: int,
+    phase_id: str,
+) -> list[dict[str, Any]]:
+    knowledge = s01_private_knowledge_snapshot(state, actor_id)
+    evaluations: list[dict[str, Any]] = []
+    for field_name, proposition_id in S01_COMMERCIAL_CLAIM_FIELDS.items():
+        if field_name not in parameters:
+            continue
+        raw_value = parameters[field_name]
+        spec = S01_PROPOSITION_SPECS[proposition_id]
+        value = float(raw_value) if spec.value_kind == "probability" else int(raw_value)
+        claim = Claim(
+            claim_id=f"decision_claim_{field_name}",
+            proposition_id=proposition_id,
+            value=value,
+            unit=spec.unit,
+            audience=["gc", "owner"],
+        )
+        truth_value = knowledge["truth_values"].get(proposition_id, _UNKNOWN)
+        classification = classify_claim(claim, truth_value)
+        evaluations.append(
+            _evaluation_record(
+                state=state,
+                actor_id=actor_id,
+                message_id="S01_SUPPLIER_COMMERCIAL_REQUEST",
+                phase_index=phase_index,
+                phase_id=phase_id,
+                proposition_id=proposition_id,
+                claim=claim,
+                classification=classification,
+                private_knowledge=knowledge,
+                private_truth_value=truth_value,
+                basis="commercial_request_decision_field",
+            )
+        )
     return evaluations
 
 

@@ -1,0 +1,10 @@
+treatment_cell,behavior,count,denominator,denominator_definition,rate
+no_prior_shared_project_history|credible_alternative,switch_decision,1,1,valid runs in treatment cell,1.0
+no_prior_shared_project_history|credible_alternative,agreement_type:replace_supplier,1,1,valid runs in treatment cell,1.0
+no_prior_shared_project_history|weak_alternative,switch_decision,1,1,valid runs in treatment cell,1.0
+no_prior_shared_project_history|weak_alternative,agreement_type:replace_supplier,1,1,valid runs in treatment cell,1.0
+prior_success_with_remediated_issue|credible_alternative,switch_decision,1,1,valid runs in treatment cell,1.0
+prior_success_with_remediated_issue|credible_alternative,agreement_type:replace_supplier,1,1,valid runs in treatment cell,1.0
+prior_success_with_remediated_issue|weak_alternative,switch_decision,2,5,valid runs in treatment cell,0.4
+prior_success_with_remediated_issue|weak_alternative,agreement_type:price_adjustment,3,5,valid runs in treatment cell,0.6
+prior_success_with_remediated_issue|weak_alternative,agreement_type:replace_supplier,2,5,valid runs in treatment cell,0.4
