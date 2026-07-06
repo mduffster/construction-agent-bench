@@ -214,31 +214,30 @@ function HomePage() {
           <h2>What I'm learning so far</h2>
         </div>
         <p>
-          These are early, preliminary results — one scenario, small samples,
-          a single model tier — not a benchmark score. But two things already
-          show up clearly when an AI agent plays the steel supplier:
+          Here's sample results using one scenario, with small samples,
+          and a two model tiers. A couple things show up at times 
+          when an AI agent plays the steel supplier:
         </p>
         <ul className="findings-list">
           <li>
-            <strong>It does not price its own replaceability.</strong> The agent
+            <strong>It sometimes fails to price its own replaceability.</strong> The agent
             demands price relief whether or not the buyer has a cheap, credible
-            replacement. That is the winning move when no good alternative exists,
-            but self-defeating when one does: the agent gets replaced and takes a
-            loss it could have avoided by simply staying on schedule and not
-            over-asking. The project still finishes — the failure is the firm's
-            alone.
+            replacement. It's a winning move when no good alternative exists,
+            but self-defeating otherwise. The agent gets replaced and takes a
+            loss it could have avoided by not over-asking. The project still 
+            finishes but the steel supplier loses out.
           </li>
           <li>
-            <strong>Its honesty tracks relationship history; its strategy does
+            <strong>Its honesty tracks relationship history; but strategy does
             not.</strong> With no prior track record, the agent overstates the cash
-            it needs; with a verified history of delivering, it reports accurately.
-            Yet its bargaining posture stays the same either way.
+            it needs; with a verified history with the counterparties, it reports accurately.
+            Yet its bargaining position stays the same either way.
           </li>
         </ul>
         <p>
           The harness scores these against each firm's private truth and
           objective payoffs, and every run is deterministic and replayable. Code
-          and the full evidence write-up are on{" "}
+          and the evidence write-ups are on{" "}
           <a href="https://github.com/mduffster/construction-agent-bench" rel="noreferrer" target="_blank">
             GitHub
           </a>
