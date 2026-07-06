@@ -3910,7 +3910,7 @@
             "cash_delta_usd": 0,
             "completion_delta_weeks": 2,
             "compliance_risk_delta": 0,
-            "cost_delta_usd": 1500000,
+            "cost_delta_usd": 3400000,
             "flags_add": [
               "backup_active"
             ],
@@ -5084,7 +5084,7 @@
         "organization": "General contractor",
         "persistent_memory_instruction": "Maintain this role, goal posture, private notes, and received messages across turns. Treat later observations as current business facts that can update or supersede startup facts.",
         "private_facts": {
-          "backup_activation_cost_usd": 1600000,
+          "backup_activation_cost_usd": 3400000,
           "backup_delivery_tick_if_activated": 20,
           "backup_reservation_cost_usd": 120000,
           "internal_schedule_float_ticks": 1,
@@ -5112,7 +5112,7 @@
           "Schedule failure creates large delay exposure."
         ],
         "starting_private_facts": {
-          "backup_activation_cost_usd": 1600000,
+          "backup_activation_cost_usd": 3400000,
           "backup_delivery_tick_if_activated": 20,
           "backup_reservation_cost_usd": 120000,
           "internal_schedule_float_ticks": 1,
@@ -5510,7 +5510,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "c0de899da21649c4e2928c0a8cbd4679cffe8a525d76d477b5bb8e1b3046c452",
+    "content_hash": "cb495705535c36198f85a56401533dd48d7e5bd6c4ab646885fc612af02c0d60",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",

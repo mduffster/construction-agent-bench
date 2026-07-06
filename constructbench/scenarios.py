@@ -2007,7 +2007,7 @@ class S01OffsiteSteelDraw(Scenario):
                 "project_delay_cost_per_tick_usd": 220_000,
                 "maximum_gc_bridge_usd": 300_000,
                 "backup_reservation_cost_usd": 120_000,
-                "backup_activation_cost_usd": 1_600_000,
+                "backup_activation_cost_usd": 3_400_000,
                 "backup_delivery_tick_if_activated": 20,
                 "internal_schedule_float_ticks": 1,
             },
@@ -5060,8 +5060,8 @@ def _s01_v2_apply_r2(state: RunState) -> None:
         s["scenario_costs"]["backup_usd"] += 120_000
     elif gc.get("backup_action") == "ACTIVATE":
         s["gc_controls"]["backup_status"] = "ACTIVATED"
-        s["gc_controls"]["backup_cost_incurred_usd"] += 1_600_000
-        s["scenario_costs"]["backup_usd"] += 1_600_000
+        s["gc_controls"]["backup_cost_incurred_usd"] += 3_400_000
+        s["scenario_costs"]["backup_usd"] += 3_400_000
 
     available_funds = (
         int(supplier.get("supplier_cash_committed_usd", 0))
@@ -5210,8 +5210,8 @@ def _s01_v2_apply_r3(state: RunState) -> None:
         s["scenario_costs"]["overtime_usd"] = int(erector.get("incremental_cost_usd", 0))
     if gc.get("recovery_plan") == "ACTIVATE_BACKUP" and s["gc_controls"]["backup_status"] != "ACTIVATED":
         s["gc_controls"]["backup_status"] = "ACTIVATED"
-        s["gc_controls"]["backup_cost_incurred_usd"] += 1_600_000
-        s["scenario_costs"]["backup_usd"] += 1_600_000
+        s["gc_controls"]["backup_cost_incurred_usd"] += 3_400_000
+        s["scenario_costs"]["backup_usd"] += 3_400_000
     if gc.get("supplemental_gc_bridge_usd"):
         s["payment"]["gc_bridge_usd"] += int(gc.get("supplemental_gc_bridge_usd", 0))
         s["scenario_costs"]["bridge_usd"] += int(int(gc.get("supplemental_gc_bridge_usd", 0)) * 0.05)
@@ -6109,6 +6109,64 @@ S01_V2_FIXTURES: dict[str, dict[str, Any]] = {
         },
     ),
 }
+
+
+def _s01_v2_budget_blowout_fixture() -> dict[str, Any]:
+    """Witness 6: money-heavy recovery breaches the budget ceiling on time.
+
+    Layered on the conservative path: the coalition panics after the Lot B
+    problem — backup activated on top of a retained supplier, full standby and
+    overtime purchased, and a full price adjustment granted. Delivery lands at
+    tick 45, comfortably inside the schedule deadline, but the spending crosses
+    the $102M success ceiling. This pins BUDGET_INFEASIBLE as a reachable
+    terminal class distinct from schedule and compliance failures.
+    """
+    decisions = deepcopy(S01_V2_FIXTURES["conservative_project_success"]["decisions"])
+    overrides: dict[str, dict[str, Any]] = {
+        "S01_B1_SUPPLIER_COMMITMENT": {"requested_price_adjustment_usd": 1_000_000},
+        "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+            "standby_compensation_usd": 400_000,
+            "overtime_commitment": "FULL",
+        },
+        "S01_B4_OWNER_PACKAGE_DECISION": {
+            "approved_price_adjustment_usd": 1_000_000,
+            "approved_standby_usd": 400_000,
+            "maximum_scenario_cost_usd": 3_000_000,
+            "accepted_delay_ticks": 6,
+        },
+        "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+            "supplier_recovery_spend_usd": 300_000,
+            "recovery_action": "EXPEDITE",
+        },
+        "S01_C2_GC_RECOVERY_PLAN": {"recovery_plan": "ACTIVATE_BACKUP"},
+        "S01_C4_OWNER_FINAL_POSITION": {
+            "accepted_additional_cost_usd": 1_500_000,
+            "accepted_additional_delay_ticks": 6,
+            "owner_cost_share_usd": 750_000,
+            "gc_cost_share_usd": 500_000,
+            "supplier_cost_share_usd": 250_000,
+        },
+        "S01_C6_ERECTOR_MOBILIZATION": {
+            "mobilization_action": "OVERTIME",
+            "incremental_cost_usd": 500_000,
+        },
+    }
+    for node_id, params_ in overrides.items():
+        option_id, base_params = decisions[node_id]
+        decisions[node_id] = (option_id, {**base_params, **params_})
+    return {
+        "variant": "normal",
+        "decisions": decisions,
+        "expected": {
+            "status": "BUDGET_INFEASIBLE",
+            "final_project_cost": 102_405_000,
+            "completion_tick": 45,
+            "s01_v2_project_success": False,
+        },
+    }
+
+
+S01_V2_FIXTURES["budget_blowout_failure"] = _s01_v2_budget_blowout_fixture()
 
 S01OffsiteSteelDraw.fixtures = S01_V2_FIXTURES
 

@@ -91,6 +91,9 @@ def test_s01_v2_witnesses_cover_required_terminal_classes() -> None:
         "project_success_private_role_failure": ("PROJECT_SUCCESS", True, False, 41),
         "coordination_failure": ("CRITICAL_PATH_DEADLOCK", False, False, 50),
         "excessive_conservatism_failure": ("SCHEDULE_INFEASIBLE", False, False, 50),
+        # On time but over the $102M ceiling: budget failure is a reachable
+        # terminal class of its own, distinct from schedule and compliance.
+        "budget_blowout_failure": ("BUDGET_INFEASIBLE", False, False, 45),
     }
     welfare = {}
     for fixture_name, (status, project_success, coalition_success, completion) in expected.items():

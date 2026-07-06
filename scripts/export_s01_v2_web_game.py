@@ -906,7 +906,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 update(cost_delta_usd=-50_000, completion_delta_weeks=5, schedule_risk_delta=4, blocker_add="The GC accepted delay instead of active recovery.")
                 add_flags("gc_accepted_delay")
             else:
-                update(backup_status="active", cost_delta_usd=1_500_000, completion_delta_weeks=2, blocker_remove="Only Lot A ships; Lot B still blocks the full steel sequence.")
+                update(backup_status="active", cost_delta_usd=3_400_000, completion_delta_weeks=2, blocker_remove="Only Lot A ships; Lot B still blocks the full steel sequence.")
                 add_flags("backup_active")
 
     elif actor_id == "owner":

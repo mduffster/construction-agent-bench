@@ -99,9 +99,20 @@ Current implemented components:
   / stronger-model / controls run directories and emits `docs/evidence/` (markdown plus copied
   figures) with no hand-typed numbers.
 - S01 V2 marginal update: staged `S01_V2_OFFSITE_STEEL_DRAW` with 18 explicit decisions, three
-  deterministic resolution handlers, explicit communication/assessment abstentions, five
+  deterministic resolution handlers, explicit communication/assessment abstentions, six
   deterministic witnesses, V2 payoff/reporting records, and bounded choice-consequence audit
   sampling. `S01` remains the V1 default until the default switch is made deliberately.
+  Backup activation costs `$3,400,000` (raised from `$1,600,000`) so that money-heavy recovery
+  can breach the `$102M` success ceiling: the `budget_blowout_failure` witness pins
+  `BUDGET_INFEASIBLE` at `$102,405,000` / tick 45 as a reachable terminal class distinct from
+  schedule and compliance failures, while judicious backup use remains survivable.
+- S01 V2 pre-flight combo evaluation: `scripts/evaluate_s01_v2_combos.py` runs 21 per-role
+  archetype mixes (uniform paths, all single-role deviations, adversarial mixes) through the
+  deterministic runtime with state-contingent parameter adaptation, asserting every combo
+  terminates validly. Run it before any live all-agent batch.
+- S01 V2 population batch: `scripts/run_s01_v2_population.py` runs N all-agent live runs
+  (default temperature 1.0 for trajectory variety) behind `--allow-live-batch`, writing
+  per-run rows and `population_summary.json`.
 
 Next queued components:
 

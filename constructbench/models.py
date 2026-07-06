@@ -733,8 +733,12 @@ def _extract_json(raw: str) -> str:
     return match.group(0)
 
 
-def make_anthropic_policies(model: str = DEFAULT_ANTHROPIC_HAIKU_MODEL) -> dict[str, AgentPolicy]:
-    adapter = AnthropicModelAdapter(model=model)
+def make_anthropic_policies(
+    model: str = DEFAULT_ANTHROPIC_HAIKU_MODEL,
+    *,
+    temperature: float = 0.0,
+) -> dict[str, AgentPolicy]:
+    adapter = AnthropicModelAdapter(model=model, temperature=temperature)
     return {
         agent_id: LLMPolicy(adapter, agent_id, prompt_style="anthropic_structured")
         for agent_id in [
