@@ -215,7 +215,7 @@ function HomePage() {
         </div>
         <p>
           In one scenario, with one live agent, other scripted actors, small samples,
-          and a two model tiers. A couple things show up at times 
+          and two model tiers. A couple things show up at times 
           when an AI agent plays the steel supplier:
         </p>
         <ul className="findings-list">
