@@ -8,10 +8,15 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "ConstructSim" })).toBeVisible();
   await expect(page.getByRole("heading", { name: /goals/i })).toBeVisible();
   await page.getByRole("link", { name: /see example runs/i }).click();
-  await expect(page.getByRole("heading", { name: /example runs, not a leaderboard/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /how to read these numbers/i })).toBeVisible();
+  await expect(page.getByText(/success limits/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /what the ai agents actually did/i })).toBeVisible();
+  await expect(page.getByText(/firms met target/i).first()).toBeVisible();
+  await expect(page.getByText(/failed — too late/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /scripted reference paths/i })).toBeVisible();
   await expect(page.getByText(/coordinated phased success/i)).toBeVisible();
-  await expect(page.getByText(/one sampled claude haiku run/i)).toBeVisible();
   await expect(page.getByText(/excessive-caution failure/i)).toBeVisible();
+  await expect(page.getByText(/panic-spending failure/i)).toBeVisible();
   await page.getByRole("link", { name: /play/i }).click();
   await expect(page.getByText(/choose your organization/i)).toBeVisible();
   await expect(page.getByText(/system participants/i)).toBeVisible();

@@ -4756,7 +4756,9 @@ def _s01_v2_specs(node_id: str) -> dict[str, ParameterSpec]:
         },
         "S01_C4_OWNER_FINAL_POSITION": {
             "supplemental_funding_usd": p_int(min_value=0, max_value=750_000, default=0),
-            "accepted_additional_cost_usd": p_int(min_value=0, max_value=1_500_000, default=0),
+            # Must be able to express accepting the full backup activation cost
+            # ($3.4M) plus companion recovery spending.
+            "accepted_additional_cost_usd": p_int(min_value=0, max_value=4_000_000, default=0),
             "accepted_additional_delay_ticks": p_int(min_value=0, max_value=8, default=1),
             "activate_remaining_contingency": p_bool(default=True),
             "owner_cost_share_usd": p_int(min_value=0, max_value=1_500_000, default=0),

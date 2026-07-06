@@ -5510,7 +5510,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "cb495705535c36198f85a56401533dd48d7e5bd6c4ab646885fc612af02c0d60",
+    "content_hash": "8d9a6002b968b90e548ebf40b47f28d031ad1837dc7cadc5f9a446cb9e1e08dd",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",
@@ -5522,6 +5522,54 @@
     "inspector"
   ],
   "witnesses": {
+    "budget_blowout_failure": {
+      "coalition_success": false,
+      "completion_tick": 45,
+      "final_project_cost": 102405000,
+      "fixture_name": "budget_blowout_failure",
+      "normalized_payoff_by_organization": {
+        "gc": 0.0,
+        "inspector": 0.5575,
+        "labor_subcontractor": 0.3,
+        "lender": 0.2,
+        "owner": 0.0,
+        "steel_supplier": 0.71
+      },
+      "path_label": "backup_recovery_failure",
+      "private_success_by_organization": {
+        "gc": false,
+        "inspector": true,
+        "labor_subcontractor": false,
+        "lender": false,
+        "owner": false,
+        "steel_supplier": true
+      },
+      "project_success": false,
+      "project_welfare": {
+        "baseline_completion_tick": 40,
+        "baseline_project_cost": 95000000,
+        "coalition_success": false,
+        "completion_success": false,
+        "cost_delta_from_baseline": 7405000,
+        "normalized_cost_score": 0.0,
+        "normalized_schedule_score": 0.375,
+        "project_success": false,
+        "schedule_delta_from_baseline": 5,
+        "success_budget_ceiling": 102000000,
+        "success_deadline_tick": 48
+      },
+      "realized_payoff_by_organization": {
+        "gc": -1534000,
+        "inspector": 115000,
+        "labor_subcontractor": -100000,
+        "lender": -600000,
+        "owner": -11405000,
+        "steel_supplier": 670000
+      },
+      "run_valid": true,
+      "terminal_reason": "final project cost exceeds success budget ceiling",
+      "terminal_status": "BUDGET_INFEASIBLE"
+    },
     "conservative_project_success": {
       "coalition_success": true,
       "completion_tick": 42,

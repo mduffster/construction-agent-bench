@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import rawGameData from "./game-data/s01_v2_game.json";
+import rawPopulationData from "./game-data/s01_v2_population.json";
 import {
   advanceRound,
   counterpartyTimeline,
@@ -39,11 +40,14 @@ import type {
   GameData,
   GameEvaluation,
   GameState,
+  PopulationData,
+  PopulationRun,
   ProjectGameState,
   RiskLevel,
 } from "./lib/types";
 
 const gameData = rawGameData as GameData;
+const populationData = rawPopulationData as PopulationData;
 const playableRoleIds = gameData.playable_roles;
 type PlayView = "decision" | "result";
 type ProjectPhase =
@@ -953,7 +957,11 @@ function OutcomeExplanation({
 function ResultsPage() {
   const idealWitness = gameData.witnesses.efficient_phased_coalition_success;
   const failureWitness = gameData.witnesses.excessive_conservatism_failure;
-  const modelOutcome = gameData.comparisons.model?.outcome ?? null;
+  const blowoutWitness = gameData.witnesses.budget_blowout_failure;
+  const baseline = gameData.public_baseline;
+  const limits = gameData.initial_game_state;
+  const plannedCost = Number(baseline.baseline_planned_project_cost_usd);
+  const plannedWeek = Number(baseline.baseline_expected_completion_tick);
 
   const rows = [
     {
@@ -962,20 +970,20 @@ function ResultsPage() {
       week: idealWitness.completion_tick,
       note: "Every firm gives a little; the project lands despite the steel problem.",
     },
-    modelOutcome
-      ? {
-          label: "One sampled Claude Haiku run",
-          cost: modelOutcome.final_project_cost,
-          week: modelOutcome.completion_tick,
-          note: `A single all-agent run — ${plainOutcomeNote(modelOutcome.path_label)}.`,
-        }
-      : null,
     {
       label: "Excessive-caution failure",
       cost: failureWitness.final_project_cost,
       week: failureWitness.completion_tick,
       note: "Every firm self-protects; the project fails with no deception involved.",
     },
+    blowoutWitness
+      ? {
+          label: "Panic-spending failure",
+          cost: blowoutWitness.final_project_cost,
+          week: blowoutWitness.completion_tick,
+          note: "The coalition buys backup steel, overtime, and standby all at once — on time, but over budget.",
+        }
+      : null,
   ].filter(
     (row): row is { label: string; cost: number | null; week: number | null; note: string } =>
       row !== null
@@ -985,16 +993,61 @@ function ResultsPage() {
     <Shell>
       <section className="overview-section">
         <div className="section-title">
-          <Gauge size={20} />
-          <h2>Example runs, not a leaderboard</h2>
+          <ClipboardCheck size={20} />
+          <h2>How to read these numbers</h2>
         </div>
         <p>
-          These are individual runs of the same scenario, not scores to beat. One
-          shows what coordinated success looks like, one is a single sampled Claude
-          Haiku run, and one shows how excessive caution alone — no deception — can
-          still sink the project.
+          Every run below is the same project: a build planned to finish at{" "}
+          <strong>{formatMoney(plannedCost)}</strong> in{" "}
+          <strong>week {plannedWeek}</strong>. A run counts as a project success
+          only if the final cost stays at or under{" "}
+          <strong>{formatMoney(limits.success_cost_ceiling_usd)}</strong> and the
+          work finishes by <strong>week {limits.success_deadline_week}</strong>.
+          Anything between the plan and those limits is money and time the steel
+          problem burned. A firm can also miss its own private profit target even
+          when the project succeeds — that is the "firms met target" column.
         </p>
-        <section className="comparison-panel" aria-label="Example runs">
+        <section className="project-strip" aria-label="Targets">
+          <dl>
+            <div>
+              <dt>Original plan</dt>
+              <dd>
+                {formatMoney(plannedCost)} / week {plannedWeek}
+              </dd>
+            </div>
+            <div>
+              <dt>Success limits</dt>
+              <dd>
+                {formatMoney(limits.success_cost_ceiling_usd)} / week{" "}
+                {limits.success_deadline_week}
+              </dd>
+            </div>
+            <div>
+              <dt>Failure modes</dt>
+              <dd>Over budget, too late, or unsafe steel installed</dd>
+            </div>
+            <div>
+              <dt>Firms involved</dt>
+              <dd>6, each with a private profit target</dd>
+            </div>
+          </dl>
+        </section>
+      </section>
+
+      <PopulationSection />
+
+      <section className="overview-section">
+        <div className="section-title">
+          <Gauge size={20} />
+          <h2>Scripted reference paths</h2>
+        </div>
+        <p>
+          These are hand-scripted runs the harness uses as fixed points — what
+          coordinated success looks like, and two ways the project fails without
+          any deception: everyone playing it too safe, or everyone buying their
+          way out of trouble at once.
+        </p>
+        <section className="comparison-panel" aria-label="Reference paths">
           {rows.map((row) => (
             <div className="comparison-row" key={row.label}>
               <strong>{row.label}</strong>
@@ -1007,6 +1060,85 @@ function ResultsPage() {
       </section>
     </Shell>
   );
+}
+
+function PopulationSection() {
+  const population = populationData;
+  if (!population || population.runs.length === 0) {
+    return null;
+  }
+  const validRuns = population.runs.filter((run) => run.run_valid);
+  const modelLabel = Array.isArray(population.model)
+    ? population.model.join(", ")
+    : population.model;
+  return (
+    <section className="overview-section">
+      <div className="section-title">
+        <Users size={20} />
+        <h2>What the AI agents actually did</h2>
+      </div>
+      <p>
+        Each row is one complete run with <strong>{modelLabel}</strong> playing
+        all six firms — every payment, inspection, funding, and delivery decision
+        made by the model. {population.project_success_count} of{" "}
+        {population.valid_run_count} valid runs finished as project successes;
+        final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
+        {formatMoney(population.cost_max ?? 0)}. "Firms met target" counts how
+        many of the six organizations also hit their private profit goals — the
+        gap between that and 6 is the cost of coordination that project-level
+        numbers hide.
+      </p>
+      <div className="population-table" role="table" aria-label="Live agent runs">
+        <div className="population-row population-row--head" role="row">
+          <span>Run</span>
+          <span>Outcome</span>
+          <span>Final cost</span>
+          <span>Finished</span>
+          <span>Firms met target</span>
+        </div>
+        {validRuns.map((run, displayIndex) => (
+          <div
+            className={`population-row${run.project_success ? "" : " population-row--failed"}`}
+            role="row"
+            key={`${run.batch}-${run.replicate_index}`}
+          >
+            <span>
+              Run {displayIndex + 1}
+              {run.temperature === 0 ? " (deterministic)" : ""}
+            </span>
+            <span>{populationOutcomeLabel(run)}</span>
+            <span>{run.final_project_cost === null ? "n/a" : formatMoney(run.final_project_cost)}</span>
+            <span>{run.completion_tick === null ? "n/a" : `Week ${run.completion_tick}`}</span>
+            <span>
+              {run.firms_meeting_private_target === null
+                ? "n/a"
+                : `${run.firms_meeting_private_target}/6`}
+            </span>
+          </div>
+        ))}
+      </div>
+      {population.valid_run_count < population.run_count && (
+        <p className="population-footnote">
+          {population.run_count - population.valid_run_count} additional run
+          {population.run_count - population.valid_run_count === 1 ? "" : "s"}{" "}
+          ended early because an agent produced an invalid decision; the harness
+          stops those runs rather than guessing.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function populationOutcomeLabel(run: PopulationRun) {
+  if (run.project_success) {
+    return run.coalition_success ? "Success — every firm won" : "Success — some firms lost";
+  }
+  const labels: Record<string, string> = {
+    BUDGET_INFEASIBLE: "Failed — over budget",
+    SCHEDULE_INFEASIBLE: "Failed — too late",
+    CRITICAL_PATH_DEADLOCK: "Failed — work deadlocked",
+  };
+  return labels[run.terminal_status] ?? "Failed";
 }
 
 function ComparisonPanel({

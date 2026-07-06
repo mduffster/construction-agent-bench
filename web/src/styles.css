@@ -1392,6 +1392,48 @@ h2 {
   height: 100%;
 }
 
+.population-table {
+  border: 4px solid #10201e;
+  background: #fffaf0;
+  box-shadow: 6px 6px 0 #d8caa8;
+  display: grid;
+  margin-top: 16px;
+}
+
+.population-row {
+  align-items: baseline;
+  border-bottom: 3px solid #e6dcc3;
+  color: #10201e;
+  display: grid;
+  font-weight: 800;
+  gap: 10px;
+  grid-template-columns: 1.1fr 1.6fr 1fr 0.9fr 1fr;
+  padding: 10px 16px;
+}
+
+.population-row:last-child {
+  border-bottom: none;
+}
+
+.population-row--head {
+  background: #10201e;
+  color: #fffaf0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.population-row--failed {
+  background: #fdeee9;
+}
+
+.population-footnote {
+  color: #59645f;
+  font-size: 0.88rem;
+  font-weight: 800;
+  margin-top: 12px;
+}
+
 .trust-calibration-lead {
   color: #2b0f54;
   font-size: 0.95rem;
@@ -1602,6 +1644,13 @@ h2 {
   .partner-trust-row,
   .quick-facts div {
     grid-template-columns: 1fr;
+  }
+
+  .population-row {
+    font-size: 0.82rem;
+    gap: 6px;
+    grid-template-columns: 0.9fr 1.5fr 1fr 0.8fr 0.8fr;
+    padding: 8px 10px;
   }
 
   .project-postcard {

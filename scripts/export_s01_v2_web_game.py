@@ -28,6 +28,7 @@ WITNESS_ORDER = [
     "project_success_private_role_failure",
     "coordination_failure",
     "excessive_conservatism_failure",
+    "budget_blowout_failure",
 ]
 
 NODE_CHOICE_COPY = {

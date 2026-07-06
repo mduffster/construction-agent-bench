@@ -200,6 +200,36 @@ export interface GameData {
   path_rules: Record<string, string>;
 }
 
+export interface PopulationRun {
+  batch: string;
+  temperature: number;
+  replicate_index: number;
+  run_valid: boolean;
+  terminal_status: string;
+  path_label: string | null;
+  final_project_cost: number | null;
+  completion_tick: number | null;
+  project_success: boolean | null;
+  coalition_success: boolean | null;
+  firms_meeting_private_target: number | null;
+  private_success_by_organization: Partial<Record<AgentId, boolean>>;
+}
+
+export interface PopulationData {
+  schema_version: string;
+  generated_at: string;
+  model: string | string[];
+  run_count: number;
+  valid_run_count: number;
+  project_success_count: number;
+  coalition_success_count: number;
+  cost_min: number | null;
+  cost_max: number | null;
+  tick_min: number | null;
+  tick_max: number | null;
+  runs: PopulationRun[];
+}
+
 export interface GameState {
   selectedRole: AgentId;
   roundIndex: number;
