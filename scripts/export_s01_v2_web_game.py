@@ -33,19 +33,19 @@ WITNESS_ORDER = [
 
 NODE_CHOICE_COPY = {
     "S01_A1_SUPPLIER_APPLICATION": {
-        "balanced": ("Ask for a smaller early payment and be honest", ["Request $1.2M against the steel package.", "Submit all available Lot A and Lot B records.", "Tell the team the title, nonconformance, and cash issues."]),
-        "self_protective": ("Ask for the full payment and disclose less", ["Request $1.8M before the steel is on site.", "Submit only the two easiest Lot A records.", "Do not disclose known exceptions."]),
+        "balanced": ("Ask for a smaller early payment and be honest", ["Ask for $1.2M of the steel contract now.", "Submit all available Lot A and Lot B records.", "Tell the team everything: the paperwork gaps, the Lot B defect, and your cash squeeze."]),
+        "self_protective": ("Ask for the full payment and disclose less", ["Request $1.8M before the steel is on site.", "Submit only the two easiest Lot A records.", "Keep the known problems to yourself."]),
         "conservative": ("Ask for no money up front", ["Request $0 up front.", "Submit the full document package.", "Try to keep the delivery plan alive without early project cash."]),
     },
     "S01_A2_GC_INITIAL_REVIEW": {
-        "balanced": ("Approve the verified first batch and send it for review", ["Certify $950K for the verified Lot A path.", "Send available records to owner, lender, and inspector.", "Keep a phased field-work path open."]),
-        "self_protective": ("Approve the big request and skip backup steel", ["Certify the supplier's high application.", "Do not reserve backup steel.", "Route only the limited submitted records."]),
-        "conservative": ("Require full review and reserve backup steel", ["Send the full package for review.", "Reserve backup steel.", "Hold the initial field-work strategy."]),
+        "balanced": ("Approve the verified first batch and send it for review", ["Approve $950K — just the part you've verified.", "Share what documents you have with the owner, lender, and inspector.", "Keep a phased field-work path open."]),
+        "self_protective": ("Approve the big request and skip backup steel", ["Approve the full $1.8M request as-is.", "Do not reserve backup steel.", "Pass along only the few documents the supplier sent."]),
+        "conservative": ("Require full review and reserve backup steel", ["Send the full package for review.", "Reserve backup steel.", "Keep the original work plan until the review clears."]),
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
-        "balanced": ("Offer limited owner cash support", ["Make $250K available if controls clear.", "Add $100K immediate equity.", "Accept up to two weeks of recovery delay."]),
-        "self_protective": ("Refuse more owner cash", ["Do not support off-site payment.", "Keep owner funds and equity at zero.", "Accept no avoidable delay."]),
-        "conservative": ("Support only with tighter controls", ["Require title and inspection controls.", "Allow funding only after review.", "Keep the delay tolerance narrow."]),
+        "balanced": ("Offer limited owner cash support", ["Offer $250K once the checks pass.", "Put in $100K of your own cash now.", "Accept up to two weeks of recovery delay."]),
+        "self_protective": ("Refuse more owner cash", ["Refuse to pay before the steel arrives.", "Put in no cash at all.", "Accept no avoidable delay."]),
+        "conservative": ("Support only with tighter checks", ["Require ownership paperwork and an inspection first.", "Allow funding only after review.", "Accept almost no delay."]),
     },
     "S01_A3_INSPECTOR_REVIEW_PLAN": {
         "balanced": ("Inspect the first batch and sample the second", ["Review Lot A so the first shipment can stay possible.", "Sample Lot B to expose the known issue early.", "Hold a later reinspection slot if Lot B needs a fix."]),
@@ -53,80 +53,80 @@ NODE_CHOICE_COPY = {
         "conservative": ("Inspect both batches before anything ships", ["Review both lots before anything moves.", "Spend more time and inspection cost today.", "Create the strongest release record if the team can wait."]),
     },
     "S01_A3_ERECTOR_CAPACITY_OFFER": {
-        "balanced": ("Hold part of the crew and crane", ["Keep a split crew available.", "Offer partial mobilization at week 15.", "Charge standby for the hold."]),
-        "self_protective": ("Send the crew and crane to other work", ["Do not hold crew or crane.", "Avoid standby exposure.", "Make the project remobilize later."]),
-        "conservative": ("Hold the full crew and crane for standby pay", ["Keep the full crew and crane.", "Mobilize later with more certainty.", "Charge the full standby price."]),
+        "balanced": ("Hold part of the crew and crane", ["Keep a split crew available.", "Offer half the crew starting week 15.", "Charge a standby fee to keep them available."]),
+        "self_protective": ("Send the crew and crane to other work", ["Do not hold crew or crane.", "Take no risk of unpaid waiting.", "If steel shows up later, the project waits for you to come back."]),
+        "conservative": ("Hold the full crew and crane for standby pay", ["Keep the full crew and crane.", "Come in later, once things are more certain.", "Charge the full standby price."]),
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
-        "balanced": ("Offer a limited loan draw", ["Cap the draw at $760K.", "Require owner equity.", "Review in the current draw cycle."]),
-        "self_protective": ("Make this loan draw ineligible", ["Release no funds.", "Require no escrow.", "Push the issue outside this draw."]),
-        "conservative": ("Use escrow and reserve controls", ["Limit release through escrow.", "Preserve completion reserves.", "Wait for stronger controls."]),
+        "balanced": ("Offer part of the loan money", ["Cap the payout at $760K.", "Require the owner to put in cash.", "Decide within the current payment cycle."]),
+        "self_protective": ("Refuse to release loan money", ["Release no funds.", "Offer no alternative.", "Push the problem to a later payment cycle."]),
+        "conservative": ("Move money only into a controlled account", ["Move money only into a controlled account.", "Keep the finish-the-job reserves intact.", "Wait for stronger controls."]),
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
         "balanced": ("Fix both steel batches with support", ["Commit cash and request support.", "Target Lot A for week 14.", "Target Lot B for week 18."]),
         "self_protective": ("Limit the fix and take other work", ["Do not add financing.", "Accept outside shop work.", "Let Lot B slip late."]),
-        "conservative": ("Borrow money and finish the full fix", ["Use maximum outside financing.", "Push for full sequence readiness.", "Accept financing cost."]),
+        "conservative": ("Borrow money and finish the full fix", ["Borrow as much as you can.", "Get both batches fully ready.", "Accept the borrowing cost."]),
     },
     "S01_B2_GC_INTEGRATED_PACKAGE": {
-        "balanced": ("Build a shared recovery plan", ["Put $100K of short-term GC funding into the package.", "Request owner and lender support.", "Drop backup if the package holds."]),
-        "self_protective": ("Reject the supplier's plan", ["Certify no payment.", "Do not put short-term GC money into the package.", "Accept field-work delay instead of carrying risk."]),
-        "conservative": ("Keep backup steel and require more controls", ["Put more short-term GC funding into the package.", "Keep backup available.", "Use a full-sequence plan if controls clear."]),
+        "balanced": ("Build a shared recovery plan", ["Put in $100K of your own short-term money.", "Request owner and lender support.", "Drop backup if the package holds."]),
+        "self_protective": ("Reject the supplier's plan", ["Approve nothing for payment.", "Do not put short-term GC money into the package.", "Accept field-work delay instead of carrying risk."]),
+        "conservative": ("Keep backup steel and demand more proof", ["Put more short-term GC funding into the package.", "Keep backup available.", "Go back to the full plan if the checks pass."]),
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
-        "balanced": ("Release the first batch and hold the second", ["Let Lot A move toward shipment.", "Keep Lot B blocked until the issue is cured.", "Set reinspection for week 18."]),
-        "self_protective": ("Block both steel batches", ["Approve no steel for shipment.", "Do not set a cure path today.", "Field work cannot start from this material."]),
+        "balanced": ("Release the first batch and hold the second", ["Let Lot A move toward shipment.", "Keep Lot B blocked until the defect is fixed.", "Set reinspection for week 18."]),
+        "self_protective": ("Block both steel batches", ["Approve no steel for shipment.", "Set no repair plan today.", "Field work cannot start from this material."]),
         "conservative": ("Require deeper review before release", ["Keep Lot A possible, but do not fully clear it yet.", "Require another inspection step.", "Keep Lot B blocked."]),
     },
     "S01_B3_ERECTOR_BINDING_COMMITMENT": {
-        "balanced": ("Commit part of the crew and crane", ["Mobilize partial capacity in week 15.", "Require Lot A release.", "Use limited overtime if needed."]),
-        "self_protective": ("Release the crew and crane", ["Do not accept the package.", "Take outside work.", "Return only after remobilization."]),
-        "conservative": ("Commit the full crew and crane for standby pay", ["Hold the full crew and crane.", "Mobilize later with full capacity.", "Require standby compensation."]),
+        "balanced": ("Commit part of the crew and crane", ["Bring half the crew in week 15.", "Only if the first batch is approved to ship.", "Use limited overtime if needed."]),
+        "self_protective": ("Release the crew and crane", ["Do not accept the package.", "Take outside work.", "Come back only when it's worth it — which takes time."]),
+        "conservative": ("Commit the full crew and crane for standby pay", ["Hold the full crew and crane.", "Come in later at full strength.", "Require standby pay."]),
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
-        "balanced": ("Approve the phased funding package", ["Fund $200K.", "Add $100K equity.", "Approve standby for the labor subcontractor."]),
-        "self_protective": ("Reject the funding package", ["Approve no funding.", "Approve no equity.", "Accept only minimal delay."]),
-        "conservative": ("Approve funding only with full controls", ["Fund more, but only under controls.", "Approve full standby.", "Keep delay limits."]),
+        "balanced": ("Approve the phased funding package", ["Fund $200K.", "Put in $100K of your own cash.", "Pay to keep the crew on standby."]),
+        "self_protective": ("Reject the funding package", ["Approve no funding.", "Put in no cash.", "Accept only minimal delay."]),
+        "conservative": ("Approve funding only with full checks", ["Fund more, but only if the checks pass.", "Pay full crew standby.", "Keep delay limits."]),
     },
     "S01_B5_LENDER_RELEASE_DECISION": {
-        "balanced": ("Release the partial loan draw", ["Release $760K.", "Require $100K owner equity.", "Preserve completion reserve."]),
-        "self_protective": ("Hold the loan draw", ["Release no funds.", "Escrow no funds.", "Leave the supplier to solve cash alone."]),
-        "conservative": ("Move funds only through escrow", ["Hold direct release.", "Use controlled escrow.", "Wait for more certainty."]),
+        "balanced": ("Release $760K of loan money", ["Release $760K.", "Require $100K of owner cash.", "Preserve completion reserve."]),
+        "self_protective": ("Hold the loan money", ["Release no funds.", "Park nothing in a controlled account.", "Leave the supplier to solve cash alone."]),
+        "conservative": ("Pay only into a controlled account", ["Pay nothing out directly.", "Move money only through the controlled account.", "Wait for more certainty."]),
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
         "balanced": ("Ship both steel batches as promised", ["Report both lots ready.", "Ship Lot A and Lot B.", "Make no extra payment request."]),
-        "self_protective": ("Ship only the first batch", ["Report Lot B not ready.", "Ship only Lot A.", "Accept the later Lot B path."]),
-        "conservative": ("Ship both batches after extra cleanup", ["Report both lots ready.", "Ship both lots.", "Keep the cleaner full-sequence story."]),
+        "self_protective": ("Ship only the first batch", ["Report Lot B not ready.", "Ship only Lot A.", "Accept that Lot B arrives late."]),
+        "conservative": ("Ship both batches after extra cleanup", ["Report both lots ready.", "Ship both lots.", "Ship with a spotless record."]),
     },
     "S01_C2_GC_RECOVERY_PLAN": {
-        "balanced": ("Keep the phased recovery plan moving", ["Verify supplier status.", "Keep downstream work resequenced.", "Do not spend on backup."]),
-        "self_protective": ("Accept the delay", ["Challenge status.", "Do not resequence downstream work.", "Accept late completion."]),
+        "balanced": ("Keep the phased recovery plan moving", ["Double-check what the supplier says is ready.", "Keep the later schedule reshuffled around the steel delay.", "Do not spend on backup."]),
+        "self_protective": ("Accept the delay", ["Push back on the supplier's status report.", "Leave the later schedule as it was.", "Accept late completion."]),
         "conservative": ("Activate the backup source", ["Use backup steel.", "Spend to protect schedule.", "Verify before proceeding."]),
     },
     "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
-        "balanced": ("Release both steel batches to ship", ["Clear Lot A.", "Clear Lot B after cure.", "Let the full steel sequence move to site."]),
+        "balanced": ("Release both steel batches to ship", ["Clear Lot A.", "Clear Lot B once it's fixed.", "Let the full steel sequence move to site."]),
         "self_protective": ("Hold the final steel release", ["Keep Lot A blocked.", "Keep Lot B blocked.", "Approve no final shipment."]),
-        "conservative": ("Release both batches after extra testing", ["Clear both lots only after the added test record.", "Accept extra review cost.", "Protect compliance with the cleanest file."]),
+        "conservative": ("Release both batches after extra testing", ["Clear both lots only after the extra test.", "Accept extra review cost.", "Protect the project with the cleanest possible record."]),
     },
     "S01_C4_OWNER_FINAL_POSITION": {
-        "balanced": ("Accept the recovery cost", ["Use contingency if needed.", "Accept one week of delay.", "Do not push extra cost to a single party."]),
-        "self_protective": ("Refuse any additional owner cost", ["Provide no supplemental funding.", "Do not share recovery cost.", "Hold the line on owner exposure."]),
-        "conservative": ("Authorize a larger controlled recovery", ["Accept higher recovery cost.", "Keep delay acceptance limited.", "Allocate cost shares explicitly."]),
+        "balanced": ("Accept the recovery cost", ["Tap the project's emergency fund if needed.", "Accept one week of delay.", "Do not push extra cost to a single party."]),
+        "self_protective": ("Refuse any additional owner cost", ["Put in no extra money.", "Do not share recovery cost.", "Hold the line on owner exposure."]),
+        "conservative": ("Authorize a larger controlled recovery", ["Accept higher recovery cost.", "Accept only a little delay.", "Spell out who pays what."]),
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
-        "balanced": ("Hold unless final support is needed", ["Do not over-release.", "Keep reserves intact.", "Let verified value drive funding."]),
-        "self_protective": ("Hold all supplemental funding", ["Release no supplemental draw.", "Require no exception.", "Push funding risk back to others."]),
-        "conservative": ("Require equity before more lender funds", ["Require owner equity.", "Preserve reserves.", "Use conditions for any support."]),
+        "balanced": ("Hold extra funds unless truly needed", ["Pay out no more than the work supports.", "Keep reserves intact.", "Let verified work decide the funding."]),
+        "self_protective": ("Refuse any extra loan money", ["Release no extra loan money.", "Grant no exceptions.", "Push funding risk back to others."]),
+        "conservative": ("Owner pays in first, then the bank follows", ["Require the owner to put in cash.", "Preserve reserves.", "Attach conditions to any support."]),
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
-        "balanced": ("Start with a phased crew and crane", ["Start in week 15.", "Use half crew and crane capacity.", "Avoid installing unreleased steel."]),
-        "self_protective": ("Release and remobilize later", ["Release current capacity.", "Return only after week 23.", "Avoid standby cost now."]),
-        "conservative": ("Start with the full crew and crane", ["Use full capacity.", "Start after controls are clearer.", "Spend more to preserve sequence."]),
+        "balanced": ("Start with a phased crew and crane", ["Start in week 15.", "Use half crew and crane capacity.", "Don't install steel the inspector hasn't approved."]),
+        "self_protective": ("Let the crew go and return later", ["Let the crew go now.", "Come back after week 23 at the earliest.", "Avoid standby cost now."]),
+        "conservative": ("Start with the full crew and crane", ["Use full capacity.", "Start once the checks are clearer.", "Spend more to keep the full plan alive."]),
     },
 }
 
 NODE_CONTEXT = {
     "S01_A1_SUPPLIER_APPLICATION": {
-        "title": "Submit the off-site steel payment request",
+        "title": "Decide how much to ask to be paid up front",
         "situation": "You are the steel supplier. The project needs two steel batches before field steel work can start. You need cash before both batches are fully ready.",
         "terms": [
             {"term": "Lot A", "meaning": "The first steel batch. If it is released and shipped, field work can start."},
@@ -136,14 +136,14 @@ NODE_CONTEXT = {
     },
     "S01_A2_GC_INITIAL_REVIEW": {
         "title": "Review the supplier's payment request",
-        "situation": "You are the general contractor. You decide how much of the off-site steel request can be certified and whether to keep a backup steel source available.",
+        "situation": "You are the general contractor. You decide how much of the supplier's payment request to approve, and whether to line up a backup steel source just in case.",
         "terms": [
             {"term": "Certify", "meaning": "Tell the owner and lender how much work appears eligible for payment."},
             {"term": "Backup steel", "meaning": "A replacement source that costs more but may save the schedule if the supplier fails."},
         ],
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
-        "title": "Set the owner's provisional funding position",
+        "title": "Decide how much cash to offer now",
         "situation": "You are the owner. You can help fund the recovery, but every extra dollar and week comes out of your own budget and return.",
         "terms": [
             {"term": "Owner funding", "meaning": "Project money the owner can put in immediately to keep the steel path moving."},
@@ -152,7 +152,7 @@ NODE_CONTEXT = {
     },
     "S01_A3_INSPECTOR_REVIEW_PLAN": {
         "title": "Choose the first inspection plan",
-        "situation": "You are the inspector. Your review determines whether any off-site steel can later be released for shipment and installation.",
+        "situation": "You are the inspector. Your review determines whether any of this steel can later be approved to ship and be installed.",
         "terms": [
             {"term": "Release", "meaning": "Your approval that a steel batch can be shipped and used without creating a compliance failure."},
             {"term": "Lot A", "meaning": "The first batch; it is mostly ready but still needs enough documentation and inspection support."},
@@ -168,7 +168,7 @@ NODE_CONTEXT = {
         ],
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
-        "title": "State whether the draw may be eligible",
+        "title": "Decide if loan money can help",
         "situation": "You are the lender. You decide whether construction-loan money can support material stored off-site.",
         "terms": [
             {"term": "Draw", "meaning": "A loan disbursement for completed or stored project work."},
@@ -176,24 +176,24 @@ NODE_CONTEXT = {
         ],
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
-        "title": "Commit cash, cure work, and delivery weeks",
-        "situation": "You are the supplier. The team needs to know whether you will actually cure the steel issues and when each batch will be ready.",
+        "title": "Commit cash, repairs, and delivery weeks",
+        "situation": "You are the supplier. The team needs to know whether you will actually fix the steel problems and when each batch will be ready.",
         "terms": [
             {"term": "Cure", "meaning": "Fix missing documents or physical issues so steel can be released."},
             {"term": "Outside work", "meaning": "Other shop work that earns margin for you but can delay this project."},
         ],
     },
     "S01_B2_GC_INTEGRATED_PACKAGE": {
-        "title": "Assemble the commercial recovery package",
-        "situation": "You are the general contractor. You combine supplier, owner, lender, inspector, labor, and backup positions into one executable path.",
+        "title": "Assemble the rescue package",
+        "situation": "You are the general contractor. Everyone has stated a position. You stitch them into one plan that can actually be executed.",
         "terms": [
             {"term": "Short-term GC funding", "meaning": "Temporary project money from the GC used to keep work moving before other funds arrive."},
             {"term": "Phased field work", "meaning": "Start with Lot A and finish when Lot B clears."},
         ],
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
-        "title": "Issue the inspection release position",
-        "situation": "You are the inspector. The team has some verified value, but Lot B still carries risk. Your release decision controls what can ship.",
+        "title": "Decide what steel can ship",
+        "situation": "You are the inspector. The team has verified some of the steel, but Lot B still carries risk. Your approval decides what can ship.",
         "terms": [
             {"term": "Lot A", "meaning": "The first steel batch. Releasing it lets the project start field work."},
             {"term": "Lot B", "meaning": "The second steel batch. Without it, the first field steel package cannot fully finish."},
@@ -201,7 +201,7 @@ NODE_CONTEXT = {
         ],
     },
     "S01_B3_ERECTOR_BINDING_COMMITMENT": {
-        "title": "Make the labor commitment binding",
+        "title": "Turn your offer into a real commitment",
         "situation": "You are the labor subcontractor. The commercial package now needs a real commitment from your crew and crane.",
         "terms": [
             {"term": "Split capacity", "meaning": "Enough labor to start with Lot A while waiting on Lot B."},
@@ -217,7 +217,7 @@ NODE_CONTEXT = {
         ],
     },
     "S01_B5_LENDER_RELEASE_DECISION": {
-        "title": "Release, escrow, or hold loan funds",
+        "title": "Decide whether loan money actually moves",
         "situation": "You are the lender. The package is assembled; now you decide whether money actually moves.",
         "terms": [
             {"term": "Partial release", "meaning": "A direct draw for the amount supported by verified value."},
@@ -225,7 +225,7 @@ NODE_CONTEXT = {
         ],
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
-        "title": "Report readiness and choose shipment",
+        "title": "Report what's ready and decide what ships",
         "situation": "You are the supplier. The project needs a truthful status and a shipping decision for the steel batches.",
         "terms": [
             {"term": "Ship Lot A", "meaning": "Send only the first batch; the project may start but cannot finish the sequence."},
@@ -241,15 +241,15 @@ NODE_CONTEXT = {
         ],
     },
     "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
-        "title": "Make the final release decision",
-        "situation": "You are the inspector. This final release controls what can legally ship and be installed.",
+        "title": "Make the final steel approval call",
+        "situation": "You are the inspector. This final approval controls what can legally ship and be installed.",
         "terms": [
             {"term": "Conditional release", "meaning": "Allow movement while requiring follow-up controls."},
             {"term": "Hold", "meaning": "Do not allow the batch to ship or be installed."},
         ],
     },
     "S01_C4_OWNER_FINAL_POSITION": {
-        "title": "Set the owner's final cost and delay position",
+        "title": "Decide how much more cost and delay you'll accept",
         "situation": "You are the owner. You decide how much extra recovery cost and delay the owner will accept.",
         "terms": [
             {"term": "Contingency", "meaning": "Project reserve money available for recovery costs."},
@@ -257,15 +257,15 @@ NODE_CONTEXT = {
         ],
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
-        "title": "Decide whether any supplemental lending support is available",
-        "situation": "You are the lender. After final release information, you decide whether more loan support is allowed.",
+        "title": "Decide if any extra loan money is available",
+        "situation": "You are the lender. After the final inspection news, you decide whether more loan money is allowed.",
         "terms": [
             {"term": "Supplemental draw", "meaning": "Extra loan money beyond the initial release."},
             {"term": "Reserve exception", "meaning": "Letting the loan dip below the normal reserve requirement."},
         ],
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
-        "title": "Mobilize the crew and crane",
+        "title": "Decide when the crew shows up",
         "situation": "You are the labor subcontractor. This is the final field-capacity decision for the steel path.",
         "terms": [
             {"term": "Mobilize", "meaning": "Bring crew and crane to the site to install steel."},
@@ -281,8 +281,8 @@ NODE_RESULT_COPY = {
         "conservative": "The team receives a complete package and no early payment request. The record is cleaner, but the cash problem is still yours to solve.",
     },
     "S01_A2_GC_INITIAL_REVIEW": {
-        "balanced": "The package now supports a targeted inspection and a limited certified value. The phased path stays alive.",
-        "self_protective": "The project has an aggressive certification but no backup protection. If the supplier slips, the team has fewer recovery options.",
+        "balanced": "The package now supports a targeted inspection and a limited approved amount. The phased plan stays alive.",
+        "self_protective": "The project has an aggressive approval but no backup protection. If the supplier slips, the team has fewer recovery options.",
         "conservative": "The backup option is preserved and the review is stronger. The project buys protection at the cost of time and money.",
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
@@ -301,9 +301,9 @@ NODE_RESULT_COPY = {
         "conservative": "Full capacity stays available, but someone must pay more standby cost.",
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
-        "balanced": "A limited draw remains possible if verified value and owner equity line up.",
-        "self_protective": "Loan money is not available for this draw. The package must find cash elsewhere.",
-        "conservative": "Money may move only under escrow and reserve controls.",
+        "balanced": "A limited loan payout remains possible if the verified steel and the owner's cash line up.",
+        "self_protective": "The lender won't release loan money. The team must find cash elsewhere.",
+        "conservative": "Money may move only into a controlled account with reserves protected.",
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
         "balanced": "You commit to curing both lots with support. Lot A and Lot B can still fit the phased schedule.",
@@ -311,59 +311,59 @@ NODE_RESULT_COPY = {
         "conservative": "You use outside financing to keep the full sequence possible, reducing delay risk but hurting your own economics.",
     },
     "S01_B2_GC_INTEGRATED_PACKAGE": {
-        "balanced": "The recovery package now has certification, short-term GC funding, owner support, lender support, and a phased field-work path.",
+        "balanced": "The rescue package now has approved value, short-term GC money, owner support, lender support, and a phased work plan.",
         "self_protective": "The supplier proposal is rejected. The project avoids carrying the risk but loses the near-term recovery path.",
         "conservative": "The package keeps backup alive and asks for stronger controls, making recovery more expensive but more protected.",
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
-        "balanced": "Lot A can move toward shipment, but Lot B remains blocked until cure and reinspection.",
+        "balanced": "Lot A can move toward shipment, but Lot B stays blocked until it's fixed and reinspected.",
         "self_protective": "No steel is released. Field steel work cannot start from the current material.",
         "conservative": "Lot A remains available, but Lot B is still held. The project has a safer partial path, not a full release.",
     },
     "S01_B3_ERECTOR_BINDING_COMMITMENT": {
         "balanced": "A split crew and crane commitment is now available for the phased steel path.",
-        "self_protective": "Labor capacity is released. Even if steel clears, remobilization may push the schedule late.",
+        "self_protective": "The crew is gone. Even if steel clears, getting them back may push the schedule late.",
         "conservative": "Full labor capacity is protected, but the package absorbs higher standby cost.",
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
-        "balanced": "Owner money, equity, and standby support are approved for the phased package.",
+        "balanced": "Owner funding, personal cash, and standby pay are approved for the phased package.",
         "self_protective": "The package loses owner support. The cash gap remains unresolved.",
         "conservative": "The owner approves support only inside a tighter, more controlled package.",
     },
     "S01_B5_LENDER_RELEASE_DECISION": {
         "balanced": "Loan funds release against verified value, giving the supplier usable cash.",
         "self_protective": "No loan money moves. The package must rely on other cash or delay.",
-        "conservative": "Funds move only through escrow, keeping control but limiting immediate supplier liquidity.",
+        "conservative": "Money moves only into the controlled account, keeping control but slowing the supplier's usable cash.",
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
         "balanced": "Both lots are reported ready and sent toward shipment.",
         "self_protective": "Only Lot A ships. The project can start, but the full sequence remains incomplete.",
-        "conservative": "Both lots ship after the cleaner cure path, preserving the full sequence.",
+        "conservative": "Both lots ship after the extra cleanup, preserving the full plan.",
     },
     "S01_C2_GC_RECOVERY_PLAN": {
-        "balanced": "The GC proceeds with a phased recovery and keeps downstream work resequenced.",
+        "balanced": "The GC proceeds with the phased recovery and keeps the later schedule reshuffled around the steel.",
         "self_protective": "The GC accepts delay. The project avoids more recovery spend but likely misses schedule success.",
         "conservative": "Backup steel is activated. The project spends more but protects a viable schedule path.",
     },
     "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
-        "balanced": "Both lots are released for shipping, so the steel path can finish without installing unreleased material.",
+        "balanced": "Both lots are approved to ship, so the steel path can finish with no illegal installs.",
         "self_protective": "Final release is held. The project cannot use the material for compliant field installation.",
         "conservative": "Both lots can release after stronger testing, protecting compliance at higher review cost.",
     },
     "S01_C4_OWNER_FINAL_POSITION": {
         "balanced": "The owner accepts the recovery cost and keeps the project path viable.",
         "self_protective": "The owner refuses added cost. The recovery path has less money to solve the remaining problem.",
-        "conservative": "The owner authorizes a larger controlled recovery and assigns cost shares.",
+        "conservative": "The owner authorizes a larger rescue and spells out who pays what.",
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
-        "balanced": "The lender holds supplemental funds unless verified value truly supports more release.",
-        "self_protective": "No supplemental lender support is available.",
-        "conservative": "Any further lending support requires more owner equity and reserve protection.",
+        "balanced": "The lender holds extra money unless the verified work truly supports paying out more.",
+        "self_protective": "No extra loan money is available.",
+        "conservative": "Any more loan money requires the owner to put in more cash first.",
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
-        "balanced": "The crew mobilizes for a phased start and avoids installing unreleased steel.",
+        "balanced": "The crew arrives for a phased start and avoids installing unapproved steel.",
         "self_protective": "The crew releases and returns later. The project likely loses the schedule window.",
-        "conservative": "Full crew and crane capacity mobilize, protecting installation if release is complete.",
+        "conservative": "The full crew and crane arrive, protecting installation if the approvals are complete.",
     },
 }
 
@@ -388,11 +388,11 @@ PARTNER_READ_COPY = {
     },
     "S01_A2_GC_INITIAL_REVIEW": {
         "balanced": {
-            "charitable": "The GC certified only what it could verify and routed the records to everyone — that keeps the money honest and the first delivery possible.",
-            "uncharitable": "Certifying the safe minimum also protects the GC's own liability first; the supplier's cash problem stays unsolved and the GC risked nothing.",
+            "charitable": "The GC approved only what it could verify and shared the records with everyone — that keeps the money honest and the first delivery possible.",
+            "uncharitable": "Approving the safe minimum also protects the GC's own liability first; the supplier's cash problem stays unsolved and the GC risked nothing.",
         },
         "self_protective": {
-            "charitable": "Certifying the full request fast is the quickest way to get the supplier funded and the steel moving — speed has real value here.",
+            "charitable": "Approving the full request fast is the quickest way to get the supplier funded and the steel moving — speed has real value here.",
             "uncharitable": "The GC pushed the owner's and lender's money at an unverified claim and skipped the backup, keeping its own costs low while others carry the risk.",
         },
         "conservative": {
@@ -402,7 +402,7 @@ PARTNER_READ_COPY = {
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
         "balanced": {
-            "charitable": "The owner put real, if limited, money on the table early — $250K plus equity is a genuine attempt to keep the steel moving.",
+            "charitable": "The owner put real, if limited, money on the table early — $250K plus their own cash is a genuine attempt to keep the steel moving.",
             "uncharitable": "A small, conditional offer lets the owner look supportive while committing almost nothing; the conditions may never actually be met.",
         },
         "self_protective": {
@@ -435,7 +435,7 @@ PARTNER_READ_COPY = {
         },
         "self_protective": {
             "charitable": "With no released steel and no funded package, sending the crew to paying work is just rational — they can't eat standby risk on a maybe.",
-            "uncharitable": "They walked off the window the project reserved; if steel clears next week, everyone waits on their remobilization.",
+            "uncharitable": "They walked off the window the project reserved; if steel clears next week, everyone waits for their crew to come back.",
         },
         "conservative": {
             "charitable": "Holding the full crew guarantees capacity the moment steel releases — the strongest schedule protection anyone offered today.",
@@ -444,16 +444,16 @@ PARTNER_READ_COPY = {
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
         "balanced": {
-            "charitable": "A capped draw against verified value, with owner equity required, is the lender genuinely trying to make the loan work for off-site steel.",
-            "uncharitable": "The cap and the equity requirement push the first loss to the owner and supplier; the lender risks little and calls it support.",
+            "charitable": "A capped payout against verified steel, with the owner's own cash required, is the lender genuinely trying to make the loan work.",
+            "uncharitable": "The cap and the owner-cash requirement push the first loss to the owner and supplier; the lender risks little and calls it support.",
         },
         "self_protective": {
-            "charitable": "Declaring the draw ineligible may be the honest reading of the loan agreement — off-site steel with title gaps is exactly what draw rules exclude.",
+            "charitable": "Refusing the payout may be the honest reading of the loan agreement — off-site steel with missing ownership paperwork is exactly what the rules exclude.",
             "uncharitable": "An early 'no' is the cheapest move available: no exposure, no work, and the cash problem becomes everyone else's.",
         },
         "conservative": {
-            "charitable": "Escrow moves money while protecting it — the funds are real but can't vanish into the supplier's other obligations.",
-            "uncharitable": "Escrow lets the lender claim it funded the fix while the supplier still can't touch the cash it actually needs.",
+            "charitable": "A controlled account moves money while protecting it — the funds are real but can't vanish into the supplier's other obligations.",
+            "uncharitable": "The controlled account lets the lender claim it funded the fix while the supplier still can't touch the cash it actually needs.",
         },
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
@@ -486,7 +486,7 @@ PARTNER_READ_COPY = {
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
         "balanced": {
-            "charitable": "Releasing Lot A while holding Lot B until cure is exactly what the evidence supports — movement where it's safe, a hold where it isn't.",
+            "charitable": "Releasing Lot A while holding Lot B until it's fixed is exactly what the evidence supports — movement where it's safe, a hold where it isn't.",
             "uncharitable": "The split decision keeps the inspector covered both ways: point at the release if the schedule holds, at the hold if it doesn't.",
         },
         "self_protective": {
@@ -505,7 +505,7 @@ PARTNER_READ_COPY = {
         },
         "self_protective": {
             "charitable": "Walking away from an unfunded package is self-preservation — a crew can't stand by on promises.",
-            "uncharitable": "They took the outside work and left the project to remobilize later at whatever price the schedule then demands.",
+            "uncharitable": "They took the outside work and left the project to rebuild a crew later at whatever price the schedule then demands.",
         },
         "conservative": {
             "charitable": "Full committed capacity with standby pay is the strongest field guarantee anywhere in the package.",
@@ -514,7 +514,7 @@ PARTNER_READ_COPY = {
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
         "balanced": {
-            "charitable": "The owner funded the package — $200K, equity, and standby support — real money to keep the phased plan alive.",
+            "charitable": "The owner funded the package — $200K, personal cash, and standby pay — real money to keep the phased plan alive.",
             "uncharitable": "The owner is buying schedule with the smallest check that plausibly works, and the delay terms mostly protect the owner's opening date.",
         },
         "self_protective": {
@@ -528,22 +528,22 @@ PARTNER_READ_COPY = {
     },
     "S01_B5_LENDER_RELEASE_DECISION": {
         "balanced": {
-            "charitable": "Releasing $760K against verified value, with owner equity in place, is the construction loan doing exactly what it exists to do.",
-            "uncharitable": "The lender waited until every other firm had already de-risked the draw, then took credit for supporting it.",
+            "charitable": "Releasing $760K against verified steel, with the owner's cash in place, is the construction loan doing exactly what it exists to do.",
+            "uncharitable": "The lender waited until every other firm had already de-risked the payout, then took credit for supporting it.",
         },
         "self_protective": {
-            "charitable": "Holding the draw may be the loan agreement talking, not the lender — unverified off-site steel is a classic ineligible cost.",
-            "uncharitable": "No release, no escrow, no counterproposal: the lender protected its collateral and left the cash gap to sink the schedule.",
+            "charitable": "Holding the money may be the loan agreement talking, not the lender — unverified off-site steel is a classic cost a construction loan won't cover.",
+            "uncharitable": "No payment, no fallback account, no counterproposal: the lender protected its collateral and left the cash gap to sink the schedule.",
         },
         "conservative": {
-            "charitable": "An escrow release moves real money while keeping it recoverable — protection for everyone whose name is on the project.",
-            "uncharitable": "Escrowed cash doesn't cure steel; the lender says yes on paper while the supplier still can't pay the shop.",
+            "charitable": "Paying into a controlled account moves real money while keeping it recoverable — protection for everyone whose name is on the project.",
+            "uncharitable": "Parked money doesn't fix steel; the lender says yes on paper while the supplier still can't pay the shop.",
         },
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
         "balanced": {
             "charitable": "Reporting both lots ready and shipping on plan is the supplier delivering exactly what it promised.",
-            "uncharitable": "'Both ready' is a claim, not a fact — if Lot B's cure is thinner than reported, the problem arrives on a truck.",
+            "uncharitable": "'Both ready' is a claim, not a fact — if Lot B's repairs are thinner than reported, the problem arrives on a truck.",
         },
         "self_protective": {
             "charitable": "Shipping only Lot A and admitting Lot B isn't ready is honest status even though it's bad news — a truthful partial beats a hopeful lie.",
@@ -570,7 +570,7 @@ PARTNER_READ_COPY = {
     },
     "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
         "balanced": {
-            "charitable": "Clearing both lots on the current record lets the steel sequence finish without anyone installing unreleased material.",
+            "charitable": "Clearing both lots on the current record lets the steel sequence finish without anyone installing unapproved material.",
             "uncharitable": "If the record was borderline, this is the release the schedule wanted, not necessarily the one the file supports.",
         },
         "self_protective": {
@@ -584,8 +584,8 @@ PARTNER_READ_COPY = {
     },
     "S01_C4_OWNER_FINAL_POSITION": {
         "balanced": {
-            "charitable": "Accepting the recovery cost from contingency, without dumping it on one firm, is the owner buying the project's completion like an owner should.",
-            "uncharitable": "Contingency is the easiest money on the job to spend — this may paper over problems the owner's earlier slowness helped create.",
+            "charitable": "Accepting the recovery cost from the emergency fund, without dumping it on one firm, is the owner buying the project's completion like an owner should.",
+            "uncharitable": "The emergency fund is the easiest money on the job to spend — this may paper over problems the owner's earlier slowness helped create.",
         },
         "self_protective": {
             "charitable": "Refusing more cost holds the line — the owner already funded one recovery and can't be the bottomless wallet.",
@@ -598,16 +598,16 @@ PARTNER_READ_COPY = {
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
         "balanced": {
-            "charitable": "Holding supplemental funds unless verified value truly supports them is the loan working as designed at the end of the job.",
+            "charitable": "Holding extra money unless the verified work truly supports it is the loan working as designed at the end of the job.",
             "uncharitable": "The lender's discipline arrives after everyone else has already spent; it risks nothing and calls that prudence.",
         },
         "self_protective": {
-            "charitable": "A flat no on supplemental support may just be the reserve math — the loan can't go below its floor for anyone.",
+            "charitable": "A flat no on extra money may just be the reserve math — the loan can't go below its floor for anyone.",
             "uncharitable": "The lender closed the last funding door and let the final gap become everyone else's loss.",
         },
         "conservative": {
-            "charitable": "Requiring equity before more lender money keeps the loan balanced — the owner tops up first, then the bank follows.",
-            "uncharitable": "The equity condition is a toll booth: the lender converts the project's emergency into leverage over the owner.",
+            "charitable": "Requiring the owner's cash before more lender money keeps the loan balanced — the owner tops up first, then the bank follows.",
+            "uncharitable": "The owner-cash condition is a toll booth: the lender converts the project's emergency into leverage over the owner.",
         },
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
@@ -616,11 +616,11 @@ PARTNER_READ_COPY = {
             "uncharitable": "Half capacity also halves their exposure; if anything upstream slips again, they're positioned to leave cheaply.",
         },
         "self_protective": {
-            "charitable": "Releasing now and remobilizing later may be the only economic answer if the package never funded their standby.",
+            "charitable": "Leaving now and returning later may be the only economic answer if the package never funded their standby.",
             "uncharitable": "The final walk-away all but guarantees the window is missed — the last firm out turns off the lights on the schedule.",
         },
         "conservative": {
-            "charitable": "Full mobilization protects the installation if release lands — the most schedule the project can still buy.",
+            "charitable": "The full crew protects the installation if the approvals land — the most schedule the project can still buy.",
             "uncharitable": "A full crew on site before everything is released risks paying maximum labor to stand next to steel they can't legally install.",
         },
     },
@@ -633,8 +633,7 @@ PUBLIC_IMPACT_COPY = {
             "risk is now visible, so the team can verify what is safe to fund."
         ),
         "self_protective": (
-            "The project gets a bigger cash request with less proof, which "
-            "makes payment approval and later release harder."
+            "The project gets a bigger cash request with less proof, which makes payment approval and later steel approval harder."
         ),
         "conservative": (
             "No project cash moves yet. The record is cleaner, but the supplier "
@@ -643,12 +642,10 @@ PUBLIC_IMPACT_COPY = {
     },
     "S01_A2_GC_INITIAL_REVIEW": {
         "balanced": (
-            "The GC creates a limited certified value and a review path, keeping "
-            "the first steel package moving."
+            "The GC approves a limited, verified amount and starts the review, keeping the first steel package moving."
         ),
         "self_protective": (
-            "The GC certifies more value but leaves no backup reserved, so a "
-            "supplier slip would be harder to recover from."
+            "The GC approves the full request but reserves no backup, so a supplier slip would be harder to recover from."
         ),
         "conservative": (
             "The GC keeps backup steel available and demands stronger proof, "
@@ -665,8 +662,7 @@ PUBLIC_IMPACT_COPY = {
             "funding gap without owner help."
         ),
         "conservative": (
-            "Owner support stays possible only under tighter controls, which "
-            "reduces payment risk but slows approval."
+            "Owner support stays possible only under tighter checks, which reduces payment risk but slows approval."
         ),
     },
     "S01_A3_INSPECTOR_REVIEW_PLAN": {
@@ -689,8 +685,7 @@ PUBLIC_IMPACT_COPY = {
             "start possible without holding the whole crew."
         ),
         "self_protective": (
-            "Crew and crane time goes elsewhere, so even cleared steel may wait "
-            "for remobilization."
+            "Crew and crane time goes elsewhere, so even approved steel may wait for the crew to come back."
         ),
         "conservative": (
             "Full crew and crane capacity stays reserved, protecting schedule "
@@ -699,26 +694,21 @@ PUBLIC_IMPACT_COPY = {
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
         "balanced": (
-            "Loan funds can still support verified steel value if owner equity "
-            "and controls line up."
+            "Loan money is still possible for the steel the team has verified — if the owner puts in cash and the checks pass."
         ),
         "self_protective": (
-            "Loan funds are unavailable for this draw, increasing the cash gap "
-            "the rest of the team must cover."
+            "The lender won't release loan money yet, increasing the cash gap the rest of the team must cover."
         ),
         "conservative": (
-            "Funding remains possible only through escrow and reserve controls, "
-            "which protects the loan but slows usable cash."
+            "Money can move only into a controlled account, which protects the loan but slows usable cash."
         ),
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
         "balanced": (
-            "The supplier commits cash and cure work, keeping both steel batches "
-            "inside the phased schedule."
+            "The supplier commits cash and repair work, keeping both steel batches on schedule."
         ),
         "self_protective": (
-            "The supplier limits cure work and takes outside work, so the second "
-            "batch becomes likely to miss the steel window."
+            "The supplier limits repairs and takes outside work, so the second batch will likely miss the window."
         ),
         "conservative": (
             "The supplier self-finances more of the fix, protecting delivery but "
@@ -727,16 +717,14 @@ PUBLIC_IMPACT_COPY = {
     },
     "S01_B2_GC_INTEGRATED_PACKAGE": {
         "balanced": (
-            "The GC assembles the workable package: verified value, short-term "
-            "funding, owner/lender support, and labor capacity."
+            "The GC assembles a workable package: verified steel, short-term money, owner and lender support, and a crew."
         ),
         "self_protective": (
             "The GC rejects the supplier path, lowering GC exposure but making "
             "project delay much more likely."
         ),
         "conservative": (
-            "The GC keeps backup active and adds controls, preserving a fallback "
-            "at higher project cost."
+            "The GC keeps backup alive and adds more checks, preserving a fallback at higher cost."
         ),
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
@@ -745,8 +733,7 @@ PUBLIC_IMPACT_COPY = {
             "batch stays blocked until it is fixed."
         ),
         "self_protective": (
-            "No steel is released, so field work cannot start from the current "
-            "material."
+            "No steel is approved, so field work cannot start from the current material."
         ),
         "conservative": (
             "The first batch stays possible but slower, and the second batch "
@@ -759,8 +746,7 @@ PUBLIC_IMPACT_COPY = {
             "available."
         ),
         "self_protective": (
-            "Labor releases capacity, so schedule recovery becomes difficult "
-            "even if the steel clears."
+            "The crew walks, so schedule recovery becomes difficult even if the steel clears."
         ),
         "conservative": (
             "Full crew capacity is protected, but the project pays more standby "
@@ -769,28 +755,24 @@ PUBLIC_IMPACT_COPY = {
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
         "balanced": (
-            "Owner funding, equity, and standby support are approved, closing a "
-            "major cash gap."
+            "The owner approves funding, personal cash, and standby pay, closing a major cash gap."
         ),
         "self_protective": (
             "Owner support is rejected, leaving the package underfunded."
         ),
         "conservative": (
-            "Owner support is approved only inside tighter controls, adding "
-            "protection and friction."
+            "Owner support is approved only inside tighter checks, adding protection and friction."
         ),
     },
     "S01_B5_LENDER_RELEASE_DECISION": {
         "balanced": (
-            "The lender releases funds against verified value, giving the "
-            "supplier usable cash."
+            "The lender releases money against the verified steel, giving the supplier usable cash."
         ),
         "self_protective": (
-            "No loan money moves, so cure and delivery must rely on other cash."
+            "No loan money moves, so the repairs and delivery must rely on other cash."
         ),
         "conservative": (
-            "Funds move through escrow, protecting the loan but limiting "
-            "immediate supplier liquidity."
+            "Money moves into a controlled account: the loan stays protected, but the supplier can't spend it right away."
         ),
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
@@ -803,14 +785,12 @@ PUBLIC_IMPACT_COPY = {
             "blocker."
         ),
         "conservative": (
-            "Both batches ship after a cleaner cure, protecting compliance but "
-            "using more time and money."
+            "Both batches ship after extra cleanup, protecting the record but using more time and money."
         ),
     },
     "S01_C2_GC_RECOVERY_PLAN": {
         "balanced": (
-            "The GC proceeds with phased recovery and resequences downstream "
-            "work around the steel path."
+            "The GC keeps the phased recovery moving and reshuffles the later schedule around the steel."
         ),
         "self_protective": (
             "The GC accepts delay instead of spending on recovery, pushing the "
@@ -823,16 +803,13 @@ PUBLIC_IMPACT_COPY = {
     },
     "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
         "balanced": (
-            "Both batches are released for shipment, so compliant field work can "
-            "proceed."
+            "Both batches are approved to ship, so the steel can be installed legally."
         ),
         "self_protective": (
-            "Final release is held, so the project cannot use the steel for "
-            "compliant field work."
+            "Final approval is withheld, so the project cannot legally use the steel."
         ),
         "conservative": (
-            "Both batches can release after extra testing, protecting compliance "
-            "at added cost and time."
+            "Both batches can be approved after extra testing, at added cost and time."
         ),
     },
     "S01_C4_OWNER_FINAL_POSITION": {
@@ -844,36 +821,29 @@ PUBLIC_IMPACT_COPY = {
             "remaining schedule problem."
         ),
         "conservative": (
-            "The owner authorizes a larger controlled recovery and assigns cost "
-            "shares."
+            "The owner authorizes a larger rescue and spells out who pays what."
         ),
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
         "balanced": (
-            "The lender holds extra funds unless verified value supports release, "
-            "protecting project reserves."
+            "The lender holds extra money unless verified work supports it, protecting the project's reserves."
         ),
         "self_protective": (
-            "No supplemental loan support is available, so the project must rely "
-            "on owner, GC, or supplier funds."
+            "No extra loan money is available, so the project must rely on owner, GC, or supplier funds."
         ),
         "conservative": (
-            "Further lender support requires more owner equity and reserve "
-            "protection."
+            "More loan money requires the owner to put in more cash first."
         ),
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
         "balanced": (
-            "The crew mobilizes for a phased start and avoids using unreleased "
-            "steel."
+            "The crew arrives for a phased start and avoids steel the inspector hasn't approved."
         ),
         "self_protective": (
-            "The crew releases and returns later, likely missing the schedule "
-            "window."
+            "The crew leaves and returns later, likely missing the schedule window."
         ),
         "conservative": (
-            "Full crew and crane capacity mobilizes, protecting installation if "
-            "release is complete."
+            "The full crew and crane arrive, protecting installation if the approvals are complete."
         ),
     },
 }
@@ -1018,7 +988,7 @@ def _initial_game_state(public_baseline: dict[str, Any]) -> dict[str, Any]:
         "schedule_risk": 0,
         "blockers": [
             "Off-site payment is unresolved.",
-            "Lot B has a known cure issue.",
+            "Lot B has a known defect.",
             "Labor capacity is not yet committed.",
         ],
         "story_flags": [],
@@ -1106,28 +1076,28 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 remove_flags("supplier_high_request", "supplier_thin_disclosure")
         elif node_id.endswith("COMMITMENT"):
             if choice_id == "balanced":
-                update(cash_delta_usd=350_000, cost_delta_usd=125_000, lot_b_ready=True, blocker_remove="Lot B has a known cure issue.")
+                update(cash_delta_usd=350_000, cost_delta_usd=125_000, lot_b_ready=True, blocker_remove="Lot B has a known defect.")
                 add_flags("supplier_committed_cure")
                 remove_flags("supplier_outside_work", "lot_b_late")
             elif choice_id == "self_protective":
-                update(completion_delta_weeks=4, schedule_risk_delta=3, lot_b_ready=False, blocker_add="Lot B is likely late because outside shop work is ahead of cure.")
+                update(completion_delta_weeks=4, schedule_risk_delta=3, lot_b_ready=False, blocker_add="Lot B is likely late because the supplier put other work first.")
                 add_flags("supplier_outside_work", "lot_b_late")
                 remove_flags("supplier_committed_cure")
             else:
-                update(cash_delta_usd=500_000, cost_delta_usd=250_000, lot_b_ready=True, blocker_remove="Lot B has a known cure issue.")
+                update(cash_delta_usd=500_000, cost_delta_usd=250_000, lot_b_ready=True, blocker_remove="Lot B has a known defect.")
                 add_flags("supplier_self_financed_cure", "supplier_committed_cure")
                 remove_flags("supplier_outside_work", "lot_b_late")
         else:
             if choice_id == "balanced":
-                update(lot_b_ready=True, blocker_remove="Lot B has a known cure issue.")
+                update(lot_b_ready=True, blocker_remove="Lot B has a known defect.")
                 add_flags("supplier_shipped_both_lots")
                 remove_flags("supplier_shipped_only_lot_a", "lot_b_late")
             elif choice_id == "self_protective":
-                update(completion_delta_weeks=5, schedule_risk_delta=4, lot_b_ready=False, blocker_add="Only Lot A ships; Lot B still blocks the full steel sequence.")
+                update(completion_delta_weeks=5, schedule_risk_delta=4, lot_b_ready=False, blocker_add="Only the first batch ships; the second still blocks the finish.")
                 add_flags("supplier_shipped_only_lot_a", "lot_b_late")
                 remove_flags("supplier_shipped_both_lots")
             else:
-                update(cost_delta_usd=80_000, lot_b_ready=True, compliance_risk_delta=-1, blocker_remove="Lot B has a known cure issue.")
+                update(cost_delta_usd=80_000, lot_b_ready=True, compliance_risk_delta=-1, blocker_remove="Lot B has a known defect.")
                 add_flags("supplier_shipped_both_lots", "supplier_extra_cleanup")
                 remove_flags("supplier_shipped_only_lot_a", "lot_b_late")
 
@@ -1166,7 +1136,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 update(cost_delta_usd=-50_000, completion_delta_weeks=5, schedule_risk_delta=4, blocker_add="The GC accepted delay instead of active recovery.")
                 add_flags("gc_accepted_delay")
             else:
-                update(backup_status="active", cost_delta_usd=3_400_000, completion_delta_weeks=2, blocker_remove="Only Lot A ships; Lot B still blocks the full steel sequence.")
+                update(backup_status="active", cost_delta_usd=3_400_000, completion_delta_weeks=2, blocker_remove="Only the first batch ships; the second still blocks the finish.")
                 add_flags("backup_active")
 
     elif actor_id == "owner":
@@ -1213,7 +1183,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
             add_flags("labor_split_capacity")
             remove_flags("labor_released")
         elif choice_id == "self_protective":
-            update(labor_capacity="released", completion_delta_weeks=6, schedule_risk_delta=4, blocker_add="Crew and crane capacity have been released to other work.")
+            update(labor_capacity="released", completion_delta_weeks=6, schedule_risk_delta=4, blocker_add="The crew and crane have gone to other work.")
             add_flags("labor_released")
             remove_flags("labor_split_capacity", "labor_full_capacity")
         else:
@@ -1227,7 +1197,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
             add_flags("loan_draw_released")
             remove_flags("loan_unavailable")
         elif choice_id == "self_protective":
-            update(cash_delta_usd=-300_000, completion_delta_weeks=3, schedule_risk_delta=3, blocker_add="Loan funds are not available for the steel draw.")
+            update(cash_delta_usd=-300_000, completion_delta_weeks=3, schedule_risk_delta=3, blocker_add="Loan money is not available for the steel payment.")
             add_flags("loan_unavailable")
             remove_flags("loan_draw_released")
         else:
@@ -1250,10 +1220,10 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 remove_flags("inspection_no_release_path")
         elif node_id.endswith("FINAL_DISPOSITION"):
             if choice_id == "balanced":
-                update(release_value_delta_usd=1_350_000, lot_a_released=True, lot_b_released=True, compliance_risk_delta=-1, blocker_remove="No steel has been released for the field.")
+                update(release_value_delta_usd=1_350_000, lot_a_released=True, lot_b_released=True, compliance_risk_delta=-1, blocker_remove="No steel has been approved for the field.")
                 add_flags("inspection_final_release")
             elif choice_id == "self_protective":
-                update(lot_a_released=False, lot_b_released=False, completion_delta_weeks=8, schedule_risk_delta=5, blocker_add="Final release is blocked; compliant field installation cannot proceed.")
+                update(lot_a_released=False, lot_b_released=False, completion_delta_weeks=8, schedule_risk_delta=5, blocker_add="Final approval is blocked; the steel cannot legally be installed.")
                 add_flags("inspection_final_block")
             else:
                 update(release_value_delta_usd=1_350_000, lot_a_released=True, lot_b_released=True, cost_delta_usd=125_000, completion_delta_weeks=1, compliance_risk_delta=-2)
@@ -1263,7 +1233,7 @@ def _web_effect_for(node_id: str, actor_id: str, choice_id: str) -> dict[str, An
                 update(release_value_delta_usd=950_000, lot_a_released=True, compliance_risk_delta=-1)
                 add_flags("inspection_lot_a_released")
             elif choice_id == "self_protective":
-                update(completion_delta_weeks=6, schedule_risk_delta=4, blocker_add="No steel has been released for the field.")
+                update(completion_delta_weeks=6, schedule_risk_delta=4, blocker_add="No steel has been approved for the field.")
                 add_flags("inspection_blocks_release")
             else:
                 update(release_value_delta_usd=950_000, lot_a_released=True, cost_delta_usd=50_000, completion_delta_weeks=1, compliance_risk_delta=-2)
@@ -1346,24 +1316,20 @@ def _choice_for(
 _SUPPLIER_APPLICATION_DISCLOSURE = {
     "balanced": {
         "claimed": (
-            "You ask for $1.2M and tell the team about the title gaps, the Lot B "
-            "nonconformance, and your cash squeeze."
+            "You ask for $1.2M and tell the team about the paperwork gaps, the Lot B defect, and your cash squeeze."
         ),
         "private_truth": (
-            "Lot B really does have a nonconformance and your cash really is short "
-            "of the full-sequence cure cost — and you said so."
+            "Lot B really is defective and your cash really is short of what the full fix costs — and you said so."
         ),
         "honesty_read": "Your public claim matches your private truth. This is accurate disclosure.",
         "verdict": "accurate",
     },
     "self_protective": {
         "claimed": (
-            "You ask for the full $1.8M, submit only the two easiest Lot A records, "
-            "and disclose no exceptions."
+            "You ask for the full $1.8M, submit only the two easiest Lot A records, and mention none of the problems."
         ),
         "private_truth": (
-            "You privately know Lot B is nonconforming and your cash is short — "
-            "neither is in what you sent the team."
+            "You privately know Lot B is defective and your cash is short — neither is in what you sent the team."
         ),
         "honesty_read": (
             "Your public claim leaves out what you know. The team will verify "
@@ -1504,15 +1470,15 @@ def _private_stakes_for(node_id: str, actor_id: str) -> list[str]:
             "Full disclosure protects trust but exposes the Lot B problem immediately.",
         ],
         "S01_B1_SUPPLIER_COMMITMENT": [
-            "Funding the cure protects delivery but cuts into your margin.",
+            "Paying for the repairs protects delivery but cuts into your margin.",
             "Taking outside work protects your shop economics but can make Lot B late.",
         ],
         "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": [
             "Shipping only Lot A preserves cash if Lot B is still messy, but it may strand the project.",
-            "Reporting both lots ready only works if the cure and release path can support it.",
+            "Reporting both lots ready only works if the repairs and approvals can back it up.",
         ],
         "S01_A2_GC_INITIAL_REVIEW": [
-            "You can certify only the value you believe is supportable.",
+            "You can only approve an amount you can stand behind.",
             "Backup steel costs money, but it gives you leverage if the supplier slips.",
         ],
         "S01_B2_GC_INTEGRATED_PACKAGE": [
@@ -1544,7 +1510,7 @@ def _private_stakes_for(node_id: str, actor_id: str) -> list[str]:
             "Outside work may be better for you if the steel package still looks shaky.",
         ],
         "S01_C6_ERECTOR_MOBILIZATION": [
-            "Mobilizing without usable released steel wastes capacity.",
+            "Showing up before any steel is approved wastes the crew.",
             "Waiting protects your crew but may make the project too late.",
         ],
     }
@@ -1573,7 +1539,7 @@ def _private_stakes_for(node_id: str, actor_id: str) -> list[str]:
             "Holding funds protects reserves but can cause the steel path to fail.",
         ],
         "inspector": [
-            "Rubber-stamping nonconforming steel can create a compliance failure tied to you.",
+            "Waving through defective steel can create a legal failure tied to you.",
             "Blocking too much steel protects you locally but can kill the project schedule.",
         ],
     }
@@ -1583,7 +1549,7 @@ def _private_stakes_for(node_id: str, actor_id: str) -> list[str]:
         stakes[1] = "Lot A may be good enough to start work; blocking it can waste the recovery window."
     if actor_id == "inspector" and node_id == "S01_C3_INSPECTOR_FINAL_DISPOSITION":
         stakes[0] = "Final release decides what can legally ship and be installed."
-        stakes[1] = "Approving unreleased or uncured steel can turn schedule success into compliance failure."
+        stakes[1] = "Approving steel that isn't truly fixed can turn schedule success into a legal failure."
     return stakes
 
 
@@ -1607,11 +1573,11 @@ NODE_TRADEOFF_COPY = {
     },
     "S01_A2_GC_INITIAL_REVIEW": {
         "balanced": {
-            "why": "Certifying the verified $950K keeps money and steel moving without vouching for what you can't see.",
+            "why": "Approving the verified $950K keeps money and steel moving without vouching for what you can't see.",
             "risk": "The supplier's cash gap stays open, and you may be back here in two weeks.",
         },
         "self_protective": {
-            "why": "Full certification is fastest, and skipping backup saves real money if the supplier delivers.",
+            "why": "Approving everything is fastest, and skipping backup saves real money if the supplier delivers.",
             "risk": "You vouched for an unverified claim with no fallback — a supplier slip becomes your problem.",
         },
         "conservative": {
@@ -1621,7 +1587,7 @@ NODE_TRADEOFF_COPY = {
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
         "balanced": {
-            "why": "$250K conditional plus $100K equity is the cheapest offer that keeps the steel path alive.",
+            "why": "$250K with conditions plus $100K of your own cash is the cheapest offer that keeps the steel path alive.",
             "risk": "You're first money in against a problem the supplier created.",
         },
         "self_protective": {
@@ -1663,16 +1629,16 @@ NODE_TRADEOFF_COPY = {
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
         "balanced": {
-            "why": "A capped draw with equity keeps the loan supporting the project without breaking draw rules.",
+            "why": "A capped payout with owner cash in keeps the loan supporting the project without breaking the rules.",
             "risk": "Even a capped draw against off-site steel is exposure if the title gaps are real.",
         },
         "self_protective": {
-            "why": "Ineligible is the safest reading of the loan agreement on today's file.",
+            "why": "Saying no is the safest reading of the loan agreement on today's paperwork.",
             "risk": "If the project fails for cash, your collateral is a stalled building.",
         },
         "conservative": {
-            "why": "Escrow moves money without losing control of it.",
-            "risk": "Escrowed funds may be too slow and too restricted to actually cure the steel.",
+            "why": "A controlled account moves money without losing control of it.",
+            "risk": "Controlled money may be too slow and too restricted to actually fix the steel.",
         },
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
@@ -1733,7 +1699,7 @@ NODE_TRADEOFF_COPY = {
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
         "balanced": {
-            "why": "$200K plus equity and standby is the smallest package that funds the phased plan.",
+            "why": "$200K plus your own cash and standby pay is the smallest package that funds the phased plan.",
             "risk": "You're paying real money for a plan that still depends on the supplier performing.",
         },
         "self_protective": {
@@ -1751,12 +1717,12 @@ NODE_TRADEOFF_COPY = {
             "risk": "You're funding steel that isn't on site yet; verification is your only protection.",
         },
         "self_protective": {
-            "why": "Holding the draw keeps the loan clean no matter what happens on site.",
+            "why": "Holding the money keeps the loan clean no matter what happens on site.",
             "risk": "The cash gap you preserved may stall the collateral you're protecting.",
         },
         "conservative": {
-            "why": "Escrow gives the package usable structure without giving up control.",
-            "risk": "If escrow terms are too tight, the supplier still can't pay the shop and the fix stalls.",
+            "why": "A controlled account moves real money without giving up control.",
+            "risk": "If the account's rules are too tight, the supplier still can't pay the shop and the fix stalls.",
         },
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
@@ -1793,7 +1759,7 @@ NODE_TRADEOFF_COPY = {
             "risk": "The release is only as good as the cure documentation behind it.",
         },
         "self_protective": {
-            "why": "Holding release protects you from certifying steel the file can't support.",
+            "why": "Holding approval protects you from signing off on steel the paperwork can't support.",
             "risk": "A hold this late almost certainly ends the schedule.",
         },
         "conservative": {
@@ -1803,7 +1769,7 @@ NODE_TRADEOFF_COPY = {
     },
     "S01_C4_OWNER_FINAL_POSITION": {
         "balanced": {
-            "why": "Contingency exists for exactly this; spending it finishes the project.",
+            "why": "The emergency fund exists for exactly this; spending it finishes the project.",
             "risk": "Contingency spent here isn't available for whatever goes wrong next.",
         },
         "self_protective": {
@@ -1821,11 +1787,11 @@ NODE_TRADEOFF_COPY = {
             "risk": "If the last gap needed your money, the project fails with your reserves intact.",
         },
         "self_protective": {
-            "why": "No supplemental support means no new exposure in the riskiest week of the job.",
+            "why": "No extra loan money means no new exposure in the riskiest week of the job.",
             "risk": "You may be the reason the final gap never closes.",
         },
         "conservative": {
-            "why": "Equity-first keeps the loan balanced if more money must move.",
+            "why": "Owner-cash-first keeps the loan balanced if more money must move.",
             "risk": "The equity negotiation takes time the final push doesn't have.",
         },
     },
@@ -1839,7 +1805,7 @@ NODE_TRADEOFF_COPY = {
             "risk": "Your remobilization time is likely the final blow to the schedule.",
         },
         "conservative": {
-            "why": "Full mobilization finishes the sequence fastest if release is complete.",
+            "why": "The full crew finishes the job fastest if the approvals are complete.",
             "risk": "A full crew standing next to unreleased steel is maximum cost for zero installs.",
         },
     },
@@ -1943,25 +1909,25 @@ def _critical_updates_for(node_id: str) -> list[str]:
     if node_id == "S01_A1_SUPPLIER_APPLICATION":
         return [
             "Original plan: $95.0M, finish week 40.",
-            "Steel has to arrive by week 14 to use the week 15-18 field-work window.",
-            "You need early cash to cure documents, fix Lot B, and keep delivery alive.",
+            "Steel has to arrive by week 14 to use the crew time reserved for weeks 15-18.",
+            "You need early cash to fix the paperwork, repair Lot B, and keep delivery alive.",
         ]
     if _round_for_node(node_id) == "A":
         return [
-            "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-            "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-            "The week 40 forecast holds only if payment, release, labor, and delivery line up.",
+            "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+            "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+            "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up.",
         ]
     if _round_for_node(node_id) == "B":
         return [
-            "Round A left a possible phased path: Lot A first, Lot B after cure.",
-            "This round turns the package into money, release, and delivery commitments.",
-            "No cash or release path means the project may become non-viable.",
+            "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+            "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+            "If no money moves and no steel is approved, the project may not survive.",
         ]
     return [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job.",
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job.",
     ]
 
 
@@ -2083,7 +2049,7 @@ def _private_dashboard(agent_id: str, private_facts: dict[str, Any]) -> dict[str
             "Schedule failure creates large delay exposure.",
         ],
         "steel_supplier": [
-            "Cash is short relative to full-sequence cure cost.",
+            "Cash is short of what the full fix costs.",
             "Outside work protects margin but can delay Lot B.",
         ],
         "labor_subcontractor": [
@@ -2091,7 +2057,7 @@ def _private_dashboard(agent_id: str, private_facts: dict[str, Any]) -> dict[str
             "Releasing capacity protects your margin but can kill the project if you aren't able to supply labor when supplies are available.",
         ],
         "lender": [
-            "Draw eligibility depends on verified stored value and reserves.",
+            "Loan payouts depend on verified steel value and protected reserves.",
             "Over-release creates downside if the project fails.",
         ],
         "inspector": [

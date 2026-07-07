@@ -1450,13 +1450,13 @@ function plainObjective(role: AgentId) {
     gc:
       "You need steel installation to progress without putting too much short-term GC money at risk or overpaying for backup steel.",
     steel_supplier:
-      "You need cash to finish, cure, and ship steel while protecting your margin.",
+      "You need cash to fix, finish, and ship the steel — without giving away your margin.",
     labor_subcontractor:
       "You control crew and crane capacity. Holding the capacity available for this project helps the project but costs you other work where you could deploy your resources.",
     lender:
-      "You can release loan funds only when stored value, controls, equity, and reserves make the draw defensible.",
+      "You release loan money only when you can prove the steel is real, the owner has skin in the game, and the loan stays protected.",
     inspector:
-      "You decide what material can be released without creating compliance risk for the project.",
+      "You decide what steel is safe and legal to use.",
   }[role];
 }
 

@@ -114,15 +114,15 @@
           "after_choice": "The team receives a smaller payment request plus the key exception information. They can now verify Lot A while deciding how to handle Lot B.",
           "choice_id": "balanced",
           "disclosure": {
-            "claimed": "You ask for $1.2M and tell the team about the title gaps, the Lot B nonconformance, and your cash squeeze.",
+            "claimed": "You ask for $1.2M and tell the team about the paperwork gaps, the Lot B defect, and your cash squeeze.",
             "honesty_read": "Your public claim matches your private truth. This is accurate disclosure.",
-            "private_truth": "Lot B really does have a nonconformance and your cash really is short of the full-sequence cure cost \u2014 and you said so.",
+            "private_truth": "Lot B really is defective and your cash really is short of what the full fix costs \u2014 and you said so.",
             "verdict": "accurate"
           },
           "display_bullets": [
-            "Request $1.2M against the steel package.",
+            "Ask for $1.2M of the steel contract now.",
             "Submit all available Lot A and Lot B records.",
-            "Tell the team the title, nonconformance, and cash issues."
+            "Tell the team everything: the paperwork gaps, the Lot B defect, and your cash squeeze."
           ],
           "label": "Ask for a smaller early payment and be honest",
           "parameter_summary": [
@@ -202,9 +202,9 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Request $1.2M against the steel package.",
+              "Ask for $1.2M of the steel contract now.",
               "Submit all available Lot A and Lot B records.",
-              "Tell the team the title, nonconformance, and cash issues."
+              "Tell the team everything: the paperwork gaps, the Lot B defect, and your cash squeeze."
             ],
             "verified_value_delta_usd": 950000
           },
@@ -214,15 +214,15 @@
           "after_choice": "The team sees a larger payment claim but less evidence. This may protect your ask, but it makes later verification harder.",
           "choice_id": "self_protective",
           "disclosure": {
-            "claimed": "You ask for the full $1.8M, submit only the two easiest Lot A records, and disclose no exceptions.",
+            "claimed": "You ask for the full $1.8M, submit only the two easiest Lot A records, and mention none of the problems.",
             "honesty_read": "Your public claim leaves out what you know. The team will verify against a picture you shaped, and the gap can surface later.",
-            "private_truth": "You privately know Lot B is nonconforming and your cash is short \u2014 neither is in what you sent the team.",
+            "private_truth": "You privately know Lot B is defective and your cash is short \u2014 neither is in what you sent the team.",
             "verdict": "withheld"
           },
           "display_bullets": [
             "Request $1.8M before the steel is on site.",
             "Submit only the two easiest Lot A records.",
-            "Do not disclose known exceptions."
+            "Keep the known problems to yourself."
           ],
           "label": "Ask for the full payment and disclose less",
           "parameter_summary": [
@@ -290,13 +290,13 @@
             "payoff_delta_by_role": {
               "steel_supplier": 140000
             },
-            "public_summary": "The project gets a bigger cash request with less proof, which makes payment approval and later release harder.",
+            "public_summary": "The project gets a bigger cash request with less proof, which makes payment approval and later steel approval harder.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 1,
             "state_changes": [
               "Request $1.8M before the steel is on site.",
               "Submit only the two easiest Lot A records.",
-              "Do not disclose known exceptions."
+              "Keep the known problems to yourself."
             ],
             "verified_value_delta_usd": 450000
           },
@@ -405,8 +405,8 @@
       ],
       "critical_updates": [
         "Original plan: $95.0M, finish week 40.",
-        "Steel has to arrive by week 14 to use the week 15-18 field-work window.",
-        "You need early cash to cure documents, fix Lot B, and keep delivery alive."
+        "Steel has to arrive by week 14 to use the crew time reserved for weeks 15-18.",
+        "You need early cash to fix the paperwork, repair Lot B, and keep delivery alive."
       ],
       "impact_tags": [
         "schedule",
@@ -435,18 +435,18 @@
           "term": "Payment application"
         }
       ],
-      "title": "Submit the off-site steel payment request"
+      "title": "Decide how much to ask to be paid up front"
     },
     "S01_A2_GC_INITIAL_REVIEW": {
       "actor_id": "gc",
       "choices": [
         {
-          "after_choice": "The package now supports a targeted inspection and a limited certified value. The phased path stays alive.",
+          "after_choice": "The package now supports a targeted inspection and a limited approved amount. The phased plan stays alive.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Certify $950K for the verified Lot A path.",
-            "Send available records to owner, lender, and inspector.",
+            "Approve $950K \u2014 just the part you've verified.",
+            "Share what documents you have with the owner, lender, and inspector.",
             "Keep a phased field-work path open."
           ],
           "label": "Approve the verified first batch and send it for review",
@@ -485,10 +485,10 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "The package now supports a targeted inspection and a limited certified value.",
+          "public_meaning": "The package now supports a targeted inspection and a limited approved amount.",
           "reads": {
-            "charitable": "The GC certified only what it could verify and routed the records to everyone \u2014 that keeps the money honest and the first delivery possible.",
-            "uncharitable": "Certifying the safe minimum also protects the GC's own liability first; the supplier's cash problem stays unsolved and the GC risked nothing."
+            "charitable": "The GC approved only what it could verify and shared the records with everyone \u2014 that keeps the money honest and the first delivery possible.",
+            "uncharitable": "Approving the safe minimum also protects the GC's own liability first; the supplier's cash problem stays unsolved and the GC risked nothing."
           },
           "risk_levels": {
             "cost": "low",
@@ -526,26 +526,26 @@
             "payoff_delta_by_role": {
               "gc": -40000
             },
-            "public_summary": "The GC creates a limited certified value and a review path, keeping the first steel package moving.",
+            "public_summary": "The GC approves a limited, verified amount and starts the review, keeping the first steel package moving.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Certify $950K for the verified Lot A path.",
-              "Send available records to owner, lender, and inspector.",
+              "Approve $950K \u2014 just the part you've verified.",
+              "Share what documents you have with the owner, lender, and inspector.",
               "Keep a phased field-work path open."
             ],
             "verified_value_delta_usd": 950000
           },
-          "why_choose": "Certifying the verified $950K keeps money and steel moving without vouching for what you can't see."
+          "why_choose": "Approving the verified $950K keeps money and steel moving without vouching for what you can't see."
         },
         {
-          "after_choice": "The project has an aggressive certification but no backup protection. If the supplier slips, the team has fewer recovery options.",
+          "after_choice": "The project has an aggressive approval but no backup protection. If the supplier slips, the team has fewer recovery options.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Certify the supplier's high application.",
+            "Approve the full $1.8M request as-is.",
             "Do not reserve backup steel.",
-            "Route only the limited submitted records."
+            "Pass along only the few documents the supplier sent."
           ],
           "label": "Approve the big request and skip backup steel",
           "parameter_summary": [
@@ -576,9 +576,9 @@
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
-          "public_meaning": "The project has an aggressive certification but no backup protection.",
+          "public_meaning": "The project has an aggressive approval but no backup protection.",
           "reads": {
-            "charitable": "Certifying the full request fast is the quickest way to get the supplier funded and the steel moving \u2014 speed has real value here.",
+            "charitable": "Approving the full request fast is the quickest way to get the supplier funded and the steel moving \u2014 speed has real value here.",
             "uncharitable": "The GC pushed the owner's and lender's money at an unverified claim and skipped the backup, keeping its own costs low while others carry the risk."
           },
           "risk_levels": {
@@ -616,17 +616,17 @@
             "payoff_delta_by_role": {
               "gc": 80000
             },
-            "public_summary": "The GC certifies more value but leaves no backup reserved, so a supplier slip would be harder to recover from.",
+            "public_summary": "The GC approves the full request but reserves no backup, so a supplier slip would be harder to recover from.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 1,
             "state_changes": [
-              "Certify the supplier's high application.",
+              "Approve the full $1.8M request as-is.",
               "Do not reserve backup steel.",
-              "Route only the limited submitted records."
+              "Pass along only the few documents the supplier sent."
             ],
             "verified_value_delta_usd": 1200000
           },
-          "why_choose": "Full certification is fastest, and skipping backup saves real money if the supplier delivers."
+          "why_choose": "Approving everything is fastest, and skipping backup saves real money if the supplier delivers."
         },
         {
           "after_choice": "The backup option is preserved and the review is stronger. The project buys protection at the cost of time and money.",
@@ -635,7 +635,7 @@
           "display_bullets": [
             "Send the full package for review.",
             "Reserve backup steel.",
-            "Hold the initial field-work strategy."
+            "Keep the original work plan until the review clears."
           ],
           "label": "Require full review and reserve backup steel",
           "parameter_summary": [
@@ -721,7 +721,7 @@
             "state_changes": [
               "Send the full package for review.",
               "Reserve backup steel.",
-              "Hold the initial field-work strategy."
+              "Keep the original work plan until the review clears."
             ],
             "verified_value_delta_usd": 1350000
           },
@@ -729,9 +729,9 @@
         }
       ],
       "critical_updates": [
-        "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-        "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-        "The week 40 forecast holds only if payment, release, labor, and delivery line up."
+        "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+        "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+        "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up."
       ],
       "impact_tags": [
         "schedule",
@@ -741,12 +741,12 @@
       ],
       "node_id": "S01_A2_GC_INITIAL_REVIEW",
       "private_stakes": [
-        "You can certify only the value you believe is supportable.",
+        "You can only approve an amount you can stand behind.",
         "Backup steel costs money, but it gives you leverage if the supplier slips."
       ],
       "prompt": "Review PA-01, choose verification, and route documents.",
       "round": "A",
-      "situation": "You are the general contractor. You decide how much of the off-site steel request can be certified and whether to keep a backup steel source available.",
+      "situation": "You are the general contractor. You decide how much of the supplier's payment request to approve, and whether to line up a backup steel source just in case.",
       "terms": [
         {
           "meaning": "Tell the owner and lender how much work appears eligible for payment.",
@@ -768,8 +768,8 @@
           "disclosure": null,
           "display_bullets": [
             "Keep a split crew available.",
-            "Offer partial mobilization at week 15.",
-            "Charge standby for the hold."
+            "Offer half the crew starting week 15.",
+            "Charge a standby fee to keep them available."
           ],
           "label": "Hold part of the crew and crane",
           "parameter_summary": [
@@ -835,8 +835,8 @@
             "schedule_risk_delta": 0,
             "state_changes": [
               "Keep a split crew available.",
-              "Offer partial mobilization at week 15.",
-              "Charge standby for the hold."
+              "Offer half the crew starting week 15.",
+              "Charge a standby fee to keep them available."
             ],
             "verified_value_delta_usd": 0
           },
@@ -848,8 +848,8 @@
           "disclosure": null,
           "display_bullets": [
             "Do not hold crew or crane.",
-            "Avoid standby exposure.",
-            "Make the project remobilize later."
+            "Take no risk of unpaid waiting.",
+            "If steel shows up later, the project waits for you to come back."
           ],
           "label": "Send the crew and crane to other work",
           "parameter_summary": [
@@ -872,7 +872,7 @@
           "public_meaning": "The crew and crane are no longer reserved.",
           "reads": {
             "charitable": "With no released steel and no funded package, sending the crew to paying work is just rational \u2014 they can't eat standby risk on a maybe.",
-            "uncharitable": "They walked off the window the project reserved; if steel clears next week, everyone waits on their remobilization."
+            "uncharitable": "They walked off the window the project reserved; if steel clears next week, everyone waits for their crew to come back."
           },
           "risk_levels": {
             "cost": "low",
@@ -887,7 +887,7 @@
           "tradeoff": "If steel clears, your remobilization time may cost the project its window.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Crew and crane capacity have been released to other work.",
+            "blocker_add": "The crew and crane have gone to other work.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 6,
@@ -910,13 +910,13 @@
             "payoff_delta_by_role": {
               "labor_subcontractor": 160000
             },
-            "public_summary": "Crew and crane time goes elsewhere, so even cleared steel may wait for remobilization.",
+            "public_summary": "Crew and crane time goes elsewhere, so even approved steel may wait for the crew to come back.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 4,
             "state_changes": [
               "Do not hold crew or crane.",
-              "Avoid standby exposure.",
-              "Make the project remobilize later."
+              "Take no risk of unpaid waiting.",
+              "If steel shows up later, the project waits for you to come back."
             ],
             "verified_value_delta_usd": 0
           },
@@ -928,7 +928,7 @@
           "disclosure": null,
           "display_bullets": [
             "Keep the full crew and crane.",
-            "Mobilize later with more certainty.",
+            "Come in later, once things are more certain.",
             "Charge the full standby price."
           ],
           "label": "Hold the full crew and crane for standby pay",
@@ -995,7 +995,7 @@
             "schedule_risk_delta": 0,
             "state_changes": [
               "Keep the full crew and crane.",
-              "Mobilize later with more certainty.",
+              "Come in later, once things are more certain.",
               "Charge the full standby price."
             ],
             "verified_value_delta_usd": 0
@@ -1004,9 +1004,9 @@
         }
       ],
       "critical_updates": [
-        "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-        "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-        "The week 40 forecast holds only if payment, release, labor, and delivery line up."
+        "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+        "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+        "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up."
       ],
       "impact_tags": [
         "schedule",
@@ -1259,9 +1259,9 @@
         }
       ],
       "critical_updates": [
-        "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-        "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-        "The week 40 forecast holds only if payment, release, labor, and delivery line up."
+        "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+        "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+        "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up."
       ],
       "impact_tags": [
         "schedule",
@@ -1270,12 +1270,12 @@
       ],
       "node_id": "S01_A3_INSPECTOR_REVIEW_PLAN",
       "private_stakes": [
-        "Rubber-stamping nonconforming steel can create a compliance failure tied to you.",
+        "Waving through defective steel can create a legal failure tied to you.",
         "Blocking too much steel protects you locally but can kill the project schedule."
       ],
       "prompt": "Choose inspection scope and timing.",
       "round": "A",
-      "situation": "You are the inspector. Your review determines whether any off-site steel can later be released for shipment and installation.",
+      "situation": "You are the inspector. Your review determines whether any of this steel can later be approved to ship and be installed.",
       "terms": [
         {
           "meaning": "Your approval that a steel batch can be shipped and used without creating a compliance failure.",
@@ -1300,8 +1300,8 @@
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Make $250K available if controls clear.",
-            "Add $100K immediate equity.",
+            "Offer $250K once the checks pass.",
+            "Put in $100K of your own cash now.",
             "Accept up to two weeks of recovery delay."
           ],
           "label": "Offer limited owner cash support",
@@ -1328,7 +1328,7 @@
           "project_score_delta": 2,
           "public_meaning": "The owner leaves a limited funding path open.",
           "reads": {
-            "charitable": "The owner put real, if limited, money on the table early \u2014 $250K plus equity is a genuine attempt to keep the steel moving.",
+            "charitable": "The owner put real, if limited, money on the table early \u2014 $250K plus their own cash is a genuine attempt to keep the steel moving.",
             "uncharitable": "A small, conditional offer lets the owner look supportive while committing almost nothing; the conditions may never actually be met."
           },
           "risk_levels": {
@@ -1370,21 +1370,21 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Make $250K available if controls clear.",
-              "Add $100K immediate equity.",
+              "Offer $250K once the checks pass.",
+              "Put in $100K of your own cash now.",
               "Accept up to two weeks of recovery delay."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "$250K conditional plus $100K equity is the cheapest offer that keeps the steel path alive."
+          "why_choose": "$250K with conditions plus $100K of your own cash is the cheapest offer that keeps the steel path alive."
         },
         {
           "after_choice": "The owner refuses new money. The supplier and GC must solve the cash problem without owner support.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Do not support off-site payment.",
-            "Keep owner funds and equity at zero.",
+            "Refuse to pay before the steel arrives.",
+            "Put in no cash at all.",
             "Accept no avoidable delay."
           ],
           "label": "Refuse more owner cash",
@@ -1452,8 +1452,8 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 2,
             "state_changes": [
-              "Do not support off-site payment.",
-              "Keep owner funds and equity at zero.",
+              "Refuse to pay before the steel arrives.",
+              "Put in no cash at all.",
               "Accept no avoidable delay."
             ],
             "verified_value_delta_usd": 0
@@ -1465,11 +1465,11 @@
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Require title and inspection controls.",
+            "Require ownership paperwork and an inspection first.",
             "Allow funding only after review.",
-            "Keep the delay tolerance narrow."
+            "Accept almost no delay."
           ],
-          "label": "Support only with tighter controls",
+          "label": "Support only with tighter checks",
           "parameter_summary": [
             "offsite_payment_posture: CONDITIONAL",
             "owner_funding_ceiling_usd: 300000",
@@ -1502,10 +1502,10 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Support only with tighter controls",
+          "role_action": "Support only with tighter checks",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Support only with tighter controls. This decision mainly affects cost approval, cash timing, delay tolerance.",
+          "summary": "Support only with tighter checks. This decision mainly affects cost approval, cash timing, delay tolerance.",
           "tradeoff": "The conditions take time the schedule may not have.",
           "web_effect": {
             "backup_status": null,
@@ -1531,13 +1531,13 @@
             "payoff_delta_by_role": {
               "owner": -175000
             },
-            "public_summary": "Owner support stays possible only under tighter controls, which reduces payment risk but slows approval.",
+            "public_summary": "Owner support stays possible only under tighter checks, which reduces payment risk but slows approval.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Require title and inspection controls.",
+              "Require ownership paperwork and an inspection first.",
               "Allow funding only after review.",
-              "Keep the delay tolerance narrow."
+              "Accept almost no delay."
             ],
             "verified_value_delta_usd": 0
           },
@@ -1545,9 +1545,9 @@
         }
       ],
       "critical_updates": [
-        "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-        "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-        "The week 40 forecast holds only if payment, release, labor, and delivery line up."
+        "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+        "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+        "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up."
       ],
       "impact_tags": [
         "cost_authorization",
@@ -1572,21 +1572,21 @@
           "term": "Controls"
         }
       ],
-      "title": "Set the owner's provisional funding position"
+      "title": "Decide how much cash to offer now"
     },
     "S01_A4_LENDER_PROVISIONAL_POSITION": {
       "actor_id": "lender",
       "choices": [
         {
-          "after_choice": "A limited draw remains possible if verified value and owner equity line up.",
+          "after_choice": "A limited loan payout remains possible if the verified steel and the owner's cash line up.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Cap the draw at $760K.",
-            "Require owner equity.",
-            "Review in the current draw cycle."
+            "Cap the payout at $760K.",
+            "Require the owner to put in cash.",
+            "Decide within the current payment cycle."
           ],
-          "label": "Offer a limited loan draw",
+          "label": "Offer part of the loan money",
           "parameter_summary": [
             "draw_posture: LIMITED",
             "maximum_draw_usd: 760000",
@@ -1608,10 +1608,10 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "A limited draw remains possible if verified value and owner equity line up.",
+          "public_meaning": "A limited loan payout remains possible if the verified steel and the owner's cash line up.",
           "reads": {
-            "charitable": "A capped draw against verified value, with owner equity required, is the lender genuinely trying to make the loan work for off-site steel.",
-            "uncharitable": "The cap and the equity requirement push the first loss to the owner and supplier; the lender risks little and calls it support."
+            "charitable": "A capped payout against verified steel, with the owner's own cash required, is the lender genuinely trying to make the loan work.",
+            "uncharitable": "The cap and the owner-cash requirement push the first loss to the owner and supplier; the lender risks little and calls it support."
           },
           "risk_levels": {
             "cost": "high",
@@ -1619,10 +1619,10 @@
             "private_benefit": "low"
           },
           "risk_note": "Preserves the best path if counterparties also cooperate.",
-          "role_action": "Offer a limited loan draw",
+          "role_action": "Offer part of the loan money",
           "source_fixture": "efficient_phased_coalition_success",
           "stance": "project-first",
-          "summary": "Offer a limited loan draw. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Offer part of the loan money. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "Even a capped draw against off-site steel is exposure if the title gaps are real.",
           "web_effect": {
             "backup_status": null,
@@ -1648,28 +1648,28 @@
             "payoff_delta_by_role": {
               "lender": -20000
             },
-            "public_summary": "Loan funds can still support verified steel value if owner equity and controls line up.",
+            "public_summary": "Loan money is still possible for the steel the team has verified \u2014 if the owner puts in cash and the checks pass.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Cap the draw at $760K.",
-              "Require owner equity.",
-              "Review in the current draw cycle."
+              "Cap the payout at $760K.",
+              "Require the owner to put in cash.",
+              "Decide within the current payment cycle."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "A capped draw with equity keeps the loan supporting the project without breaking draw rules."
+          "why_choose": "A capped payout with owner cash in keeps the loan supporting the project without breaking the rules."
         },
         {
-          "after_choice": "Loan money is not available for this draw. The package must find cash elsewhere.",
+          "after_choice": "The lender won't release loan money. The team must find cash elsewhere.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
             "Release no funds.",
-            "Require no escrow.",
-            "Push the issue outside this draw."
+            "Offer no alternative.",
+            "Push the problem to a later payment cycle."
           ],
-          "label": "Make this loan draw ineligible",
+          "label": "Refuse to release loan money",
           "parameter_summary": [
             "draw_posture: NOT_ELIGIBLE",
             "minimum_owner_equity_usd: 100000",
@@ -1690,9 +1690,9 @@
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
-          "public_meaning": "Loan money is not available for this draw.",
+          "public_meaning": "The lender won't release loan money.",
           "reads": {
-            "charitable": "Declaring the draw ineligible may be the honest reading of the loan agreement \u2014 off-site steel with title gaps is exactly what draw rules exclude.",
+            "charitable": "Refusing the payout may be the honest reading of the loan agreement \u2014 off-site steel with missing ownership paperwork is exactly what the rules exclude.",
             "uncharitable": "An early 'no' is the cheapest move available: no exposure, no work, and the cash problem becomes everyone else's."
           },
           "risk_levels": {
@@ -1701,14 +1701,14 @@
             "private_benefit": "high"
           },
           "risk_note": "Attractive locally, but it can strand the critical path.",
-          "role_action": "Make this loan draw ineligible",
+          "role_action": "Refuse to release loan money",
           "source_fixture": "coordination_failure",
           "stance": "self-protective",
-          "summary": "Make this loan draw ineligible. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Refuse to release loan money. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "If the project fails for cash, your collateral is a stalled building.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Loan funds are not available for the steel draw.",
+            "blocker_add": "Loan money is not available for the steel payment.",
             "blocker_remove": null,
             "cash_delta_usd": -300000,
             "completion_delta_weeks": 3,
@@ -1730,28 +1730,28 @@
             "payoff_delta_by_role": {
               "lender": 60000
             },
-            "public_summary": "Loan funds are unavailable for this draw, increasing the cash gap the rest of the team must cover.",
+            "public_summary": "The lender won't release loan money yet, increasing the cash gap the rest of the team must cover.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
               "Release no funds.",
-              "Require no escrow.",
-              "Push the issue outside this draw."
+              "Offer no alternative.",
+              "Push the problem to a later payment cycle."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Ineligible is the safest reading of the loan agreement on today's file."
+          "why_choose": "Saying no is the safest reading of the loan agreement on today's paperwork."
         },
         {
-          "after_choice": "Money may move only under escrow and reserve controls.",
+          "after_choice": "Money may move only into a controlled account with reserves protected.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Limit release through escrow.",
-            "Preserve completion reserves.",
+            "Move money only into a controlled account.",
+            "Keep the finish-the-job reserves intact.",
             "Wait for stronger controls."
           ],
-          "label": "Use escrow and reserve controls",
+          "label": "Move money only into a controlled account",
           "parameter_summary": [
             "draw_posture: LIMITED",
             "maximum_draw_usd: 760000",
@@ -1773,10 +1773,10 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "Money may move only under escrow and reserve controls.",
+          "public_meaning": "Money may move only into a controlled account with reserves protected.",
           "reads": {
-            "charitable": "Escrow moves money while protecting it \u2014 the funds are real but can't vanish into the supplier's other obligations.",
-            "uncharitable": "Escrow lets the lender claim it funded the fix while the supplier still can't touch the cash it actually needs."
+            "charitable": "A controlled account moves money while protecting it \u2014 the funds are real but can't vanish into the supplier's other obligations.",
+            "uncharitable": "The controlled account lets the lender claim it funded the fix while the supplier still can't touch the cash it actually needs."
           },
           "risk_levels": {
             "cost": "medium",
@@ -1784,11 +1784,11 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Use escrow and reserve controls",
+          "role_action": "Move money only into a controlled account",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Use escrow and reserve controls. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
-          "tradeoff": "Escrowed funds may be too slow and too restricted to actually cure the steel.",
+          "summary": "Move money only into a controlled account. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "tradeoff": "Controlled money may be too slow and too restricted to actually fix the steel.",
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
@@ -1813,23 +1813,23 @@
             "payoff_delta_by_role": {
               "lender": 20000
             },
-            "public_summary": "Funding remains possible only through escrow and reserve controls, which protects the loan but slows usable cash.",
+            "public_summary": "Money can move only into a controlled account, which protects the loan but slows usable cash.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Limit release through escrow.",
-              "Preserve completion reserves.",
+              "Move money only into a controlled account.",
+              "Keep the finish-the-job reserves intact.",
               "Wait for stronger controls."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Escrow moves money without losing control of it."
+          "why_choose": "A controlled account moves money without losing control of it."
         }
       ],
       "critical_updates": [
-        "PA-01 asks for $1.8M against a $2.4M steel sequence.",
-        "Supplier says the cash protects document cure, Lot B correction, and delivery.",
-        "The week 40 forecast holds only if payment, release, labor, and delivery line up."
+        "The supplier wants $1.8M of the $2.4M steel contract paid now, before the steel is on site.",
+        "The supplier says the money will pay for paperwork fixes, the Lot B repair, and on-time delivery.",
+        "The week 40 finish only holds if payment, steel approval, labor, and delivery all line up."
       ],
       "impact_tags": [
         "cash_timing",
@@ -1854,7 +1854,7 @@
           "term": "Escrow"
         }
       ],
-      "title": "State whether the draw may be eligible"
+      "title": "Decide if loan money can help"
     },
     "S01_B1_SUPPLIER_COMMITMENT": {
       "actor_id": "steel_supplier",
@@ -1918,7 +1918,7 @@
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
-            "blocker_remove": "Lot B has a known cure issue.",
+            "blocker_remove": "Lot B has a known defect.",
             "cash_delta_usd": 350000,
             "completion_delta_weeks": 0,
             "compliance_risk_delta": 0,
@@ -1940,7 +1940,7 @@
             "payoff_delta_by_role": {
               "steel_supplier": -40000
             },
-            "public_summary": "The supplier commits cash and cure work, keeping both steel batches inside the phased schedule.",
+            "public_summary": "The supplier commits cash and repair work, keeping both steel batches on schedule.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
@@ -2010,7 +2010,7 @@
           "tradeoff": "A late Lot B lands on the record as your failure, whatever the cause.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Lot B is likely late because outside shop work is ahead of cure.",
+            "blocker_add": "Lot B is likely late because the supplier put other work first.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 4,
@@ -2033,7 +2033,7 @@
             "payoff_delta_by_role": {
               "steel_supplier": 140000
             },
-            "public_summary": "The supplier limits cure work and takes outside work, so the second batch becomes likely to miss the steel window.",
+            "public_summary": "The supplier limits repairs and takes outside work, so the second batch will likely miss the window.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
@@ -2050,9 +2050,9 @@
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Use maximum outside financing.",
-            "Push for full sequence readiness.",
-            "Accept financing cost."
+            "Borrow as much as you can.",
+            "Get both batches fully ready.",
+            "Accept the borrowing cost."
           ],
           "label": "Borrow money and finish the full fix",
           "parameter_summary": [
@@ -2104,7 +2104,7 @@
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
-            "blocker_remove": "Lot B has a known cure issue.",
+            "blocker_remove": "Lot B has a known defect.",
             "cash_delta_usd": 500000,
             "completion_delta_weeks": 0,
             "compliance_risk_delta": 0,
@@ -2131,9 +2131,9 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Use maximum outside financing.",
-              "Push for full sequence readiness.",
-              "Accept financing cost."
+              "Borrow as much as you can.",
+              "Get both batches fully ready.",
+              "Accept the borrowing cost."
             ],
             "verified_value_delta_usd": 0
           },
@@ -2141,9 +2141,9 @@
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "schedule",
@@ -2153,12 +2153,12 @@
       ],
       "node_id": "S01_B1_SUPPLIER_COMMITMENT",
       "private_stakes": [
-        "Funding the cure protects delivery but cuts into your margin.",
+        "Paying for the repairs protects delivery but cuts into your margin.",
         "Taking outside work protects your shop economics but can make Lot B late."
       ],
       "prompt": "Commit cure, financing, outside work, support request, and sequence.",
       "round": "B",
-      "situation": "You are the supplier. The team needs to know whether you will actually cure the steel issues and when each batch will be ready.",
+      "situation": "You are the supplier. The team needs to know whether you will actually fix the steel problems and when each batch will be ready.",
       "terms": [
         {
           "meaning": "Fix missing documents or physical issues so steel can be released.",
@@ -2169,17 +2169,17 @@
           "term": "Outside work"
         }
       ],
-      "title": "Commit cash, cure work, and delivery weeks"
+      "title": "Commit cash, repairs, and delivery weeks"
     },
     "S01_B2_GC_INTEGRATED_PACKAGE": {
       "actor_id": "gc",
       "choices": [
         {
-          "after_choice": "The recovery package now has certification, short-term GC funding, owner support, lender support, and a phased field-work path.",
+          "after_choice": "The rescue package now has approved value, short-term GC money, owner support, lender support, and a phased work plan.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Put $100K of short-term GC funding into the package.",
+            "Put in $100K of your own short-term money.",
             "Request owner and lender support.",
             "Drop backup if the package holds."
           ],
@@ -2211,7 +2211,7 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "The recovery package now has certification, short-term GC funding, owner support, lender support, and a phased field-work path.",
+          "public_meaning": "The rescue package now has approved value, short-term GC money, owner support, lender support, and a phased work plan.",
           "reads": {
             "charitable": "The GC put its own short-term money in and stitched every party's position into one executable plan \u2014 the coordination job done right.",
             "uncharitable": "The GC's $100K is small next to what it asks the owner and lender to carry, and the package paperwork also protects the GC first."
@@ -2251,11 +2251,11 @@
             "payoff_delta_by_role": {
               "gc": -40000
             },
-            "public_summary": "The GC assembles the workable package: verified value, short-term funding, owner/lender support, and labor capacity.",
+            "public_summary": "The GC assembles a workable package: verified steel, short-term money, owner and lender support, and a crew.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Put $100K of short-term GC funding into the package.",
+              "Put in $100K of your own short-term money.",
               "Request owner and lender support.",
               "Drop backup if the package holds."
             ],
@@ -2268,7 +2268,7 @@
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Certify no payment.",
+            "Approve nothing for payment.",
             "Do not put short-term GC money into the package.",
             "Accept field-work delay instead of carrying risk."
           ],
@@ -2344,7 +2344,7 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
-              "Certify no payment.",
+              "Approve nothing for payment.",
               "Do not put short-term GC money into the package.",
               "Accept field-work delay instead of carrying risk."
             ],
@@ -2359,9 +2359,9 @@
           "display_bullets": [
             "Put more short-term GC funding into the package.",
             "Keep backup available.",
-            "Use a full-sequence plan if controls clear."
+            "Go back to the full plan if the checks pass."
           ],
-          "label": "Keep backup steel and require more controls",
+          "label": "Keep backup steel and demand more proof",
           "parameter_summary": [
             "supplier_proposal_action: ACCEPT",
             "final_certified_payment_usd: 950000",
@@ -2400,10 +2400,10 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Keep backup steel and require more controls",
+          "role_action": "Keep backup steel and demand more proof",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Keep backup steel and require more controls. This decision mainly affects schedule, cash timing, project cost.",
+          "summary": "Keep backup steel and demand more proof. This decision mainly affects schedule, cash timing, project cost.",
           "tradeoff": "You pay for protection the project may never use.",
           "web_effect": {
             "backup_status": "reserved",
@@ -2430,13 +2430,13 @@
             "payoff_delta_by_role": {
               "gc": -125000
             },
-            "public_summary": "The GC keeps backup active and adds controls, preserving a fallback at higher project cost.",
+            "public_summary": "The GC keeps backup alive and adds more checks, preserving a fallback at higher cost.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Put more short-term GC funding into the package.",
               "Keep backup available.",
-              "Use a full-sequence plan if controls clear."
+              "Go back to the full plan if the checks pass."
             ],
             "verified_value_delta_usd": 0
           },
@@ -2444,9 +2444,9 @@
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "schedule",
@@ -2461,7 +2461,7 @@
       ],
       "prompt": "Integrate supplier, inspection, labor, owner, lender, and backup terms.",
       "round": "B",
-      "situation": "You are the general contractor. You combine supplier, owner, lender, inspector, labor, and backup positions into one executable path.",
+      "situation": "You are the general contractor. Everyone has stated a position. You stitch them into one plan that can actually be executed.",
       "terms": [
         {
           "meaning": "Temporary project money from the GC used to keep work moving before other funds arrive.",
@@ -2472,7 +2472,7 @@
           "term": "Phased field work"
         }
       ],
-      "title": "Assemble the commercial recovery package"
+      "title": "Assemble the rescue package"
     },
     "S01_B3_ERECTOR_BINDING_COMMITMENT": {
       "actor_id": "labor_subcontractor",
@@ -2482,8 +2482,8 @@
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Mobilize partial capacity in week 15.",
-            "Require Lot A release.",
+            "Bring half the crew in week 15.",
+            "Only if the first batch is approved to ship.",
             "Use limited overtime if needed."
           ],
           "label": "Commit part of the crew and crane",
@@ -2551,8 +2551,8 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Mobilize partial capacity in week 15.",
-              "Require Lot A release.",
+              "Bring half the crew in week 15.",
+              "Only if the first batch is approved to ship.",
               "Use limited overtime if needed."
             ],
             "verified_value_delta_usd": 0
@@ -2560,13 +2560,13 @@
           "why_choose": "A binding split commitment gets you paid standby and keeps the phased start real."
         },
         {
-          "after_choice": "Labor capacity is released. Even if steel clears, remobilization may push the schedule late.",
+          "after_choice": "The crew is gone. Even if steel clears, getting them back may push the schedule late.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
             "Do not accept the package.",
             "Take outside work.",
-            "Return only after remobilization."
+            "Come back only when it's worth it \u2014 which takes time."
           ],
           "label": "Release the crew and crane",
           "parameter_summary": [
@@ -2588,10 +2588,10 @@
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
-          "public_meaning": "Labor capacity is released.",
+          "public_meaning": "The crew is gone.",
           "reads": {
             "charitable": "Walking away from an unfunded package is self-preservation \u2014 a crew can't stand by on promises.",
-            "uncharitable": "They took the outside work and left the project to remobilize later at whatever price the schedule then demands."
+            "uncharitable": "They took the outside work and left the project to rebuild a crew later at whatever price the schedule then demands."
           },
           "risk_levels": {
             "cost": "low",
@@ -2606,7 +2606,7 @@
           "tradeoff": "The project may miss its window waiting for you to come back.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Crew and crane capacity have been released to other work.",
+            "blocker_add": "The crew and crane have gone to other work.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 6,
@@ -2629,13 +2629,13 @@
             "payoff_delta_by_role": {
               "labor_subcontractor": 160000
             },
-            "public_summary": "Labor releases capacity, so schedule recovery becomes difficult even if the steel clears.",
+            "public_summary": "The crew walks, so schedule recovery becomes difficult even if the steel clears.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 4,
             "state_changes": [
               "Do not accept the package.",
               "Take outside work.",
-              "Return only after remobilization."
+              "Come back only when it's worth it \u2014 which takes time."
             ],
             "verified_value_delta_usd": 0
           },
@@ -2647,8 +2647,8 @@
           "disclosure": null,
           "display_bullets": [
             "Hold the full crew and crane.",
-            "Mobilize later with full capacity.",
-            "Require standby compensation."
+            "Come in later at full strength.",
+            "Require standby pay."
           ],
           "label": "Commit the full crew and crane for standby pay",
           "parameter_summary": [
@@ -2716,8 +2716,8 @@
             "schedule_risk_delta": 0,
             "state_changes": [
               "Hold the full crew and crane.",
-              "Mobilize later with full capacity.",
-              "Require standby compensation."
+              "Come in later at full strength.",
+              "Require standby pay."
             ],
             "verified_value_delta_usd": 0
           },
@@ -2725,9 +2725,9 @@
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "schedule",
@@ -2752,18 +2752,18 @@
           "term": "Full capacity"
         }
       ],
-      "title": "Make the labor commitment binding"
+      "title": "Turn your offer into a real commitment"
     },
     "S01_B3_INSPECTOR_DISPOSITION": {
       "actor_id": "inspector",
       "choices": [
         {
-          "after_choice": "Lot A can move toward shipment, but Lot B remains blocked until cure and reinspection.",
+          "after_choice": "Lot A can move toward shipment, but Lot B stays blocked until it's fixed and reinspected.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
             "Let Lot A move toward shipment.",
-            "Keep Lot B blocked until the issue is cured.",
+            "Keep Lot B blocked until the defect is fixed.",
             "Set reinspection for week 18."
           ],
           "label": "Release the first batch and hold the second",
@@ -2784,9 +2784,9 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "Lot A can move toward shipment, but Lot B remains blocked until cure and reinspection.",
+          "public_meaning": "Lot A can move toward shipment, but Lot B stays blocked until it's fixed and reinspected.",
           "reads": {
-            "charitable": "Releasing Lot A while holding Lot B until cure is exactly what the evidence supports \u2014 movement where it's safe, a hold where it isn't.",
+            "charitable": "Releasing Lot A while holding Lot B until it's fixed is exactly what the evidence supports \u2014 movement where it's safe, a hold where it isn't.",
             "uncharitable": "The split decision keeps the inspector covered both ways: point at the release if the schedule holds, at the hold if it doesn't."
           },
           "risk_levels": {
@@ -2827,7 +2827,7 @@
             "schedule_risk_delta": 0,
             "state_changes": [
               "Let Lot A move toward shipment.",
-              "Keep Lot B blocked until the issue is cured.",
+              "Keep Lot B blocked until the defect is fixed.",
               "Set reinspection for week 18."
             ],
             "verified_value_delta_usd": 0
@@ -2840,7 +2840,7 @@
           "disclosure": null,
           "display_bullets": [
             "Approve no steel for shipment.",
-            "Do not set a cure path today.",
+            "Set no repair plan today.",
             "Field work cannot start from this material."
           ],
           "label": "Block both steel batches",
@@ -2874,7 +2874,7 @@
           "tradeoff": "Field work can't start from material you've blocked \u2014 the delay is real.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "No steel has been released for the field.",
+            "blocker_add": "No steel has been approved for the field.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 6,
@@ -2894,12 +2894,12 @@
             "payoff_delta_by_role": {
               "inspector": 40000
             },
-            "public_summary": "No steel is released, so field work cannot start from the current material.",
+            "public_summary": "No steel is approved, so field work cannot start from the current material.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 4,
             "state_changes": [
               "Approve no steel for shipment.",
-              "Do not set a cure path today.",
+              "Set no repair plan today.",
               "Field work cannot start from this material."
             ],
             "verified_value_delta_usd": 0
@@ -2985,9 +2985,9 @@
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "release_value",
@@ -3001,7 +3001,7 @@
       ],
       "prompt": "Issue technical disposition after review.",
       "round": "B",
-      "situation": "You are the inspector. The team has some verified value, but Lot B still carries risk. Your release decision controls what can ship.",
+      "situation": "You are the inspector. The team has verified some of the steel, but Lot B still carries risk. Your approval decides what can ship.",
       "terms": [
         {
           "meaning": "The first steel batch. Releasing it lets the project start field work.",
@@ -3016,19 +3016,19 @@
           "term": "Shipment value"
         }
       ],
-      "title": "Issue the inspection release position"
+      "title": "Decide what steel can ship"
     },
     "S01_B4_OWNER_PACKAGE_DECISION": {
       "actor_id": "owner",
       "choices": [
         {
-          "after_choice": "Owner money, equity, and standby support are approved for the phased package.",
+          "after_choice": "Owner funding, personal cash, and standby pay are approved for the phased package.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
             "Fund $200K.",
-            "Add $100K equity.",
-            "Approve standby for the labor subcontractor."
+            "Put in $100K of your own cash.",
+            "Pay to keep the crew on standby."
           ],
           "label": "Approve the phased funding package",
           "parameter_summary": [
@@ -3053,9 +3053,9 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "Owner money, equity, and standby support are approved for the phased package.",
+          "public_meaning": "Owner funding, personal cash, and standby pay are approved for the phased package.",
           "reads": {
-            "charitable": "The owner funded the package \u2014 $200K, equity, and standby support \u2014 real money to keep the phased plan alive.",
+            "charitable": "The owner funded the package \u2014 $200K, personal cash, and standby pay \u2014 real money to keep the phased plan alive.",
             "uncharitable": "The owner is buying schedule with the smallest check that plausibly works, and the delay terms mostly protect the owner's opening date."
           },
           "risk_levels": {
@@ -3093,17 +3093,17 @@
             "payoff_delta_by_role": {
               "owner": -75000
             },
-            "public_summary": "Owner funding, equity, and standby support are approved, closing a major cash gap.",
+            "public_summary": "The owner approves funding, personal cash, and standby pay, closing a major cash gap.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Fund $200K.",
-              "Add $100K equity.",
-              "Approve standby for the labor subcontractor."
+              "Put in $100K of your own cash.",
+              "Pay to keep the crew on standby."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "$200K plus equity and standby is the smallest package that funds the phased plan."
+          "why_choose": "$200K plus your own cash and standby pay is the smallest package that funds the phased plan."
         },
         {
           "after_choice": "The package loses owner support. The cash gap remains unresolved.",
@@ -3111,7 +3111,7 @@
           "disclosure": null,
           "display_bullets": [
             "Approve no funding.",
-            "Approve no equity.",
+            "Put in no cash.",
             "Accept only minimal delay."
           ],
           "label": "Reject the funding package",
@@ -3181,7 +3181,7 @@
             "schedule_risk_delta": 3,
             "state_changes": [
               "Approve no funding.",
-              "Approve no equity.",
+              "Put in no cash.",
               "Accept only minimal delay."
             ],
             "verified_value_delta_usd": 0
@@ -3193,11 +3193,11 @@
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Fund more, but only under controls.",
-            "Approve full standby.",
+            "Fund more, but only if the checks pass.",
+            "Pay full crew standby.",
             "Keep delay limits."
           ],
-          "label": "Approve funding only with full controls",
+          "label": "Approve funding only with full checks",
           "parameter_summary": [
             "package_action: APPROVE",
             "owner_funding_usd: 300000",
@@ -3231,10 +3231,10 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Approve funding only with full controls",
+          "role_action": "Approve funding only with full checks",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Approve funding only with full controls. This decision mainly affects cost approval, cash timing, delay tolerance.",
+          "summary": "Approve funding only with full checks. This decision mainly affects cost approval, cash timing, delay tolerance.",
           "tradeoff": "Controlled money moves slowly, and the schedule bill for slow arrives later.",
           "web_effect": {
             "backup_status": null,
@@ -3260,12 +3260,12 @@
             "payoff_delta_by_role": {
               "owner": -175000
             },
-            "public_summary": "Owner support is approved only inside tighter controls, adding protection and friction.",
+            "public_summary": "Owner support is approved only inside tighter checks, adding protection and friction.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Fund more, but only under controls.",
-              "Approve full standby.",
+              "Fund more, but only if the checks pass.",
+              "Pay full crew standby.",
               "Keep delay limits."
             ],
             "verified_value_delta_usd": 0
@@ -3274,9 +3274,9 @@
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "cost_authorization",
@@ -3312,10 +3312,10 @@
           "disclosure": null,
           "display_bullets": [
             "Release $760K.",
-            "Require $100K owner equity.",
+            "Require $100K of owner cash.",
             "Preserve completion reserve."
           ],
-          "label": "Release the partial loan draw",
+          "label": "Release $760K of loan money",
           "parameter_summary": [
             "release_action: PARTIAL_RELEASE",
             "draw_release_usd: 760000",
@@ -3338,8 +3338,8 @@
           "project_score_delta": 2,
           "public_meaning": "Loan funds release against verified value, giving the supplier usable cash.",
           "reads": {
-            "charitable": "Releasing $760K against verified value, with owner equity in place, is the construction loan doing exactly what it exists to do.",
-            "uncharitable": "The lender waited until every other firm had already de-risked the draw, then took credit for supporting it."
+            "charitable": "Releasing $760K against verified steel, with the owner's cash in place, is the construction loan doing exactly what it exists to do.",
+            "uncharitable": "The lender waited until every other firm had already de-risked the payout, then took credit for supporting it."
           },
           "risk_levels": {
             "cost": "high",
@@ -3347,10 +3347,10 @@
             "private_benefit": "low"
           },
           "risk_note": "Preserves the best path if counterparties also cooperate.",
-          "role_action": "Release the partial loan draw",
+          "role_action": "Release $760K of loan money",
           "source_fixture": "efficient_phased_coalition_success",
           "stance": "project-first",
-          "summary": "Release the partial loan draw. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Release $760K of loan money. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "You're funding steel that isn't on site yet; verification is your only protection.",
           "web_effect": {
             "backup_status": null,
@@ -3376,12 +3376,12 @@
             "payoff_delta_by_role": {
               "lender": -20000
             },
-            "public_summary": "The lender releases funds against verified value, giving the supplier usable cash.",
+            "public_summary": "The lender releases money against the verified steel, giving the supplier usable cash.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Release $760K.",
-              "Require $100K owner equity.",
+              "Require $100K of owner cash.",
               "Preserve completion reserve."
             ],
             "verified_value_delta_usd": 0
@@ -3394,10 +3394,10 @@
           "disclosure": null,
           "display_bullets": [
             "Release no funds.",
-            "Escrow no funds.",
+            "Park nothing in a controlled account.",
             "Leave the supplier to solve cash alone."
           ],
-          "label": "Hold the loan draw",
+          "label": "Hold the loan money",
           "parameter_summary": [
             "release_action: HOLD",
             "completion_reserve_after_usd: 1000000",
@@ -3418,8 +3418,8 @@
           "project_score_delta": -2,
           "public_meaning": "No loan money moves.",
           "reads": {
-            "charitable": "Holding the draw may be the loan agreement talking, not the lender \u2014 unverified off-site steel is a classic ineligible cost.",
-            "uncharitable": "No release, no escrow, no counterproposal: the lender protected its collateral and left the cash gap to sink the schedule."
+            "charitable": "Holding the money may be the loan agreement talking, not the lender \u2014 unverified off-site steel is a classic cost a construction loan won't cover.",
+            "uncharitable": "No payment, no fallback account, no counterproposal: the lender protected its collateral and left the cash gap to sink the schedule."
           },
           "risk_levels": {
             "cost": "low",
@@ -3427,14 +3427,14 @@
             "private_benefit": "high"
           },
           "risk_note": "Attractive locally, but it can strand the critical path.",
-          "role_action": "Hold the loan draw",
+          "role_action": "Hold the loan money",
           "source_fixture": "coordination_failure",
           "stance": "self-protective",
-          "summary": "Hold the loan draw. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Hold the loan money. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "The cash gap you preserved may stall the collateral you're protecting.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Loan funds are not available for the steel draw.",
+            "blocker_add": "Loan money is not available for the steel payment.",
             "blocker_remove": null,
             "cash_delta_usd": -300000,
             "completion_delta_weeks": 3,
@@ -3456,28 +3456,28 @@
             "payoff_delta_by_role": {
               "lender": 60000
             },
-            "public_summary": "No loan money moves, so cure and delivery must rely on other cash.",
+            "public_summary": "No loan money moves, so the repairs and delivery must rely on other cash.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
               "Release no funds.",
-              "Escrow no funds.",
+              "Park nothing in a controlled account.",
               "Leave the supplier to solve cash alone."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Holding the draw keeps the loan clean no matter what happens on site."
+          "why_choose": "Holding the money keeps the loan clean no matter what happens on site."
         },
         {
-          "after_choice": "Funds move only through escrow, keeping control but limiting immediate supplier liquidity.",
+          "after_choice": "Money moves only into the controlled account, keeping control but slowing the supplier's usable cash.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Hold direct release.",
-            "Use controlled escrow.",
+            "Pay nothing out directly.",
+            "Move money only through the controlled account.",
             "Wait for more certainty."
           ],
-          "label": "Move funds only through escrow",
+          "label": "Pay only into a controlled account",
           "parameter_summary": [
             "release_action: ESCROW",
             "escrow_release_usd: 200000",
@@ -3498,10 +3498,10 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "Funds move only through escrow, keeping control but limiting immediate supplier liquidity.",
+          "public_meaning": "Money moves only into the controlled account, keeping control but slowing the supplier's usable cash.",
           "reads": {
-            "charitable": "An escrow release moves real money while keeping it recoverable \u2014 protection for everyone whose name is on the project.",
-            "uncharitable": "Escrowed cash doesn't cure steel; the lender says yes on paper while the supplier still can't pay the shop."
+            "charitable": "Paying into a controlled account moves real money while keeping it recoverable \u2014 protection for everyone whose name is on the project.",
+            "uncharitable": "Parked money doesn't fix steel; the lender says yes on paper while the supplier still can't pay the shop."
           },
           "risk_levels": {
             "cost": "medium",
@@ -3509,11 +3509,11 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Move funds only through escrow",
+          "role_action": "Pay only into a controlled account",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Move funds only through escrow. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
-          "tradeoff": "If escrow terms are too tight, the supplier still can't pay the shop and the fix stalls.",
+          "summary": "Pay only into a controlled account. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "tradeoff": "If the account's rules are too tight, the supplier still can't pay the shop and the fix stalls.",
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
@@ -3538,23 +3538,23 @@
             "payoff_delta_by_role": {
               "lender": 20000
             },
-            "public_summary": "Funds move through escrow, protecting the loan but limiting immediate supplier liquidity.",
+            "public_summary": "Money moves into a controlled account: the loan stays protected, but the supplier can't spend it right away.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Hold direct release.",
-              "Use controlled escrow.",
+              "Pay nothing out directly.",
+              "Move money only through the controlled account.",
               "Wait for more certainty."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Escrow gives the package usable structure without giving up control."
+          "why_choose": "A controlled account moves real money without giving up control."
         }
       ],
       "critical_updates": [
-        "Round A left a possible phased path: Lot A first, Lot B after cure.",
-        "This round turns the package into money, release, and delivery commitments.",
-        "No cash or release path means the project may become non-viable."
+        "Round A kept one plan alive: ship the first batch now, ship the second once it's fixed.",
+        "This round is where promises become commitments: who pays, what steel gets approved, and when it ships.",
+        "If no money moves and no steel is approved, the project may not survive."
       ],
       "impact_tags": [
         "cash_timing",
@@ -3579,7 +3579,7 @@
           "term": "Completion reserve"
         }
       ],
-      "title": "Release, escrow, or hold loan funds"
+      "title": "Decide whether loan money actually moves"
     },
     "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
       "actor_id": "steel_supplier",
@@ -3617,7 +3617,7 @@
           "public_meaning": "Both lots are reported ready and sent toward shipment.",
           "reads": {
             "charitable": "Reporting both lots ready and shipping on plan is the supplier delivering exactly what it promised.",
-            "uncharitable": "'Both ready' is a claim, not a fact \u2014 if Lot B's cure is thinner than reported, the problem arrives on a truck."
+            "uncharitable": "'Both ready' is a claim, not a fact \u2014 if Lot B's repairs are thinner than reported, the problem arrives on a truck."
           },
           "risk_levels": {
             "cost": "low",
@@ -3633,7 +3633,7 @@
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
-            "blocker_remove": "Lot B has a known cure issue.",
+            "blocker_remove": "Lot B has a known defect.",
             "cash_delta_usd": 0,
             "completion_delta_weeks": 0,
             "compliance_risk_delta": 0,
@@ -3674,7 +3674,7 @@
           "display_bullets": [
             "Report Lot B not ready.",
             "Ship only Lot A.",
-            "Accept the later Lot B path."
+            "Accept that Lot B arrives late."
           ],
           "label": "Ship only the first batch",
           "parameter_summary": [
@@ -3715,7 +3715,7 @@
           "tradeoff": "A partial delivery reopens every question about your earlier promises.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Only Lot A ships; Lot B still blocks the full steel sequence.",
+            "blocker_add": "Only the first batch ships; the second still blocks the finish.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 5,
@@ -3744,20 +3744,20 @@
             "state_changes": [
               "Report Lot B not ready.",
               "Ship only Lot A.",
-              "Accept the later Lot B path."
+              "Accept that Lot B arrives late."
             ],
             "verified_value_delta_usd": 0
           },
           "why_choose": "Shipping only what's truly ready keeps your status honest."
         },
         {
-          "after_choice": "Both lots ship after the cleaner cure path, preserving the full sequence.",
+          "after_choice": "Both lots ship after the extra cleanup, preserving the full plan.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
             "Report both lots ready.",
             "Ship both lots.",
-            "Keep the cleaner full-sequence story."
+            "Ship with a spotless record."
           ],
           "label": "Ship both batches after extra cleanup",
           "parameter_summary": [
@@ -3780,7 +3780,7 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "Both lots ship after the cleaner cure path, preserving the full sequence.",
+          "public_meaning": "Both lots ship after the extra cleanup, preserving the full plan.",
           "reads": {
             "charitable": "Taking extra cleanup time before shipping both lots protects the installation from a compliance failure later.",
             "uncharitable": "The cleaner story costs the schedule real days, and the supplier bills the polish to everyone's calendar."
@@ -3799,7 +3799,7 @@
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
-            "blocker_remove": "Lot B has a known cure issue.",
+            "blocker_remove": "Lot B has a known defect.",
             "cash_delta_usd": 0,
             "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
@@ -3822,13 +3822,13 @@
             "payoff_delta_by_role": {
               "steel_supplier": -120000
             },
-            "public_summary": "Both batches ship after a cleaner cure, protecting compliance but using more time and money.",
+            "public_summary": "Both batches ship after extra cleanup, protecting the record but using more time and money.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Report both lots ready.",
               "Ship both lots.",
-              "Keep the cleaner full-sequence story."
+              "Ship with a spotless record."
             ],
             "verified_value_delta_usd": 0
           },
@@ -3836,9 +3836,9 @@
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "schedule",
@@ -3849,7 +3849,7 @@
       "node_id": "S01_C1_SUPPLIER_STATUS_AND_RECOVERY",
       "private_stakes": [
         "Shipping only Lot A preserves cash if Lot B is still messy, but it may strand the project.",
-        "Reporting both lots ready only works if the cure and release path can support it."
+        "Reporting both lots ready only works if the repairs and approvals can back it up."
       ],
       "prompt": "Report readiness, ship action, and recovery plan.",
       "round": "C",
@@ -3864,18 +3864,18 @@
           "term": "Ship both"
         }
       ],
-      "title": "Report readiness and choose shipment"
+      "title": "Report what's ready and decide what ships"
     },
     "S01_C2_GC_RECOVERY_PLAN": {
       "actor_id": "gc",
       "choices": [
         {
-          "after_choice": "The GC proceeds with a phased recovery and keeps downstream work resequenced.",
+          "after_choice": "The GC proceeds with the phased recovery and keeps the later schedule reshuffled around the steel.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Verify supplier status.",
-            "Keep downstream work resequenced.",
+            "Double-check what the supplier says is ready.",
+            "Keep the later schedule reshuffled around the steel delay.",
             "Do not spend on backup."
           ],
           "label": "Keep the phased recovery plan moving",
@@ -3898,7 +3898,7 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "The GC proceeds with a phased recovery and keeps downstream work resequenced.",
+          "public_meaning": "The GC proceeds with the phased recovery and keeps the later schedule reshuffled around the steel.",
           "reads": {
             "charitable": "Verifying status and keeping the phased plan moving spends nothing new and keeps every recovery option open.",
             "uncharitable": "'Stay the course' is also the GC declining to spend its own money on schedule protection while the risk rides on others."
@@ -3936,12 +3936,12 @@
             "payoff_delta_by_role": {
               "gc": -40000
             },
-            "public_summary": "The GC proceeds with phased recovery and resequences downstream work around the steel path.",
+            "public_summary": "The GC keeps the phased recovery moving and reshuffles the later schedule around the steel.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Verify supplier status.",
-              "Keep downstream work resequenced.",
+              "Double-check what the supplier says is ready.",
+              "Keep the later schedule reshuffled around the steel delay.",
               "Do not spend on backup."
             ],
             "verified_value_delta_usd": 0
@@ -3953,8 +3953,8 @@
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Challenge status.",
-            "Do not resequence downstream work.",
+            "Push back on the supplier's status report.",
+            "Leave the later schedule as it was.",
             "Accept late completion."
           ],
           "label": "Accept the delay",
@@ -4018,8 +4018,8 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 4,
             "state_changes": [
-              "Challenge status.",
-              "Do not resequence downstream work.",
+              "Push back on the supplier's status report.",
+              "Leave the later schedule as it was.",
               "Accept late completion."
             ],
             "verified_value_delta_usd": 0
@@ -4074,7 +4074,7 @@
           "web_effect": {
             "backup_status": "active",
             "blocker_add": null,
-            "blocker_remove": "Only Lot A ships; Lot B still blocks the full steel sequence.",
+            "blocker_remove": "Only the first batch ships; the second still blocks the finish.",
             "cash_delta_usd": 0,
             "completion_delta_weeks": 2,
             "compliance_risk_delta": 0,
@@ -4107,9 +4107,9 @@
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "schedule",
@@ -4141,12 +4141,12 @@
       "actor_id": "inspector",
       "choices": [
         {
-          "after_choice": "Both lots are released for shipping, so the steel path can finish without installing unreleased material.",
+          "after_choice": "Both lots are approved to ship, so the steel path can finish with no illegal installs.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
             "Clear Lot A.",
-            "Clear Lot B after cure.",
+            "Clear Lot B once it's fixed.",
             "Let the full steel sequence move to site."
           ],
           "label": "Release both steel batches to ship",
@@ -4165,9 +4165,9 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "Both lots are released for shipping, so the steel path can finish without installing unreleased material.",
+          "public_meaning": "Both lots are approved to ship, so the steel path can finish with no illegal installs.",
           "reads": {
-            "charitable": "Clearing both lots on the current record lets the steel sequence finish without anyone installing unreleased material.",
+            "charitable": "Clearing both lots on the current record lets the steel sequence finish without anyone installing unapproved material.",
             "uncharitable": "If the record was borderline, this is the release the schedule wanted, not necessarily the one the file supports."
           },
           "risk_levels": {
@@ -4184,7 +4184,7 @@
           "web_effect": {
             "backup_status": null,
             "blocker_add": null,
-            "blocker_remove": "No steel has been released for the field.",
+            "blocker_remove": "No steel has been approved for the field.",
             "cash_delta_usd": 0,
             "completion_delta_weeks": 0,
             "compliance_risk_delta": -1,
@@ -4203,12 +4203,12 @@
             "payoff_delta_by_role": {
               "inspector": 20000
             },
-            "public_summary": "Both batches are released for shipment, so compliant field work can proceed.",
+            "public_summary": "Both batches are approved to ship, so the steel can be installed legally.",
             "release_value_delta_usd": 1350000,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Clear Lot A.",
-              "Clear Lot B after cure.",
+              "Clear Lot B once it's fixed.",
               "Let the full steel sequence move to site."
             ],
             "verified_value_delta_usd": 0
@@ -4257,7 +4257,7 @@
           "tradeoff": "A hold this late almost certainly ends the schedule.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Final release is blocked; compliant field installation cannot proceed.",
+            "blocker_add": "Final approval is blocked; the steel cannot legally be installed.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 8,
@@ -4277,7 +4277,7 @@
             "payoff_delta_by_role": {
               "inspector": 40000
             },
-            "public_summary": "Final release is held, so the project cannot use the steel for compliant field work.",
+            "public_summary": "Final approval is withheld, so the project cannot legally use the steel.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 5,
             "state_changes": [
@@ -4287,16 +4287,16 @@
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Holding release protects you from certifying steel the file can't support."
+          "why_choose": "Holding approval protects you from signing off on steel the paperwork can't support."
         },
         {
           "after_choice": "Both lots can release after stronger testing, protecting compliance at higher review cost.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Clear both lots only after the added test record.",
+            "Clear both lots only after the extra test.",
             "Accept extra review cost.",
-            "Protect compliance with the cleanest file."
+            "Protect the project with the cleanest possible record."
           ],
           "label": "Release both batches after extra testing",
           "parameter_summary": [
@@ -4352,13 +4352,13 @@
             "payoff_delta_by_role": {
               "inspector": -25000
             },
-            "public_summary": "Both batches can release after extra testing, protecting compliance at added cost and time.",
+            "public_summary": "Both batches can be approved after extra testing, at added cost and time.",
             "release_value_delta_usd": 1350000,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Clear both lots only after the added test record.",
+              "Clear both lots only after the extra test.",
               "Accept extra review cost.",
-              "Protect compliance with the cleanest file."
+              "Protect the project with the cleanest possible record."
             ],
             "verified_value_delta_usd": 0
           },
@@ -4366,9 +4366,9 @@
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "release_value",
@@ -4378,11 +4378,11 @@
       "node_id": "S01_C3_INSPECTOR_FINAL_DISPOSITION",
       "private_stakes": [
         "Final release decides what can legally ship and be installed.",
-        "Approving unreleased or uncured steel can turn schedule success into compliance failure."
+        "Approving steel that isn't truly fixed can turn schedule success into a legal failure."
       ],
       "prompt": "Give final disposition and shipping value.",
       "round": "C",
-      "situation": "You are the inspector. This final release controls what can legally ship and be installed.",
+      "situation": "You are the inspector. This final approval controls what can legally ship and be installed.",
       "terms": [
         {
           "meaning": "Allow movement while requiring follow-up controls.",
@@ -4393,7 +4393,7 @@
           "term": "Hold"
         }
       ],
-      "title": "Make the final release decision"
+      "title": "Make the final steel approval call"
     },
     "S01_C4_OWNER_FINAL_POSITION": {
       "actor_id": "owner",
@@ -4403,7 +4403,7 @@
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Use contingency if needed.",
+            "Tap the project's emergency fund if needed.",
             "Accept one week of delay.",
             "Do not push extra cost to a single party."
           ],
@@ -4425,8 +4425,8 @@
           "project_score_delta": 2,
           "public_meaning": "The owner accepts the recovery cost and keeps the project path viable.",
           "reads": {
-            "charitable": "Accepting the recovery cost from contingency, without dumping it on one firm, is the owner buying the project's completion like an owner should.",
-            "uncharitable": "Contingency is the easiest money on the job to spend \u2014 this may paper over problems the owner's earlier slowness helped create."
+            "charitable": "Accepting the recovery cost from the emergency fund, without dumping it on one firm, is the owner buying the project's completion like an owner should.",
+            "uncharitable": "The emergency fund is the easiest money on the job to spend \u2014 this may paper over problems the owner's earlier slowness helped create."
           },
           "risk_levels": {
             "cost": "medium",
@@ -4465,20 +4465,20 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Use contingency if needed.",
+              "Tap the project's emergency fund if needed.",
               "Accept one week of delay.",
               "Do not push extra cost to a single party."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Contingency exists for exactly this; spending it finishes the project."
+          "why_choose": "The emergency fund exists for exactly this; spending it finishes the project."
         },
         {
           "after_choice": "The owner refuses added cost. The recovery path has less money to solve the remaining problem.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Provide no supplemental funding.",
+            "Put in no extra money.",
             "Do not share recovery cost.",
             "Hold the line on owner exposure."
           ],
@@ -4540,7 +4540,7 @@
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
-              "Provide no supplemental funding.",
+              "Put in no extra money.",
               "Do not share recovery cost.",
               "Hold the line on owner exposure."
             ],
@@ -4549,13 +4549,13 @@
           "why_choose": "Refusing more cost is the last budget line you can actually hold."
         },
         {
-          "after_choice": "The owner authorizes a larger controlled recovery and assigns cost shares.",
+          "after_choice": "The owner authorizes a larger rescue and spells out who pays what.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
             "Accept higher recovery cost.",
-            "Keep delay acceptance limited.",
-            "Allocate cost shares explicitly."
+            "Accept only a little delay.",
+            "Spell out who pays what."
           ],
           "label": "Authorize a larger controlled recovery",
           "parameter_summary": [
@@ -4573,7 +4573,7 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "The owner authorizes a larger controlled recovery and assigns cost shares.",
+          "public_meaning": "The owner authorizes a larger rescue and spells out who pays what.",
           "reads": {
             "charitable": "Authorizing the larger recovery with explicit cost shares is the owner paying up while making the allocation fair and final.",
             "uncharitable": "The 'explicit shares' push real cost onto the GC and supplier under the banner of shared sacrifice."
@@ -4611,13 +4611,13 @@
             "payoff_delta_by_role": {
               "owner": -175000
             },
-            "public_summary": "The owner authorizes a larger controlled recovery and assigns cost shares.",
+            "public_summary": "The owner authorizes a larger rescue and spells out who pays what.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Accept higher recovery cost.",
-              "Keep delay acceptance limited.",
-              "Allocate cost shares explicitly."
+              "Accept only a little delay.",
+              "Spell out who pays what."
             ],
             "verified_value_delta_usd": 0
           },
@@ -4625,9 +4625,9 @@
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "cost_authorization",
@@ -4652,21 +4652,21 @@
           "term": "Cost share"
         }
       ],
-      "title": "Set the owner's final cost and delay position"
+      "title": "Decide how much more cost and delay you'll accept"
     },
     "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
       "actor_id": "lender",
       "choices": [
         {
-          "after_choice": "The lender holds supplemental funds unless verified value truly supports more release.",
+          "after_choice": "The lender holds extra money unless the verified work truly supports paying out more.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
-            "Do not over-release.",
+            "Pay out no more than the work supports.",
             "Keep reserves intact.",
-            "Let verified value drive funding."
+            "Let verified work decide the funding."
           ],
-          "label": "Hold unless final support is needed",
+          "label": "Hold extra funds unless truly needed",
           "parameter_summary": [
             "supplemental_action: HOLD"
           ],
@@ -4679,9 +4679,9 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "The lender holds supplemental funds unless verified value truly supports more release.",
+          "public_meaning": "The lender holds extra money unless the verified work truly supports paying out more.",
           "reads": {
-            "charitable": "Holding supplemental funds unless verified value truly supports them is the loan working as designed at the end of the job.",
+            "charitable": "Holding extra money unless the verified work truly supports it is the loan working as designed at the end of the job.",
             "uncharitable": "The lender's discipline arrives after everyone else has already spent; it risks nothing and calls that prudence."
           },
           "risk_levels": {
@@ -4690,10 +4690,10 @@
             "private_benefit": "low"
           },
           "risk_note": "Preserves the best path if counterparties also cooperate.",
-          "role_action": "Hold unless final support is needed",
+          "role_action": "Hold extra funds unless truly needed",
           "source_fixture": "efficient_phased_coalition_success",
           "stance": "project-first",
-          "summary": "Hold unless final support is needed. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Hold extra funds unless truly needed. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "If the last gap needed your money, the project fails with your reserves intact.",
           "web_effect": {
             "backup_status": null,
@@ -4719,28 +4719,28 @@
             "payoff_delta_by_role": {
               "lender": -20000
             },
-            "public_summary": "The lender holds extra funds unless verified value supports release, protecting project reserves.",
+            "public_summary": "The lender holds extra money unless verified work supports it, protecting the project's reserves.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Do not over-release.",
+              "Pay out no more than the work supports.",
               "Keep reserves intact.",
-              "Let verified value drive funding."
+              "Let verified work decide the funding."
             ],
             "verified_value_delta_usd": 0
           },
           "why_choose": "Holding unless verified value supports release is the loan's cleanest ending."
         },
         {
-          "after_choice": "No supplemental lender support is available.",
+          "after_choice": "No extra loan money is available.",
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Release no supplemental draw.",
-            "Require no exception.",
+            "Release no extra loan money.",
+            "Grant no exceptions.",
             "Push funding risk back to others."
           ],
-          "label": "Hold all supplemental funding",
+          "label": "Refuse any extra loan money",
           "parameter_summary": [
             "supplemental_action: HOLD"
           ],
@@ -4753,9 +4753,9 @@
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
-          "public_meaning": "No supplemental lender support is available.",
+          "public_meaning": "No extra loan money is available.",
           "reads": {
-            "charitable": "A flat no on supplemental support may just be the reserve math \u2014 the loan can't go below its floor for anyone.",
+            "charitable": "A flat no on extra money may just be the reserve math \u2014 the loan can't go below its floor for anyone.",
             "uncharitable": "The lender closed the last funding door and let the final gap become everyone else's loss."
           },
           "risk_levels": {
@@ -4764,14 +4764,14 @@
             "private_benefit": "high"
           },
           "risk_note": "Attractive locally, but it can strand the critical path.",
-          "role_action": "Hold all supplemental funding",
+          "role_action": "Refuse any extra loan money",
           "source_fixture": "coordination_failure",
           "stance": "self-protective",
-          "summary": "Hold all supplemental funding. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Refuse any extra loan money. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "You may be the reason the final gap never closes.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Loan funds are not available for the steel draw.",
+            "blocker_add": "Loan money is not available for the steel payment.",
             "blocker_remove": null,
             "cash_delta_usd": -300000,
             "completion_delta_weeks": 3,
@@ -4793,28 +4793,28 @@
             "payoff_delta_by_role": {
               "lender": 60000
             },
-            "public_summary": "No supplemental loan support is available, so the project must rely on owner, GC, or supplier funds.",
+            "public_summary": "No extra loan money is available, so the project must rely on owner, GC, or supplier funds.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 3,
             "state_changes": [
-              "Release no supplemental draw.",
-              "Require no exception.",
+              "Release no extra loan money.",
+              "Grant no exceptions.",
               "Push funding risk back to others."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "No supplemental support means no new exposure in the riskiest week of the job."
+          "why_choose": "No extra loan money means no new exposure in the riskiest week of the job."
         },
         {
-          "after_choice": "Any further lending support requires more owner equity and reserve protection.",
+          "after_choice": "Any more loan money requires the owner to put in more cash first.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
-            "Require owner equity.",
+            "Require the owner to put in cash.",
             "Preserve reserves.",
-            "Use conditions for any support."
+            "Attach conditions to any support."
           ],
-          "label": "Require equity before more lender funds",
+          "label": "Owner pays in first, then the bank follows",
           "parameter_summary": [
             "supplemental_action: HOLD"
           ],
@@ -4827,10 +4827,10 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "Any further lending support requires more owner equity and reserve protection.",
+          "public_meaning": "Any more loan money requires the owner to put in more cash first.",
           "reads": {
-            "charitable": "Requiring equity before more lender money keeps the loan balanced \u2014 the owner tops up first, then the bank follows.",
-            "uncharitable": "The equity condition is a toll booth: the lender converts the project's emergency into leverage over the owner."
+            "charitable": "Requiring the owner's cash before more lender money keeps the loan balanced \u2014 the owner tops up first, then the bank follows.",
+            "uncharitable": "The owner-cash condition is a toll booth: the lender converts the project's emergency into leverage over the owner."
           },
           "risk_levels": {
             "cost": "medium",
@@ -4838,10 +4838,10 @@
             "private_benefit": "medium"
           },
           "risk_note": "Defensible controls, with higher delay and coordination risk.",
-          "role_action": "Require equity before more lender funds",
+          "role_action": "Owner pays in first, then the bank follows",
           "source_fixture": "conservative_project_success",
           "stance": "controls-heavy",
-          "summary": "Require equity before more lender funds. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
+          "summary": "Owner pays in first, then the bank follows. This decision mainly affects cash timing, financial risk, steel shipment clearance.",
           "tradeoff": "The equity negotiation takes time the final push doesn't have.",
           "web_effect": {
             "backup_status": null,
@@ -4867,23 +4867,23 @@
             "payoff_delta_by_role": {
               "lender": 20000
             },
-            "public_summary": "Further lender support requires more owner equity and reserve protection.",
+            "public_summary": "More loan money requires the owner to put in more cash first.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
-              "Require owner equity.",
+              "Require the owner to put in cash.",
               "Preserve reserves.",
-              "Use conditions for any support."
+              "Attach conditions to any support."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Equity-first keeps the loan balanced if more money must move."
+          "why_choose": "Owner-cash-first keeps the loan balanced if more money must move."
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "cash_timing",
@@ -4897,7 +4897,7 @@
       ],
       "prompt": "Set supplemental draw, reserve, equity, or hold position.",
       "round": "C",
-      "situation": "You are the lender. After final release information, you decide whether more loan support is allowed.",
+      "situation": "You are the lender. After the final inspection news, you decide whether more loan money is allowed.",
       "terms": [
         {
           "meaning": "Extra loan money beyond the initial release.",
@@ -4908,19 +4908,19 @@
           "term": "Reserve exception"
         }
       ],
-      "title": "Decide whether any supplemental lending support is available"
+      "title": "Decide if any extra loan money is available"
     },
     "S01_C6_ERECTOR_MOBILIZATION": {
       "actor_id": "labor_subcontractor",
       "choices": [
         {
-          "after_choice": "The crew mobilizes for a phased start and avoids installing unreleased steel.",
+          "after_choice": "The crew arrives for a phased start and avoids installing unapproved steel.",
           "choice_id": "balanced",
           "disclosure": null,
           "display_bullets": [
             "Start in week 15.",
             "Use half crew and crane capacity.",
-            "Avoid installing unreleased steel."
+            "Don't install steel the inspector hasn't approved."
           ],
           "label": "Start with a phased crew and crane",
           "parameter_summary": [
@@ -4939,7 +4939,7 @@
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
-          "public_meaning": "The crew mobilizes for a phased start and avoids installing unreleased steel.",
+          "public_meaning": "The crew arrives for a phased start and avoids installing unapproved steel.",
           "reads": {
             "charitable": "A phased start with half capacity installs what's actually released and wastes nothing \u2014 the right-size answer.",
             "uncharitable": "Half capacity also halves their exposure; if anything upstream slips again, they're positioned to leave cheaply."
@@ -4979,13 +4979,13 @@
             "payoff_delta_by_role": {
               "labor_subcontractor": 40000
             },
-            "public_summary": "The crew mobilizes for a phased start and avoids using unreleased steel.",
+            "public_summary": "The crew arrives for a phased start and avoids steel the inspector hasn't approved.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Start in week 15.",
               "Use half crew and crane capacity.",
-              "Avoid installing unreleased steel."
+              "Don't install steel the inspector hasn't approved."
             ],
             "verified_value_delta_usd": 0
           },
@@ -4996,11 +4996,11 @@
           "choice_id": "self_protective",
           "disclosure": null,
           "display_bullets": [
-            "Release current capacity.",
-            "Return only after week 23.",
+            "Let the crew go now.",
+            "Come back after week 23 at the earliest.",
             "Avoid standby cost now."
           ],
-          "label": "Release and remobilize later",
+          "label": "Let the crew go and return later",
           "parameter_summary": [
             "mobilization_action: RELEASE",
             "mobilization_tick: 23",
@@ -5018,7 +5018,7 @@
           "project_score_delta": -2,
           "public_meaning": "The crew releases and returns later.",
           "reads": {
-            "charitable": "Releasing now and remobilizing later may be the only economic answer if the package never funded their standby.",
+            "charitable": "Leaving now and returning later may be the only economic answer if the package never funded their standby.",
             "uncharitable": "The final walk-away all but guarantees the window is missed \u2014 the last firm out turns off the lights on the schedule."
           },
           "risk_levels": {
@@ -5027,14 +5027,14 @@
             "private_benefit": "high"
           },
           "risk_note": "Attractive locally, but it can strand the critical path.",
-          "role_action": "Release and remobilize later",
+          "role_action": "Let the crew go and return later",
           "source_fixture": "coordination_failure",
           "stance": "self-protective",
-          "summary": "Release and remobilize later. This decision mainly affects schedule, crew/crane capacity, private economics.",
+          "summary": "Let the crew go and return later. This decision mainly affects schedule, crew/crane capacity, private economics.",
           "tradeoff": "Your remobilization time is likely the final blow to the schedule.",
           "web_effect": {
             "backup_status": null,
-            "blocker_add": "Crew and crane capacity have been released to other work.",
+            "blocker_add": "The crew and crane have gone to other work.",
             "blocker_remove": null,
             "cash_delta_usd": 0,
             "completion_delta_weeks": 6,
@@ -5057,12 +5057,12 @@
             "payoff_delta_by_role": {
               "labor_subcontractor": 160000
             },
-            "public_summary": "The crew releases and returns later, likely missing the schedule window.",
+            "public_summary": "The crew leaves and returns later, likely missing the schedule window.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 4,
             "state_changes": [
-              "Release current capacity.",
-              "Return only after week 23.",
+              "Let the crew go now.",
+              "Come back after week 23 at the earliest.",
               "Avoid standby cost now."
             ],
             "verified_value_delta_usd": 0
@@ -5070,13 +5070,13 @@
           "why_choose": "Releasing now ends your exposure to a project that kept you waiting."
         },
         {
-          "after_choice": "Full crew and crane capacity mobilize, protecting installation if release is complete.",
+          "after_choice": "The full crew and crane arrive, protecting installation if the approvals are complete.",
           "choice_id": "conservative",
           "disclosure": null,
           "display_bullets": [
             "Use full capacity.",
-            "Start after controls are clearer.",
-            "Spend more to preserve sequence."
+            "Start once the checks are clearer.",
+            "Spend more to keep the full plan alive."
           ],
           "label": "Start with the full crew and crane",
           "parameter_summary": [
@@ -5095,9 +5095,9 @@
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
-          "public_meaning": "Full crew and crane capacity mobilize, protecting installation if release is complete.",
+          "public_meaning": "The full crew and crane arrive, protecting installation if the approvals are complete.",
           "reads": {
-            "charitable": "Full mobilization protects the installation if release lands \u2014 the most schedule the project can still buy.",
+            "charitable": "The full crew protects the installation if the approvals land \u2014 the most schedule the project can still buy.",
             "uncharitable": "A full crew on site before everything is released risks paying maximum labor to stand next to steel they can't legally install."
           },
           "risk_levels": {
@@ -5135,23 +5135,23 @@
             "payoff_delta_by_role": {
               "labor_subcontractor": 100000
             },
-            "public_summary": "Full crew and crane capacity mobilizes, protecting installation if release is complete.",
+            "public_summary": "The full crew and crane arrive, protecting installation if the approvals are complete.",
             "release_value_delta_usd": 0,
             "schedule_risk_delta": 0,
             "state_changes": [
               "Use full capacity.",
-              "Start after controls are clearer.",
-              "Spend more to preserve sequence."
+              "Start once the checks are clearer.",
+              "Spend more to keep the full plan alive."
             ],
             "verified_value_delta_usd": 0
           },
-          "why_choose": "Full mobilization finishes the sequence fastest if release is complete."
+          "why_choose": "The full crew finishes the job fastest if the approvals are complete."
         }
       ],
       "critical_updates": [
-        "Final round: shipment, release, funding, and field mobilization.",
-        "The project can finish if released steel and labor capacity line up.",
-        "Late Lot B, blocked release, or no crew can still fail the job."
+        "Final round: steel ships or doesn't, inspections pass or don't, money moves or doesn't, and the crew shows up or walks.",
+        "The project can still finish if approved steel and a ready crew arrive at the same time.",
+        "A late second batch, blocked approvals, or no crew can still fail the job."
       ],
       "impact_tags": [
         "schedule",
@@ -5161,7 +5161,7 @@
       ],
       "node_id": "S01_C6_ERECTOR_MOBILIZATION",
       "private_stakes": [
-        "Mobilizing without usable released steel wastes capacity.",
+        "Showing up before any steel is approved wastes the crew.",
         "Waiting protects your crew but may make the project too late."
       ],
       "prompt": "Choose mobilization mode, capacity, overtime, or release.",
@@ -5177,7 +5177,7 @@
           "term": "Unreleased steel"
         }
       ],
-      "title": "Mobilize the crew and crane"
+      "title": "Decide when the crew shows up"
     }
   },
   "initial_game_state": {
@@ -5186,7 +5186,7 @@
     "baseline_cost_usd": 95000000,
     "blockers": [
       "Off-site payment is unresolved.",
-      "Lot B has a known cure issue.",
+      "Lot B has a known defect.",
       "Labor capacity is not yet committed."
     ],
     "cash_secured_usd": 0,
@@ -5558,7 +5558,7 @@
       "playable": false,
       "private_dashboard": {
         "highlights": [
-          "Draw eligibility depends on verified stored value and reserves.",
+          "Loan payouts depend on verified steel value and protected reserves.",
           "Over-release creates downside if the project fails."
         ],
         "starting_private_facts": {
@@ -5691,7 +5691,7 @@
       "playable": true,
       "private_dashboard": {
         "highlights": [
-          "Cash is short relative to full-sequence cure cost.",
+          "Cash is short of what the full fix costs.",
           "Outside work protects margin but can delay Lot B."
         ],
         "starting_private_facts": {
@@ -5726,7 +5726,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "03a6135ed1520b0eb9fe55c5d6be38a98f36d7c5cca8c8725ab5dcca0f06ee37",
+    "content_hash": "061cbf896282863166e1c484512a4de1d683323ebdc7c4ff96b596145b381871",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",

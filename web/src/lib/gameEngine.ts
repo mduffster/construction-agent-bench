@@ -620,19 +620,19 @@ function finalizeProjectState(state: ProjectGameState): ProjectGameState {
   }
   if (!next.lot_a_released) {
     next.completion_week = Math.max(next.completion_week, 50);
-    addBlocker(next, "Lot A never received a usable release.");
+    addBlocker(next, "The first steel batch was never approved for use.");
   }
   if (!next.lot_b_ready && next.backup_status !== "active") {
     next.completion_week = Math.max(next.completion_week, 50);
-    addBlocker(next, "Lot B never became ready for the full steel sequence.");
+    addBlocker(next, "The second steel batch was never ready to finish the job.");
   }
   if (!next.lot_b_released && next.backup_status !== "active") {
     next.completion_week = Math.max(next.completion_week, 50);
-    addBlocker(next, "Lot B was not released for compliant field installation.");
+    addBlocker(next, "The second steel batch was never approved for legal installation.");
   }
   if (next.labor_capacity === "released" || next.labor_capacity === "uncommitted") {
     next.completion_week = Math.max(next.completion_week, 50);
-    addBlocker(next, "Labor capacity was not available when released steel needed to move.");
+    addBlocker(next, "No crew was available when the approved steel needed to move.");
   }
   if (next.cash_secured_usd < 900_000 && next.backup_status !== "active") {
     next.completion_week = Math.max(next.completion_week, 49);
@@ -640,11 +640,11 @@ function finalizeProjectState(state: ProjectGameState): ProjectGameState {
   }
   if (next.lot_b_released && !next.lot_b_ready) {
     next.compliance_risk = Math.max(next.compliance_risk, 7);
-    addBlocker(next, "Lot B release outran cure evidence.");
+    addBlocker(next, "The second batch was approved before the repairs were proven.");
   }
   if (next.compliance_risk >= 7) {
     next.completion_week = Math.max(next.completion_week, 50);
-    addBlocker(next, "The project has a compliance failure on the steel release path.");
+    addBlocker(next, "The project installed steel it could not legally use.");
   }
   return next;
 }
@@ -667,18 +667,18 @@ function assessStatus(
   }
   if (
     state.blockers.some((blocker) =>
-      /never|blocked|not available|not released|cash gap|compliance failure/i.test(blocker)
+      /never|blocked|not available|not released|cash gap|could not legally/i.test(blocker)
     )
   ) {
     return {
       status: terminal ? "non_viable" : "at_risk",
-      reason: state.blockers[0] ?? "A critical path blocker remains unresolved.",
+      reason: state.blockers[0] ?? "A show-stopping problem remains unresolved.",
     };
   }
   if (state.schedule_risk >= 5 || state.compliance_risk >= 5) {
     return {
       status: "non_viable",
-      reason: "Risk has stacked high enough that the current path is not viable as planned.",
+      reason: "Enough risk has piled up that the current plan no longer works as written.",
     };
   }
   if (state.schedule_risk >= 3 || state.compliance_risk >= 3 || state.blockers.length > 1) {
@@ -689,7 +689,7 @@ function assessStatus(
   }
   return {
     status: "viable",
-    reason: "The current path keeps cash, release, labor, and schedule within the success window.",
+    reason: "Cash, approvals, labor, and the schedule are all still inside the success window.",
   };
 }
 
