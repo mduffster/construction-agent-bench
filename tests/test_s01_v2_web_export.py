@@ -118,6 +118,26 @@ def test_s01_v2_web_export_covers_playable_roles_and_three_decisions() -> None:
             assert choice["risk_levels"]["delay"] in {"low", "medium", "high"}
             assert choice["web_effect"]["state_changes"]
             assert choice["web_effect"]["public_summary"]
+            assert choice["reads"]["charitable"]
+            assert choice["reads"]["uncharitable"]
+            assert choice["reads"]["charitable"] != choice["reads"]["uncharitable"]
+    # Narrative copy must be decision-specific: the same archetype at a role's
+    # different nodes may not reuse text, or players see identical language
+    # every round.
+    for field in ("why_choose", "tradeoff"):
+        values = [
+            choice[field]
+            for node in payload["decision_nodes"].values()
+            for choice in node["choices"]
+        ]
+        assert len(values) == len(set(values)), f"duplicated {field} copy across nodes"
+    read_values = [
+        choice["reads"][side]
+        for node in payload["decision_nodes"].values()
+        for choice in node["choices"]
+        for side in ("charitable", "uncharitable")
+    ]
+    assert len(read_values) == len(set(read_values)), "duplicated partner-read copy"
 
 
 def test_s01_v2_web_export_has_initial_state_and_comparisons() -> None:

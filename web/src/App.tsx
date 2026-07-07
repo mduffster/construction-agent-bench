@@ -1608,7 +1608,17 @@ function hasStoryFlag(state: ProjectGameState, flag: string) {
   return state.story_flags.includes(flag);
 }
 
-function partnerDecisionReads(move: { actorId: AgentId; choiceId: ChoiceId }) {
+function partnerDecisionReads(move: {
+  nodeId: string;
+  actorId: AgentId;
+  choiceId: ChoiceId;
+}) {
+  const choice = gameData.decision_nodes[move.nodeId]?.choices.find(
+    (candidate) => candidate.choice_id === move.choiceId
+  );
+  if (choice?.reads) {
+    return choice.reads;
+  }
   const actor = roleLabel(move.actorId).toLowerCase();
   return {
     balanced: {

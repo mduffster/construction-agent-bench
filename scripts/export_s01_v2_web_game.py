@@ -144,7 +144,7 @@ NODE_CONTEXT = {
     },
     "S01_A3_OWNER_PROVISIONAL_POSITION": {
         "title": "Set the owner's provisional funding position",
-        "situation": "You are the owner. You can help fund the recovery, but extra money and delay reduce your private value.",
+        "situation": "You are the owner. You can help fund the recovery, but every extra dollar and week comes out of your own budget and return.",
         "terms": [
             {"term": "Owner funding", "meaning": "Project money the owner can put in immediately to keep the steel path moving."},
             {"term": "Controls", "meaning": "Conditions like title, inspection, and escrow that reduce payment risk."},
@@ -364,6 +364,265 @@ NODE_RESULT_COPY = {
         "balanced": "The crew mobilizes for a phased start and avoids installing unreleased steel.",
         "self_protective": "The crew releases and returns later. The project likely loses the schedule window.",
         "conservative": "Full crew and crane capacity mobilize, protecting installation if release is complete.",
+    },
+}
+
+# Charitable/uncharitable interpretations of each decision, shown to OTHER
+# players on the partner-review card. Written per node so the same archetype
+# reads differently at different moments: the owner refusing cash in round A
+# is a different act than the owner refusing cost shares in round C.
+PARTNER_READ_COPY = {
+    "S01_A1_SUPPLIER_APPLICATION": {
+        "balanced": {
+            "charitable": "The supplier asked for less than it could have and volunteered its own problems — that looks like someone trying to keep the project's trust.",
+            "uncharitable": "Admitting the Lot B problem early could be cover for the ask itself: a smaller number with a sympathy story is still project money before steel is on site.",
+        },
+        "self_protective": {
+            "charitable": "The supplier may genuinely need the full $1.8M to fix Lot B and keep both deliveries alive — cash now might be the fastest path to steel on site.",
+            "uncharitable": "It asked for maximum money with minimum proof and said nothing about the problems it knows about. Paying now means funding a picture it shaped.",
+        },
+        "conservative": {
+            "charitable": "Asking for nothing and showing every document is the strongest good-faith signal available — the supplier is betting its own cash on the project.",
+            "uncharitable": "A $0 ask can also mean the supplier hasn't committed to funding the Lot B fix at all, and the schedule will quietly absorb that later.",
+        },
+    },
+    "S01_A2_GC_INITIAL_REVIEW": {
+        "balanced": {
+            "charitable": "The GC certified only what it could verify and routed the records to everyone — that keeps the money honest and the first delivery possible.",
+            "uncharitable": "Certifying the safe minimum also protects the GC's own liability first; the supplier's cash problem stays unsolved and the GC risked nothing.",
+        },
+        "self_protective": {
+            "charitable": "Certifying the full request fast is the quickest way to get the supplier funded and the steel moving — speed has real value here.",
+            "uncharitable": "The GC pushed the owner's and lender's money at an unverified claim and skipped the backup, keeping its own costs low while others carry the risk.",
+        },
+        "conservative": {
+            "charitable": "Full review plus reserved backup steel protects the project if the supplier fails — insurance somebody had to buy.",
+            "uncharitable": "The GC may be building a paper trail to shift blame and cost onto the supplier, slowing the job while billing the protection to the project.",
+        },
+    },
+    "S01_A3_OWNER_PROVISIONAL_POSITION": {
+        "balanced": {
+            "charitable": "The owner put real, if limited, money on the table early — $250K plus equity is a genuine attempt to keep the steel moving.",
+            "uncharitable": "A small, conditional offer lets the owner look supportive while committing almost nothing; the conditions may never actually be met.",
+        },
+        "self_protective": {
+            "charitable": "Refusing new money is the owner holding the original deal — the supplier's cash problem was never the owner's to fund.",
+            "uncharitable": "The owner is protecting its budget and betting someone else blinks first; if the project slips, it will blame the firms that 'failed to perform.'",
+        },
+        "conservative": {
+            "charitable": "The owner kept funding open but demanded controls — money moves once title and inspection are real, which protects everyone's money, not just theirs.",
+            "uncharitable": "'Support with controls' can be a polite no: every extra condition is another week, and the owner pays nothing while the clock runs.",
+        },
+    },
+    "S01_A3_INSPECTOR_REVIEW_PLAN": {
+        "balanced": {
+            "charitable": "Reviewing Lot A now and sampling Lot B surfaces the known problem early while keeping the first shipment possible — the review the schedule needs.",
+            "uncharitable": "Sampling instead of fully inspecting Lot B lets the inspector look diligent while pushing the hard call to later.",
+        },
+        "self_protective": {
+            "charitable": "Refusing to clear anything on today's evidence may simply be honest — the paperwork isn't there yet.",
+            "uncharitable": "A documents-only review clears nothing and costs the inspector nothing; the burden lands entirely on everyone else's schedule.",
+        },
+        "conservative": {
+            "charitable": "Inspecting both lots up front builds the strongest possible release record — nothing has to ship twice.",
+            "uncharitable": "The fullest review is also the slowest and most billable one, and the inspector doesn't pay for the wait.",
+        },
+    },
+    "S01_A3_ERECTOR_CAPACITY_OFFER": {
+        "balanced": {
+            "charitable": "Holding half the crew keeps a phased start alive at a fair standby price — a real commitment when the steel isn't even released yet.",
+            "uncharitable": "A split hold hedges their bets: standby money from this project, outside work with the other half of the crew.",
+        },
+        "self_protective": {
+            "charitable": "With no released steel and no funded package, sending the crew to paying work is just rational — they can't eat standby risk on a maybe.",
+            "uncharitable": "They walked off the window the project reserved; if steel clears next week, everyone waits on their remobilization.",
+        },
+        "conservative": {
+            "charitable": "Holding the full crew guarantees capacity the moment steel releases — the strongest schedule protection anyone offered today.",
+            "uncharitable": "Full standby at full price is a great deal for them: paid to wait either way, whether or not steel ever moves.",
+        },
+    },
+    "S01_A4_LENDER_PROVISIONAL_POSITION": {
+        "balanced": {
+            "charitable": "A capped draw against verified value, with owner equity required, is the lender genuinely trying to make the loan work for off-site steel.",
+            "uncharitable": "The cap and the equity requirement push the first loss to the owner and supplier; the lender risks little and calls it support.",
+        },
+        "self_protective": {
+            "charitable": "Declaring the draw ineligible may be the honest reading of the loan agreement — off-site steel with title gaps is exactly what draw rules exclude.",
+            "uncharitable": "An early 'no' is the cheapest move available: no exposure, no work, and the cash problem becomes everyone else's.",
+        },
+        "conservative": {
+            "charitable": "Escrow moves money while protecting it — the funds are real but can't vanish into the supplier's other obligations.",
+            "uncharitable": "Escrow lets the lender claim it funded the fix while the supplier still can't touch the cash it actually needs.",
+        },
+    },
+    "S01_B1_SUPPLIER_COMMITMENT": {
+        "balanced": {
+            "charitable": "Committing its own cash alongside the support request, with dated targets for both lots, is the supplier putting skin in the game.",
+            "uncharitable": "The commitment leans on everyone else's money arriving on time; if the support slips, those delivery dates were never real.",
+        },
+        "self_protective": {
+            "charitable": "Taking outside work keeps the supplier solvent — a dead supplier delivers no steel at all.",
+            "uncharitable": "They're feeding other customers with the capacity this project is waiting on, and a late Lot B is the quiet price.",
+        },
+        "conservative": {
+            "charitable": "Borrowing at its own cost to finish the full fix is the supplier absorbing pain to keep its promise.",
+            "uncharitable": "More debt makes the supplier more fragile — if anything else goes wrong, that financing becomes the project's problem too.",
+        },
+    },
+    "S01_B2_GC_INTEGRATED_PACKAGE": {
+        "balanced": {
+            "charitable": "The GC put its own short-term money in and stitched every party's position into one executable plan — the coordination job done right.",
+            "uncharitable": "The GC's $100K is small next to what it asks the owner and lender to carry, and the package paperwork also protects the GC first.",
+        },
+        "self_protective": {
+            "charitable": "Rejecting a package built on an unproven supplier may be discipline, not obstruction — good money after bad steel helps no one.",
+            "uncharitable": "The GC killed the only near-term recovery path because delay costs the GC less than carrying risk does.",
+        },
+        "conservative": {
+            "charitable": "Keeping backup steel alive inside the package means the project survives even if the supplier fails — belt and suspenders.",
+            "uncharitable": "Every added control is cost and time other firms pay, and the backup line mostly protects the GC's completion promise.",
+        },
+    },
+    "S01_B3_INSPECTOR_DISPOSITION": {
+        "balanced": {
+            "charitable": "Releasing Lot A while holding Lot B until cure is exactly what the evidence supports — movement where it's safe, a hold where it isn't.",
+            "uncharitable": "The split decision keeps the inspector covered both ways: point at the release if the schedule holds, at the hold if it doesn't.",
+        },
+        "self_protective": {
+            "charitable": "Blocking both lots may reflect what the file actually shows — a release the record can't support becomes a compliance failure later.",
+            "uncharitable": "A full block is the zero-risk move for the inspector, and the entire cost of it lands on the field schedule.",
+        },
+        "conservative": {
+            "charitable": "One more inspection step before release trades a week for a bulletproof record — cheap insurance on a multi-million-dollar package.",
+            "uncharitable": "'Deeper review' is unbounded: always defensible, always billable, and never the inspector's delay.",
+        },
+    },
+    "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+        "balanced": {
+            "charitable": "A binding split commitment tied to Lot A release is real capacity promised at real risk, with modest overtime if needed.",
+            "uncharitable": "The conditions do the work: if anything upstream slips, the commitment quietly evaporates and they've lost nothing.",
+        },
+        "self_protective": {
+            "charitable": "Walking away from an unfunded package is self-preservation — a crew can't stand by on promises.",
+            "uncharitable": "They took the outside work and left the project to remobilize later at whatever price the schedule then demands.",
+        },
+        "conservative": {
+            "charitable": "Full committed capacity with standby pay is the strongest field guarantee anywhere in the package.",
+            "uncharitable": "They priced their leverage at the top: the project pays full standby whether or not the steel ever arrives.",
+        },
+    },
+    "S01_B4_OWNER_PACKAGE_DECISION": {
+        "balanced": {
+            "charitable": "The owner funded the package — $200K, equity, and standby support — real money to keep the phased plan alive.",
+            "uncharitable": "The owner is buying schedule with the smallest check that plausibly works, and the delay terms mostly protect the owner's opening date.",
+        },
+        "self_protective": {
+            "charitable": "Rejecting the package holds the original bargain — the owner already paid for this steel once and shouldn't pay twice for the supplier's problem.",
+            "uncharitable": "The owner defunded the recovery to protect its budget; when the schedule slips, every other firm eats a share of the miss.",
+        },
+        "conservative": {
+            "charitable": "Funding under full controls is generous and careful at once — more money than the balanced offer, but only into a package that can't leak.",
+            "uncharitable": "Controls make the money slow, and slow money may be worthless; the owner gets credit for 'yes' while the calendar does the refusing.",
+        },
+    },
+    "S01_B5_LENDER_RELEASE_DECISION": {
+        "balanced": {
+            "charitable": "Releasing $760K against verified value, with owner equity in place, is the construction loan doing exactly what it exists to do.",
+            "uncharitable": "The lender waited until every other firm had already de-risked the draw, then took credit for supporting it.",
+        },
+        "self_protective": {
+            "charitable": "Holding the draw may be the loan agreement talking, not the lender — unverified off-site steel is a classic ineligible cost.",
+            "uncharitable": "No release, no escrow, no counterproposal: the lender protected its collateral and left the cash gap to sink the schedule.",
+        },
+        "conservative": {
+            "charitable": "An escrow release moves real money while keeping it recoverable — protection for everyone whose name is on the project.",
+            "uncharitable": "Escrowed cash doesn't cure steel; the lender says yes on paper while the supplier still can't pay the shop.",
+        },
+    },
+    "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+        "balanced": {
+            "charitable": "Reporting both lots ready and shipping on plan is the supplier delivering exactly what it promised.",
+            "uncharitable": "'Both ready' is a claim, not a fact — if Lot B's cure is thinner than reported, the problem arrives on a truck.",
+        },
+        "self_protective": {
+            "charitable": "Shipping only Lot A and admitting Lot B isn't ready is honest status even though it's bad news — a truthful partial beats a hopeful lie.",
+            "uncharitable": "The late Lot B traces back through every earlier choice the supplier made to protect its own cash and margin.",
+        },
+        "conservative": {
+            "charitable": "Taking extra cleanup time before shipping both lots protects the installation from a compliance failure later.",
+            "uncharitable": "The cleaner story costs the schedule real days, and the supplier bills the polish to everyone's calendar.",
+        },
+    },
+    "S01_C2_GC_RECOVERY_PLAN": {
+        "balanced": {
+            "charitable": "Verifying status and keeping the phased plan moving spends nothing new and keeps every recovery option open.",
+            "uncharitable": "'Stay the course' is also the GC declining to spend its own money on schedule protection while the risk rides on others.",
+        },
+        "self_protective": {
+            "charitable": "Accepting the delay avoids throwing new money at a problem that may still resolve — a defensible, conservative bet.",
+            "uncharitable": "The GC just conceded the schedule; the late-completion cost sprays across every firm while the GC saves its recovery budget.",
+        },
+        "conservative": {
+            "charitable": "Activating backup steel is expensive, but it converts an uncertain supplier into a certain schedule — sometimes that's worth millions.",
+            "uncharitable": "The backup spend torches the budget to protect the GC's completion record, and other firms fund a decision they didn't make.",
+        },
+    },
+    "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+        "balanced": {
+            "charitable": "Clearing both lots on the current record lets the steel sequence finish without anyone installing unreleased material.",
+            "uncharitable": "If the record was borderline, this is the release the schedule wanted, not necessarily the one the file supports.",
+        },
+        "self_protective": {
+            "charitable": "Holding final release on this evidence may be the only defensible call — a release the inspector can't stand behind helps no one.",
+            "uncharitable": "A final hold this late is maximum damage at zero inspector cost; there is no later date left to be wrong at.",
+        },
+        "conservative": {
+            "charitable": "Extra testing before final release buys certainty exactly when a mistake would be most expensive.",
+            "uncharitable": "A last-minute test requirement bills more review into the most schedule-critical window of the whole job.",
+        },
+    },
+    "S01_C4_OWNER_FINAL_POSITION": {
+        "balanced": {
+            "charitable": "Accepting the recovery cost from contingency, without dumping it on one firm, is the owner buying the project's completion like an owner should.",
+            "uncharitable": "Contingency is the easiest money on the job to spend — this may paper over problems the owner's earlier slowness helped create.",
+        },
+        "self_protective": {
+            "charitable": "Refusing more cost holds the line — the owner already funded one recovery and can't be the bottomless wallet.",
+            "uncharitable": "The owner starved the fix at the exact moment money mattered most, protecting its budget while the schedule burns.",
+        },
+        "conservative": {
+            "charitable": "Authorizing the larger recovery with explicit cost shares is the owner paying up while making the allocation fair and final.",
+            "uncharitable": "The 'explicit shares' push real cost onto the GC and supplier under the banner of shared sacrifice.",
+        },
+    },
+    "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
+        "balanced": {
+            "charitable": "Holding supplemental funds unless verified value truly supports them is the loan working as designed at the end of the job.",
+            "uncharitable": "The lender's discipline arrives after everyone else has already spent; it risks nothing and calls that prudence.",
+        },
+        "self_protective": {
+            "charitable": "A flat no on supplemental support may just be the reserve math — the loan can't go below its floor for anyone.",
+            "uncharitable": "The lender closed the last funding door and let the final gap become everyone else's loss.",
+        },
+        "conservative": {
+            "charitable": "Requiring equity before more lender money keeps the loan balanced — the owner tops up first, then the bank follows.",
+            "uncharitable": "The equity condition is a toll booth: the lender converts the project's emergency into leverage over the owner.",
+        },
+    },
+    "S01_C6_ERECTOR_MOBILIZATION": {
+        "balanced": {
+            "charitable": "A phased start with half capacity installs what's actually released and wastes nothing — the right-size answer.",
+            "uncharitable": "Half capacity also halves their exposure; if anything upstream slips again, they're positioned to leave cheaply.",
+        },
+        "self_protective": {
+            "charitable": "Releasing now and remobilizing later may be the only economic answer if the package never funded their standby.",
+            "uncharitable": "The final walk-away all but guarantees the window is missed — the last firm out turns off the lights on the schedule.",
+        },
+        "conservative": {
+            "charitable": "Full mobilization protects the installation if release lands — the most schedule the project can still buy.",
+            "uncharitable": "A full crew on site before everything is released risks paying maximum labor to stand next to steel they can't legally install.",
+        },
     },
 }
 
@@ -1069,12 +1328,13 @@ def _choice_for(
         "display_bullets": bullets,
         "after_choice": NODE_RESULT_COPY[node_id][choice_id],
         "public_meaning": _first_sentence(NODE_RESULT_COPY[node_id][choice_id]),
-        "why_choose": _choice_tradeoff(actor_id, choice_id)["why"],
-        "tradeoff": _choice_tradeoff(actor_id, choice_id)["risk"],
+        "why_choose": _choice_tradeoff(node_id, actor_id, choice_id)["why"],
+        "tradeoff": _choice_tradeoff(node_id, actor_id, choice_id)["risk"],
         "risk_levels": _risk_levels_for(choice_id, parameters, web_effect),
         "parameter_summary": _parameter_summary(parameters),
         "web_effect": web_effect,
         "disclosure": _disclosure_for(node_id, choice_id),
+        "reads": deepcopy(PARTNER_READ_COPY[node_id][choice_id]),
     }
 
 
@@ -1327,7 +1587,269 @@ def _private_stakes_for(node_id: str, actor_id: str) -> list[str]:
     return stakes
 
 
-def _choice_tradeoff(actor_id: str, choice_id: str) -> dict[str, str]:
+# Per-node "why choose this / what it costs you" lines for the player's own
+# choice cards. Keyed by node so the same archetype reads differently at each
+# of a role's three decisions instead of repeating one role-level sentence.
+NODE_TRADEOFF_COPY = {
+    "S01_A1_SUPPLIER_APPLICATION": {
+        "balanced": {
+            "why": "A credible ask with full disclosure is the version of early cash the team can actually approve.",
+            "risk": "You get less money than you need, and your problems are now on the record.",
+        },
+        "self_protective": {
+            "why": "The full $1.8M would cover the Lot B fix and your cash squeeze in one stroke.",
+            "risk": "If verification catches the gaps, you lose the payment and the team's trust at once.",
+        },
+        "conservative": {
+            "why": "A $0 ask with a complete file makes you the most trustworthy party on the project.",
+            "risk": "Your cash problem stays unsolved, and nobody is obligated to help you fix Lot B.",
+        },
+    },
+    "S01_A2_GC_INITIAL_REVIEW": {
+        "balanced": {
+            "why": "Certifying the verified $950K keeps money and steel moving without vouching for what you can't see.",
+            "risk": "The supplier's cash gap stays open, and you may be back here in two weeks.",
+        },
+        "self_protective": {
+            "why": "Full certification is fastest, and skipping backup saves real money if the supplier delivers.",
+            "risk": "You vouched for an unverified claim with no fallback — a supplier slip becomes your problem.",
+        },
+        "conservative": {
+            "why": "Full review plus reserved backup means no single failure can sink your schedule.",
+            "risk": "You pay for the reservation and the slower review even if the supplier was always fine.",
+        },
+    },
+    "S01_A3_OWNER_PROVISIONAL_POSITION": {
+        "balanced": {
+            "why": "$250K conditional plus $100K equity is the cheapest offer that keeps the steel path alive.",
+            "risk": "You're first money in against a problem the supplier created.",
+        },
+        "self_protective": {
+            "why": "Zero new money holds the deal you already paid for.",
+            "risk": "If nobody else fills the gap, the schedule slips and your opening date goes with it.",
+        },
+        "conservative": {
+            "why": "Funding behind title and inspection controls means your money can't move into a broken package.",
+            "risk": "The conditions take time the schedule may not have.",
+        },
+    },
+    "S01_A3_INSPECTOR_REVIEW_PLAN": {
+        "balanced": {
+            "why": "Reviewing Lot A now and sampling Lot B keeps shipment possible and surfaces the problem early.",
+            "risk": "A sample can miss what a full inspection would catch.",
+        },
+        "self_protective": {
+            "why": "Clearing nothing on thin paperwork keeps your name off a bad release.",
+            "risk": "The whole team waits on a second visit you could have started today.",
+        },
+        "conservative": {
+            "why": "Inspecting both lots now builds a record nobody can challenge later.",
+            "risk": "It's the slowest, most expensive review, paid in schedule time.",
+        },
+    },
+    "S01_A3_ERECTOR_CAPACITY_OFFER": {
+        "balanced": {
+            "why": "A split hold earns standby on half the crew while keeping the other half billable elsewhere.",
+            "risk": "If the project needs full capacity fast, you only have half of it here.",
+        },
+        "self_protective": {
+            "why": "Outside work pays now; standby on an unfunded project may never pay.",
+            "risk": "If steel clears, your remobilization time may cost the project its window.",
+        },
+        "conservative": {
+            "why": "Full standby at full price is your best revenue if the project actually pays it.",
+            "risk": "If the package collapses, you held the crew for nothing.",
+        },
+    },
+    "S01_A4_LENDER_PROVISIONAL_POSITION": {
+        "balanced": {
+            "why": "A capped draw with equity keeps the loan supporting the project without breaking draw rules.",
+            "risk": "Even a capped draw against off-site steel is exposure if the title gaps are real.",
+        },
+        "self_protective": {
+            "why": "Ineligible is the safest reading of the loan agreement on today's file.",
+            "risk": "If the project fails for cash, your collateral is a stalled building.",
+        },
+        "conservative": {
+            "why": "Escrow moves money without losing control of it.",
+            "risk": "Escrowed funds may be too slow and too restricted to actually cure the steel.",
+        },
+    },
+    "S01_B1_SUPPLIER_COMMITMENT": {
+        "balanced": {
+            "why": "Committing your own cash with dated targets is what unlocks everyone else's support.",
+            "risk": "If the support doesn't land on time, you've committed to dates you can't fund.",
+        },
+        "self_protective": {
+            "why": "Outside work protects your margin while the project sorts out its money.",
+            "risk": "A late Lot B lands on the record as your failure, whatever the cause.",
+        },
+        "conservative": {
+            "why": "Financing the full fix yourself keeps both delivery dates in your own hands.",
+            "risk": "The interest comes out of your margin, and more debt makes you fragile.",
+        },
+    },
+    "S01_B2_GC_INTEGRATED_PACKAGE": {
+        "balanced": {
+            "why": "Your $100K bridges the package while owner and lender money moves — the phased path stays real.",
+            "risk": "You're now a creditor of the weakest party on the project.",
+        },
+        "self_protective": {
+            "why": "Rejecting the package means carrying no supplier risk at all.",
+            "risk": "Delay becomes the default plan, and delay costs everyone — including you.",
+        },
+        "conservative": {
+            "why": "Keeping backup inside the package means even supplier failure doesn't kill your schedule.",
+            "risk": "You pay for protection the project may never use.",
+        },
+    },
+    "S01_B3_INSPECTOR_DISPOSITION": {
+        "balanced": {
+            "why": "Releasing Lot A on its record starts field work; holding Lot B respects the known issue.",
+            "risk": "If the Lot A record was thinner than it looked, the release is yours.",
+        },
+        "self_protective": {
+            "why": "Blocking both lots is the only position that can't produce a bad release.",
+            "risk": "Field work can't start from material you've blocked — the delay is real.",
+        },
+        "conservative": {
+            "why": "One more inspection step makes the eventual release unchallengeable.",
+            "risk": "The extra step costs a week the recovery may not have.",
+        },
+    },
+    "S01_B3_ERECTOR_BINDING_COMMITMENT": {
+        "balanced": {
+            "why": "A binding split commitment gets you paid standby and keeps the phased start real.",
+            "risk": "You're committed if Lot A releases — outside work has to wait.",
+        },
+        "self_protective": {
+            "why": "Releasing the crew ends your standby exposure today.",
+            "risk": "The project may miss its window waiting for you to come back.",
+        },
+        "conservative": {
+            "why": "Full committed capacity at full standby is the strongest position if the package funds it.",
+            "risk": "If funding slips, you're holding your most valuable asset on a promise.",
+        },
+    },
+    "S01_B4_OWNER_PACKAGE_DECISION": {
+        "balanced": {
+            "why": "$200K plus equity and standby is the smallest package that funds the phased plan.",
+            "risk": "You're paying real money for a plan that still depends on the supplier performing.",
+        },
+        "self_protective": {
+            "why": "Rejecting the package caps your exposure at what you've already spent.",
+            "risk": "The recovery dies unless someone else funds it, and the delay lands on your opening date.",
+        },
+        "conservative": {
+            "why": "More money under full controls buys the recovery without trusting anyone's word.",
+            "risk": "Controlled money moves slowly, and the schedule bill for slow arrives later.",
+        },
+    },
+    "S01_B5_LENDER_RELEASE_DECISION": {
+        "balanced": {
+            "why": "Releasing $760K against verified value is defensible support that keeps the loan's project alive.",
+            "risk": "You're funding steel that isn't on site yet; verification is your only protection.",
+        },
+        "self_protective": {
+            "why": "Holding the draw keeps the loan clean no matter what happens on site.",
+            "risk": "The cash gap you preserved may stall the collateral you're protecting.",
+        },
+        "conservative": {
+            "why": "Escrow gives the package usable structure without giving up control.",
+            "risk": "If escrow terms are too tight, the supplier still can't pay the shop and the fix stalls.",
+        },
+    },
+    "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+        "balanced": {
+            "why": "Shipping both lots on plan completes your commitment and your payment case.",
+            "risk": "If Lot B's cure doesn't hold up at the site, the failure is public and yours.",
+        },
+        "self_protective": {
+            "why": "Shipping only what's truly ready keeps your status honest.",
+            "risk": "A partial delivery reopens every question about your earlier promises.",
+        },
+        "conservative": {
+            "why": "The extra cleanup makes both lots bulletproof at delivery.",
+            "risk": "The delay you spend polishing may cost the project its field window.",
+        },
+    },
+    "S01_C2_GC_RECOVERY_PLAN": {
+        "balanced": {
+            "why": "Verifying and proceeding keeps the phased plan moving without new spend.",
+            "risk": "If the supplier's status is optimistic, you find out at the worst time.",
+        },
+        "self_protective": {
+            "why": "Accepting delay avoids gambling more money on an uncertain supplier.",
+            "risk": "You've conceded schedule success for everyone to protect your budget.",
+        },
+        "conservative": {
+            "why": "Backup steel converts supplier uncertainty into a schedule you control.",
+            "risk": "It's the most expensive decision on the project, and you're making it with shared money.",
+        },
+    },
+    "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+        "balanced": {
+            "why": "Clearing both lots on the current record lets the sequence finish legally.",
+            "risk": "The release is only as good as the cure documentation behind it.",
+        },
+        "self_protective": {
+            "why": "Holding release protects you from certifying steel the file can't support.",
+            "risk": "A hold this late almost certainly ends the schedule.",
+        },
+        "conservative": {
+            "why": "The added test makes the final release certain instead of probable.",
+            "risk": "Testing time is schedule time, spent at the most expensive moment.",
+        },
+    },
+    "S01_C4_OWNER_FINAL_POSITION": {
+        "balanced": {
+            "why": "Contingency exists for exactly this; spending it finishes the project.",
+            "risk": "Contingency spent here isn't available for whatever goes wrong next.",
+        },
+        "self_protective": {
+            "why": "Refusing more cost is the last budget line you can actually hold.",
+            "risk": "An underfunded recovery can fail entirely, costing more than the share you refused.",
+        },
+        "conservative": {
+            "why": "A bigger authorized recovery with explicit shares settles both the fix and the fight over who pays.",
+            "risk": "Pushing shares onto the GC and supplier spends goodwill you may need later.",
+        },
+    },
+    "S01_C5_LENDER_SUPPLEMENTAL_POSITION": {
+        "balanced": {
+            "why": "Holding unless verified value supports release is the loan's cleanest ending.",
+            "risk": "If the last gap needed your money, the project fails with your reserves intact.",
+        },
+        "self_protective": {
+            "why": "No supplemental support means no new exposure in the riskiest week of the job.",
+            "risk": "You may be the reason the final gap never closes.",
+        },
+        "conservative": {
+            "why": "Equity-first keeps the loan balanced if more money must move.",
+            "risk": "The equity negotiation takes time the final push doesn't have.",
+        },
+    },
+    "S01_C6_ERECTOR_MOBILIZATION": {
+        "balanced": {
+            "why": "A phased start installs everything that's actually released, without waste.",
+            "risk": "If the rest releases quickly, half capacity becomes the new bottleneck.",
+        },
+        "self_protective": {
+            "why": "Releasing now ends your exposure to a project that kept you waiting.",
+            "risk": "Your remobilization time is likely the final blow to the schedule.",
+        },
+        "conservative": {
+            "why": "Full mobilization finishes the sequence fastest if release is complete.",
+            "risk": "A full crew standing next to unreleased steel is maximum cost for zero installs.",
+        },
+    },
+}
+
+
+def _choice_tradeoff(node_id: str, actor_id: str, choice_id: str) -> dict[str, str]:
+    node_copy = NODE_TRADEOFF_COPY.get(node_id, {}).get(choice_id)
+    if node_copy:
+        return node_copy
     tradeoffs = {
         "owner": {
             "balanced": {
