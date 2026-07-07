@@ -12,7 +12,9 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await expect(page.getByText(/success limits/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /what the ai agents actually did/i })).toBeVisible();
   await expect(page.getByText(/firms met target/i).first()).toBeVisible();
-  await expect(page.getByText(/failed — too late/i)).toBeVisible();
+  await expect(page.getByText(/failed — too late/i).first()).toBeVisible();
+  await expect(page.getByText(/success — some firms lost/i).first()).toBeVisible();
+  await expect(page.getByText(/^repairs$/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /scripted reference paths/i })).toBeVisible();
   await expect(page.getByText(/coordinated phased success/i)).toBeVisible();
   await expect(page.getByText(/excessive-caution failure/i)).toBeVisible();
@@ -20,6 +22,67 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await page.getByRole("link", { name: /play/i }).click();
   await expect(page.getByText(/choose your organization/i)).toBeVisible();
   await expect(page.getByText(/system participants/i)).toBeVisible();
+});
+
+test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {
+  let recorded: unknown = null;
+  await page.route("**/api/playthroughs*", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST") {
+      recorded = request.postDataJSON();
+      await route.fulfill({ status: 201, json: { recorded: true } });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      json: {
+        available: true,
+        totalPlays: 41,
+        rolePlays: 12,
+        projectSuccessCount: 9,
+        privateSuccessCount: 6,
+        averageCostUsd: 96_100_000,
+        averageCompletionWeek: 42,
+        nodes: {
+          S01_A1_SUPPLIER_APPLICATION: { balanced: 7, self_protective: 3, conservative: 2 },
+        },
+      },
+    });
+  });
+
+  await page.goto("/play");
+  await page.getByRole("link", { name: /steel supplier/i }).click();
+  await page.getByRole("button", { name: /start first decision/i }).click();
+  for (let round = 0; round < 3; round += 1) {
+    await page.locator("button.choice-card").first().click();
+    await page.getByRole("button", { name: /continue to next decision|show final outcome/i }).click();
+  }
+
+  await expect(page.getByRole("heading", { name: /you vs\. other players/i })).toBeVisible();
+  await expect(page.getByText(/12 people have finished a playthrough/i)).toBeVisible();
+  await expect(page.getByText(/average player finish/i)).toBeVisible();
+  expect(recorded).toMatchObject({ role: "steel_supplier" });
+});
+
+test("end screen stays clean when playthrough stats are unavailable", async ({ page }) => {
+  await page.route("**/api/playthroughs*", async (route) => {
+    if (route.request().method() === "POST") {
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+    await route.fulfill({ status: 200, json: { available: false } });
+  });
+
+  await page.goto("/play");
+  await page.getByRole("link", { name: /owner/i }).click();
+  await page.getByRole("button", { name: /start first decision/i }).click();
+  for (let round = 0; round < 3; round += 1) {
+    await page.locator("button.choice-card").first().click();
+    await page.getByRole("button", { name: /continue to next decision|show final outcome/i }).click();
+  }
+
+  await expect(page.getByText(/final outcome/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /you vs\. other players/i })).toHaveCount(0);
 });
 
 for (const role of roles) {

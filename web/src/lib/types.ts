@@ -203,6 +203,9 @@ export interface GameData {
 export interface PopulationRun {
   batch: string;
   temperature: number;
+  repair_budget?: number;
+  repair_attempt_count?: number | null;
+  repaired_turn_count?: number | null;
   replicate_index: number;
   run_valid: boolean;
   terminal_status: string;

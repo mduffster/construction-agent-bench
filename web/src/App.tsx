@@ -18,6 +18,8 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import rawGameData from "./game-data/s01_v2_game.json";
 import rawPopulationData from "./game-data/s01_v2_population.json";
+import { fetchCrowdStats, submitPlaythrough } from "./lib/playthroughs";
+import type { CrowdStats } from "./lib/playthroughs";
 import {
   advanceRound,
   counterpartyTimeline,
@@ -828,6 +830,11 @@ function EndScreen({ state }: { state: GameState }) {
       </div>
       <OutcomeExplanation evaluation={evaluation} role={state.selectedRole} />
       <ComparisonPanel evaluation={evaluation} />
+      <CrowdComparisonPanel
+        state={state}
+        evaluation={evaluation}
+        playerNodes={playerNodes}
+      />
 
       <section className="timeline">
         <div className="section-title">
@@ -866,6 +873,140 @@ function EndScreen({ state }: { state: GameState }) {
           Back to overview
         </NavButton>
       </div>
+    </section>
+  );
+}
+
+function CrowdComparisonPanel({
+  state,
+  evaluation,
+  playerNodes,
+}: {
+  state: GameState;
+  evaluation: GameEvaluation;
+  playerNodes: DecisionNode[];
+}) {
+  const [stats, setStats] = useState<CrowdStats | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const nodeIds = playerNodes.map((node) => node.node_id);
+    submitPlaythrough({
+      role: state.selectedRole,
+      decisions: state.decisions,
+      projectSuccess: evaluation.projectSuccess,
+      privateSuccess: evaluation.playerPrivateSuccess,
+      costUsd: evaluation.state.cost_usd,
+      completionWeek: evaluation.state.completion_week,
+    })
+      .then(() => fetchCrowdStats(state.selectedRole, nodeIds))
+      .then((crowd) => {
+        if (!cancelled) {
+          setStats(crowd);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // Submit and fetch exactly once per completed game.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!stats) {
+    return null;
+  }
+
+  const validAgentRuns = populationData.valid_run_count;
+  const agentSuccesses = populationData.project_success_count;
+  if (stats.rolePlays <= 1) {
+    return (
+      <section className="crowd-panel" aria-label="Player comparison">
+        <div className="section-title">
+          <Users size={20} />
+          <h2>You vs. other players</h2>
+        </div>
+        <p>
+          You are the first recorded {roleLabel(state.selectedRole)} playthrough.
+          As more people play, this panel will show how your calls compare to
+          theirs — and to the {validAgentRuns} valid AI-agent runs, where{" "}
+          {agentSuccesses} ended in project success.
+        </p>
+      </section>
+    );
+  }
+
+  const successRate = Math.round(
+    (stats.projectSuccessCount / stats.rolePlays) * 100
+  );
+  return (
+    <section className="crowd-panel" aria-label="Player comparison">
+      <div className="section-title">
+        <Users size={20} />
+        <h2>You vs. other players</h2>
+      </div>
+      <p>
+        {stats.rolePlays} people have finished a playthrough as the{" "}
+        {roleLabel(state.selectedRole)}. {successRate}% reached project success
+        — the AI agent population managed {agentSuccesses} of {validAgentRuns}{" "}
+        valid runs. Here is where your calls sat in the crowd:
+      </p>
+      <div className="crowd-list">
+        {playerNodes.map((node) => {
+          const yourChoiceId = state.decisions[node.node_id];
+          const yourChoice = node.choices.find(
+            (choice) => choice.choice_id === yourChoiceId
+          );
+          const counts = stats.nodes[node.node_id] ?? {};
+          const totalAtNode = node.choices.reduce(
+            (total, choice) => total + (counts[choice.choice_id] ?? 0),
+            0
+          );
+          const sameCalls = counts[yourChoiceId] ?? 0;
+          return (
+            <article className="crowd-row" key={node.node_id}>
+              <header>
+                <strong>{node.title}</strong>
+                <span>
+                  You chose “{yourChoice?.label}” — so did{" "}
+                  {totalAtNode
+                    ? `${Math.round((sameCalls / totalAtNode) * 100)}% of players`
+                    : "no one else yet"}
+                </span>
+              </header>
+              <div className="crowd-bar" aria-hidden="true">
+                {node.choices.map((choice) => (
+                  <span
+                    className={`crowd-bar-segment crowd-bar-segment--${choice.choice_id}${
+                      choice.choice_id === yourChoiceId
+                        ? " crowd-bar-segment--yours"
+                        : ""
+                    }`}
+                    key={choice.choice_id}
+                    style={{
+                      flexGrow: Math.max(counts[choice.choice_id] ?? 0, 0.01),
+                    }}
+                    title={`${choice.label}: ${counts[choice.choice_id] ?? 0}`}
+                  />
+                ))}
+              </div>
+              <footer>
+                {node.choices.map((choice) => (
+                  <span key={choice.choice_id}>
+                    {choice.label}: {counts[choice.choice_id] ?? 0}
+                  </span>
+                ))}
+              </footer>
+            </article>
+          );
+        })}
+      </div>
+      {stats.averageCostUsd !== null && stats.averageCompletionWeek !== null ? (
+        <p className="crowd-averages">
+          Average player finish: {formatMoney(stats.averageCostUsd)} at week{" "}
+          {stats.averageCompletionWeek}. Yours:{" "}
+          {formatMoney(evaluation.state.cost_usd)} at week{" "}
+          {evaluation.state.completion_week}.
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -1093,6 +1234,7 @@ function PopulationSection() {
           <span>Final cost</span>
           <span>Finished</span>
           <span>Firms met target</span>
+          <span>Repairs</span>
         </div>
         {validRuns.map((run, displayIndex) => (
           <div
@@ -1112,18 +1254,42 @@ function PopulationSection() {
                 ? "n/a"
                 : `${run.firms_meeting_private_target}/6`}
             </span>
+            <span>{run.repair_attempt_count ?? "n/a"}</span>
           </div>
         ))}
       </div>
-      {population.valid_run_count < population.run_count && (
-        <p className="population-footnote">
-          {population.run_count - population.valid_run_count} additional run
-          {population.run_count - population.valid_run_count === 1 ? "" : "s"}{" "}
-          ended early because an agent produced an invalid decision; the harness
-          stops those runs rather than guessing. Better repair logic is forthcoming.
-        </p>
-      )}
+      <PopulationRepairNote runs={population.runs} />
     </section>
+  );
+}
+
+function PopulationRepairNote({ runs }: { runs: PopulationRun[] }) {
+  const lowBudgetRuns = runs.filter((run) => (run.repair_budget ?? 1) <= 1);
+  const highBudgetRuns = runs.filter((run) => (run.repair_budget ?? 1) > 1);
+  const invalidLow = lowBudgetRuns.filter((run) => !run.run_valid).length;
+  const invalidHigh = highBudgetRuns.filter((run) => !run.run_valid).length;
+  if (lowBudgetRuns.length === 0 && highBudgetRuns.length === 0) {
+    return null;
+  }
+  return (
+    <p className="population-footnote">
+      When an agent submits a malformed decision, the harness sends the
+      validation errors back and lets it retry instead of guessing. "Repairs"
+      counts those retries.{" "}
+      {lowBudgetRuns.length > 0 && (
+        <>
+          With a single retry allowed, {invalidLow} of {lowBudgetRuns.length}{" "}
+          runs still ended early on an invalid decision.{" "}
+        </>
+      )}
+      {highBudgetRuns.length > 0 && (
+        <>
+          With up to three retries, {invalidHigh} of {highBudgetRuns.length}{" "}
+          runs ended early. Runs that failed anyway are excluded from the table
+          above.
+        </>
+      )}
+    </p>
   );
 }
 
