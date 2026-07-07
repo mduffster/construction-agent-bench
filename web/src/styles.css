@@ -1738,6 +1738,17 @@ h2 {
   .project-postcard {
     aspect-ratio: 16 / 8;
   }
+
+  /* Repeat the game-shell selectors at their full specificity: the desktop
+     rules use .site-shell--game prefixes, which would otherwise outrank the
+     single-class collapses above and keep three columns on phones. */
+  .site-shell--game .choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-shell--game .choice-card {
+    min-height: 0;
+  }
 }
 
 @media (max-width: 640px) {

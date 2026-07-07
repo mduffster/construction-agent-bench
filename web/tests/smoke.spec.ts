@@ -85,6 +85,22 @@ test("end screen stays clean when playthrough stats are unavailable", async ({ p
   await expect(page.getByRole("heading", { name: /you vs\. other players/i })).toHaveCount(0);
 });
 
+test.describe("mobile layout", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("choice cards stack full-width on phones", async ({ page }) => {
+    await page.goto("/play/s01?role=gc");
+    await page.getByRole("button", { name: /start first decision/i }).click();
+    const firstCard = page.locator("button.choice-card").first();
+    await expect(firstCard).toBeVisible();
+    const box = await firstCard.boundingBox();
+    expect(box).not.toBeNull();
+    // Regression guard: cards once rendered as three ~108px columns because a
+    // higher-specificity game-shell rule overrode the media-query collapse.
+    expect(box!.width).toBeGreaterThan(300);
+  });
+});
+
 for (const role of roles) {
   test(`${role} can complete a three-round S01 playthrough`, async ({ page }) => {
     await page.goto("/play");
