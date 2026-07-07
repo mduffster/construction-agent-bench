@@ -34,11 +34,15 @@ def main() -> None:
         summary = json.loads((batch_dir / "population_summary.json").read_text())
         models.add(str(summary.get("model")))
         temperature = summary.get("temperature")
+        repair_budget = summary.get("repair_budget", 1)
         for row in summary.get("runs", []):
             runs.append(
                 {
                     "batch": batch_dir.name,
                     "temperature": temperature,
+                    "repair_budget": repair_budget,
+                    "repair_attempt_count": row.get("repair_attempt_count"),
+                    "repaired_turn_count": row.get("repaired_turn_count"),
                     "replicate_index": row.get("replicate_index"),
                     "run_valid": row.get("run_valid"),
                     "terminal_status": row.get("terminal_status"),

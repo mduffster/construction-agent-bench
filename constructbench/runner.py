@@ -109,6 +109,7 @@ def run_policy(
     behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
     debug_model_io: bool = False,
     max_phases: int = 50,
+    repair_budget: int = 1,
 ) -> RunResult:
     scenario = get_scenario(scenario_key)
     return run_scenario_policy(
@@ -123,6 +124,7 @@ def run_policy(
         behavior_profile_by_agent=behavior_profile_by_agent,
         debug_model_io=debug_model_io,
         max_phases=max_phases,
+        repair_budget=repair_budget,
     )
 
 
@@ -139,6 +141,7 @@ def run_scenario_policy(
     behavior_profile_by_agent: dict[str, BehaviorProfileName] | None = None,
     debug_model_io: bool = False,
     max_phases: int = 50,
+    repair_budget: int = 1,
 ) -> RunResult:
     model_settings = dict(model_settings or {})
     if scenario_instance_id is not None:
@@ -157,6 +160,7 @@ def run_scenario_policy(
         output_dir=output_dir,
         debug_model_io=debug_model_io,
         max_phases=max_phases,
+        repair_budget=repair_budget,
         start_event_type="briefing_phase",
         start_event_details={
             "summary": "Agents initialized as business organizations.",
@@ -196,6 +200,7 @@ def run_existing_state_policy(
     output_dir: Path | None = None,
     debug_model_io: bool = False,
     max_phases: int = 50,
+    repair_budget: int = 1,
     start_event_type: str | None = None,
     start_event_details: dict[str, Any] | None = None,
 ) -> RunResult:
@@ -281,12 +286,15 @@ def run_existing_state_policy(
             submission = policy.decide(observation)
             _drain_model_io(state, policy)
             errors = _validate_submission(observation, submission, scenario=scenario)
-            if errors and hasattr(policy, "repair"):
+            repair_attempt = 0
+            while errors and repair_attempt < repair_budget and hasattr(policy, "repair"):
+                repair_attempt += 1
                 state.histories["repair_attempts"].append(
                     {
                         "phase_index": state.phase_index,
                         "phase_id": phase.phase_id,
                         "agent_id": turn.agent_id,
+                        "attempt": repair_attempt,
                         "errors": errors,
                     }
                 )

@@ -608,3 +608,75 @@ def test_s01_v2_outputs_and_replay_remain_contract_compatible(tmp_path) -> None:
 
     replayed = replay_run(output_dir)
     assert replayed.model_dump(mode="json") == result.final_state.model_dump(mode="json")
+
+
+class _FlakyRepairPolicy:
+    """Wraps a scripted policy; emits empty submissions until failures are spent."""
+
+    def __init__(self, inner, *, fail_times: int, target_phase: str) -> None:
+        self.inner = inner
+        self.remaining_failures = fail_times
+        self.target_phase = target_phase
+        self.repair_calls = 0
+
+    def decide(self, observation: AgentObservation) -> AgentSubmission:
+        if observation.phase_id == self.target_phase and self.remaining_failures > 0:
+            self.remaining_failures -= 1
+            return AgentSubmission()
+        return self.inner.decide(observation)
+
+    def repair(self, observation: AgentObservation, errors: list[str]) -> AgentSubmission:
+        self.repair_calls += 1
+        if self.remaining_failures > 0:
+            self.remaining_failures -= 1
+            return AgentSubmission()
+        return self.inner.decide(observation)
+
+
+def _flaky_policies(fail_times: int) -> dict:
+    fixture = _scenario().fixtures["efficient_phased_coalition_success"]["decisions"]
+    policies = dict(policies_for_fixture(fixture))
+    policies["steel_supplier"] = _FlakyRepairPolicy(
+        policies["steel_supplier"],
+        fail_times=fail_times,
+        target_phase="S01_A1_SUPPLIER_APPLICATION",
+    )
+    return policies
+
+
+def test_repair_budget_allows_multiple_repair_rounds() -> None:
+    policies = _flaky_policies(fail_times=2)
+    result = run_policy("S01_V2", "normal", policies, repair_budget=2)
+
+    assert result.final_state.terminal_status == "PROJECT_SUCCESS"
+    attempts = result.final_state.histories["repair_attempts"]
+    assert [record["attempt"] for record in attempts] == [1, 2]
+    assert all(
+        record["phase_id"] == "S01_A1_SUPPLIER_APPLICATION" for record in attempts
+    )
+    assert policies["steel_supplier"].repair_calls == 2
+
+
+def test_repair_budget_exhaustion_marks_run_invalid() -> None:
+    policies = _flaky_policies(fail_times=2)
+    result = run_policy("S01_V2", "normal", policies, repair_budget=1)
+
+    assert result.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
+    attempts = result.final_state.histories["repair_attempts"]
+    assert [record["attempt"] for record in attempts] == [1]
+
+
+def test_repair_summary_reports_repaired_and_unrepaired_turns(tmp_path) -> None:
+    output_dir = tmp_path / "repaired"
+    policies = _flaky_policies(fail_times=1)
+    run_policy("S01_V2", "normal", policies, repair_budget=1, output_dir=output_dir)
+
+    summary = json.loads((output_dir / "run_summary.json").read_text())
+    assert summary["terminal_status"] == "PROJECT_SUCCESS"
+    assert summary["repair_summary"] == {
+        "attempt_count": 1,
+        "turns_with_repair_attempts": 1,
+        "repaired_turn_count": 1,
+        "unrepaired_turn_count": 0,
+    }
+    assert len(summary["repair_attempts"]) == 1

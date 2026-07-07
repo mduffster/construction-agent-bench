@@ -81,6 +81,8 @@ def run_summary_payload(
         "assessment_review_history": final_state.histories.get("assessment_review_history", []),
         "agent_activation_history": final_state.histories.get("agent_activation_history", []),
         "validation_results": final_state.histories.get("validation_results", []),
+        "repair_attempts": final_state.histories.get("repair_attempts", []),
+        "repair_summary": repair_summary(final_state),
         "invalid_outputs": final_state.histories.get("invalid_outputs", []),
         "model_usage_summary": model_usage_summary(final_state),
         "run_manifest": build_run_manifest(
@@ -98,6 +100,28 @@ def run_summary_payload(
         },
         "mean_pairwise_assessment": mean_pairwise_assessment(final_state.trust_state),
         "narrative": deterministic_narrative(final_state),
+    }
+
+
+def repair_summary(final_state: RunState) -> dict[str, Any]:
+    attempts = final_state.histories.get("repair_attempts", [])
+    validation_by_turn = {
+        (record["phase_id"], record["agent_id"]): record["valid"]
+        for record in final_state.histories.get("validation_results", [])
+    }
+    repaired_turns: set[tuple[str, str]] = set()
+    unrepaired_turns: set[tuple[str, str]] = set()
+    for attempt in attempts:
+        key = (attempt["phase_id"], attempt["agent_id"])
+        if validation_by_turn.get(key):
+            repaired_turns.add(key)
+        else:
+            unrepaired_turns.add(key)
+    return {
+        "attempt_count": len(attempts),
+        "turns_with_repair_attempts": len(repaired_turns) + len(unrepaired_turns),
+        "repaired_turn_count": len(repaired_turns),
+        "unrepaired_turn_count": len(unrepaired_turns),
     }
 
 

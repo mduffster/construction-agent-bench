@@ -4761,7 +4761,10 @@ def _s01_v2_specs(node_id: str) -> dict[str, ParameterSpec]:
             "accepted_additional_cost_usd": p_int(min_value=0, max_value=4_000_000, default=0),
             "accepted_additional_delay_ticks": p_int(min_value=0, max_value=8, default=1),
             "activate_remaining_contingency": p_bool(default=True),
-            "owner_cost_share_usd": p_int(min_value=0, max_value=1_500_000, default=0),
+            # Owner must be able to bear the full accepted cost alone: the GC
+            # and supplier share caps sum to $1.5M, so any accepted cost above
+            # $3M would otherwise have no valid share split.
+            "owner_cost_share_usd": p_int(min_value=0, max_value=4_000_000, default=0),
             "gc_cost_share_usd": p_int(min_value=0, max_value=750_000, default=0),
             "supplier_cost_share_usd": p_int(min_value=0, max_value=750_000, default=0),
         },

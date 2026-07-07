@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from constructbench.models import DEFAULT_ANTHROPIC_HAIKU_MODEL, make_anthropic_policies
-from constructbench.reporting import model_usage_summary
+from constructbench.reporting import model_usage_summary, repair_summary
 from constructbench.runner import run_policy
 from constructbench.state import RunState
 
@@ -26,6 +26,12 @@ def main() -> None:
     parser.add_argument("--model", default=DEFAULT_ANTHROPIC_HAIKU_MODEL)
     parser.add_argument("--temperature", type=float, default=1.0)
     parser.add_argument("--variant", choices=["normal", "stressed"], default="normal")
+    parser.add_argument(
+        "--repair-budget",
+        type=int,
+        default=1,
+        help="validation-failure retries per turn; each retry re-prompts with the errors",
+    )
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--allow-live-batch", action="store_true")
     args = parser.parse_args()
@@ -45,11 +51,13 @@ def main() -> None:
             policies,
             output_dir=root / f"run_{index:02d}",
             seed=index,
+            repair_budget=args.repair_budget,
             model_settings={
                 "policy": "llm_population",
                 "provider": "anthropic",
                 "model": args.model,
                 "temperature": args.temperature,
+                "repair_budget": args.repair_budget,
                 "replicate_index": index,
             },
         )
@@ -57,7 +65,8 @@ def main() -> None:
         latest = rows[-1]
         print(
             f"run_{index:02d}: valid={latest['run_valid']} status={latest['terminal_status']} "
-            f"path={latest['path_label']} cost=${latest['model_cost_usd']:.3f}"
+            f"path={latest['path_label']} repairs={latest['repair_attempt_count']} "
+            f"cost=${latest['model_cost_usd']:.3f}"
         )
 
     (root / "population_summary.json").write_text(
@@ -67,6 +76,7 @@ def main() -> None:
                 "valid_run_count": sum(1 for row in rows if row["run_valid"]),
                 "model": args.model,
                 "temperature": args.temperature,
+                "repair_budget": args.repair_budget,
                 "total_model_cost_usd": round(
                     sum(row["model_cost_usd"] for row in rows), 6
                 ),
@@ -84,6 +94,7 @@ def _row(index: int, state: RunState) -> dict[str, Any]:
     project = state.canonical_state["project"]
     organizations = state.canonical_state.get("organizations", {})
     usage = model_usage_summary(state)["total"]
+    repairs = repair_summary(state)
     return {
         "replicate_index": index,
         "run_valid": state.run_valid,
@@ -104,6 +115,9 @@ def _row(index: int, state: RunState) -> dict[str, Any]:
         "input_tokens": usage["input_tokens"],
         "output_tokens": usage["output_tokens"],
         "model_cost_usd": float(usage["cost_usd"]),
+        "repair_attempt_count": repairs["attempt_count"],
+        "repaired_turn_count": repairs["repaired_turn_count"],
+        "unrepaired_turn_count": repairs["unrepaired_turn_count"],
     }
 
 

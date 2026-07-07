@@ -123,7 +123,7 @@ Agent submissions contain only:
 
 If required decisions exist, empty `decisions` is invalid. A modeled inaction is valid only when it is an explicit scenario option, such as `wait_for_diagnostics` or `schedule_no_payment`.
 
-Invalid JSON, invalid option IDs, missing parameters, or empty required decisions get one targeted repair attempt for LLM policies. If still invalid, the run stops as `INVALID_AGENT_OUTPUT`. The runner must not advance consequences or compute a fake project outcome after invalid required output.
+Invalid JSON, invalid option IDs, missing parameters, or empty required decisions get targeted repair attempts for LLM policies: the runner re-prompts with the validation errors up to `repair_budget` times per turn (default 1; `--repair-budget` on batch scripts). If still invalid, the run stops as `INVALID_AGENT_OUTPUT`. Attempts are recorded in `histories["repair_attempts"]` and summarized in `run_summary.json` under `repair_summary`. The runner must not advance consequences or compute a fake project outcome after invalid required output.
 
 ## State Invariants
 
@@ -186,6 +186,13 @@ Do not hand-maintain a separate scenario in the frontend. Scenario facts,
 decision schemas, role briefs, payoff thresholds, witness outcomes, and content
 hashes should come through the export script. Frontend copy may simplify those
 facts for humans, but it should preserve the underlying harness semantics.
+
+The one server-side piece is `web/api/playthroughs.ts`, a Vercel function that
+stores anonymized playthrough counters (role, per-node choice tallies, outcome
+counts) in Upstash Redis via REST. It needs `KV_REST_API_URL`/`KV_REST_API_TOKEN`
+(or the `UPSTASH_REDIS_REST_*` equivalents) in the Vercel project; without them
+it reports unavailable and the end-screen crowd panel stays hidden. It stores
+no user identifiers.
 
 The public human game is intentionally smaller than the full simulation:
 

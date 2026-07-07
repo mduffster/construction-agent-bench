@@ -113,6 +113,20 @@ Current implemented components:
 - S01 V2 population batch: `scripts/run_s01_v2_population.py` runs N all-agent live runs
   (default temperature 1.0 for trajectory variety) behind `--allow-live-batch`, writing
   per-run rows and `population_summary.json`.
+- Repair budget: the runner re-prompts an agent with its validation errors up to
+  `repair_budget` times per turn (`--repair-budget` on the population script, default 1,
+  recorded in the run manifest). Attempts land in `histories["repair_attempts"]` and every
+  `run_summary.json` carries a `repair_summary` block, so batch invalid rates at different
+  repair budgets are directly comparable.
+- S01 V2 C4 share-cap consistency: `owner_cost_share_usd` max is `$4,000,000`, matching the
+  `accepted_additional_cost_usd` max. The GC and supplier share caps sum to `$1.5M`, so the
+  earlier `$1.5M` owner cap made any accepted cost above `$3M` (including the real `$3.4M`
+  backup activation) impossible to share validly — a live repair-smoke run surfaced the trap.
+- Web playthrough telemetry: `web/api/playthroughs.ts` (Vercel function, Upstash/KV REST)
+  stores anonymized playthrough counters — role, per-node choice tallies, outcome counts,
+  cost/week sums; no identifiers. The end screen submits once per completed game and renders
+  a "you vs. other players" panel; when storage is unconfigured the endpoint reports
+  unavailable and the panel stays hidden.
 
 Next queued components:
 
