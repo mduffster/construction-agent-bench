@@ -31,6 +31,9 @@ def test_response_curve_web_export_matches_evidence_package() -> None:
     assert payload["haiku_confirmation"]["valid_run_count"] == 46
     assert payload["design"]["minimum_safe_request_usd"] == 200_000
     assert payload["design"]["maximum_safe_request_usd"] == 1_200_000
+    assert "recorded_total_model_cost_usd" not in payload
+    assert "model_cost_usd" not in payload["haiku_confirmation"]
+    assert "model_cost_usd" not in payload["sonnet_modal"]
 
 
 def _sha256(path: Path) -> str:

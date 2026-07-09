@@ -288,10 +288,6 @@ function ResearchTeaser() {
               <strong>{formatMoney(Math.round(haiku.mean_attainable_regret_usd))}</strong>
               mean attainable regret
             </span>
-            <span>
-              <strong>{formatModelCost(responseCurveData.recorded_total_model_cost_usd)}</strong>
-              recorded model spend
-            </span>
           </div>
           <NavButton href="/research" icon={<ArrowRight size={18} />}>
             Explore the study
@@ -349,11 +345,6 @@ function ResearchPage() {
             icon={<DollarSign size={20} />}
             label="Mean attainable regret"
             value={formatMoney(Math.round(haiku.mean_attainable_regret_usd))}
-          />
-          <Metric
-            icon={<ShieldCheck size={20} />}
-            label="Recorded model spend"
-            value={formatModelCost(responseCurveData.recorded_total_model_cost_usd)}
           />
         </div>
         <p className="body-copy">
@@ -1899,10 +1890,6 @@ function formatMoney(value: number) {
     return `${sign}$${(amount / 1_000_000).toFixed(2)}M`;
   }
   return `${sign}$${amount.toLocaleString()}`;
-}
-
-function formatModelCost(value: number) {
-  return `$${value.toFixed(2)}`;
 }
 
 function formatDelta(value: number, unit: string) {

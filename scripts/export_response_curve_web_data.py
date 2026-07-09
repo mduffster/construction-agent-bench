@@ -19,8 +19,8 @@ def main() -> None:
     chart_path = EVIDENCE_DIR / "response_curve.png"
     manifest = json.loads(manifest_path.read_text())
     levels = _read_levels(table_path)
-    haiku = manifest["samples"]["haiku_confirmation"]
-    sonnet = manifest["samples"]["sonnet_modal"]
+    haiku = _public_sample(manifest["samples"]["haiku_confirmation"])
+    sonnet = _public_sample(manifest["samples"]["sonnet_modal"])
     payload = {
         "schema_version": "constructsim.web_response_curve.v1",
         "experiment_id": manifest["experiment_id"],
@@ -45,9 +45,6 @@ def main() -> None:
         },
         "haiku_confirmation": haiku,
         "sonnet_modal": sonnet,
-        "recorded_total_model_cost_usd": manifest["metrics"][
-            "recorded_cost_usd"
-        ],
         "haiku_request_counts": manifest["metrics"]["haiku_request_counts"],
         "levels": levels,
         "limitations": [
@@ -72,6 +69,15 @@ def main() -> None:
     shutil.copyfile(chart_path, WEB_CHART_PATH)
     print(f"wrote {WEB_DATA_PATH.relative_to(ROOT)}")
     print(f"wrote {WEB_CHART_PATH.relative_to(ROOT)}")
+
+
+def _public_sample(sample: dict[str, Any]) -> dict[str, Any]:
+    """Keep operational spend metadata out of the public web artifact."""
+    return {
+        key: value
+        for key, value in sample.items()
+        if key != "model_cost_usd"
+    }
 
 
 def _read_levels(path: Path) -> list[dict[str, Any]]:

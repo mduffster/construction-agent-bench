@@ -1,5 +1,5 @@
 {
-  "content_sha256": "ed6ff62480d042eef508c3f24a789a6a4c18f72a977689d5d2346a0949ee50cf",
+  "content_sha256": "df594c4bee8ba43cf705f5b251d16a3889c90186920c260618f40bff4e424c16",
   "design": {
     "deterministic_counterparty_count": 5,
     "deterministic_reference_trajectory_count": 130,
@@ -15,7 +15,6 @@
     "invalid_run_count": 4,
     "mean_attainable_regret_usd": 594782.6086956522,
     "model": "claude-haiku-4-5-20251001",
-    "model_cost_usd": 1.140198,
     "replacement_rate": 0.5217391304347826,
     "request_monotonicity_violations": 4,
     "run_count": 50,
@@ -126,13 +125,11 @@
     "Both evaluated models are from one provider and there is not yet a human baseline."
   ],
   "question": "As a qualified replacement gets cheaper, does an AI steel supplier reduce the price relief it asks for?",
-  "recorded_total_model_cost_usd": 2.507715,
   "schema_version": "constructsim.web_response_curve.v1",
   "sonnet_modal": {
     "invalid_run_count": 0,
     "mean_attainable_regret_usd": 914000.0,
     "model": "claude-sonnet-5",
-    "model_cost_usd": 0.859434,
     "replacement_rate": 0.8,
     "request_monotonicity_violations": 1,
     "run_count": 5,

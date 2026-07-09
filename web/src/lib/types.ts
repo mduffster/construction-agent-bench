@@ -249,7 +249,6 @@ export interface ResponseCurveSample {
   replacement_rate: number;
   mean_attainable_regret_usd: number;
   request_monotonicity_violations: number;
-  model_cost_usd: number;
 }
 
 export interface ResponseCurveLevel {
@@ -288,7 +287,6 @@ export interface ResponseCurveData {
   };
   haiku_confirmation: ResponseCurveSample;
   sonnet_modal: ResponseCurveSample;
-  recorded_total_model_cost_usd: number;
   haiku_request_counts: Record<string, number>;
   levels: ResponseCurveLevel[];
   limitations: string[];
