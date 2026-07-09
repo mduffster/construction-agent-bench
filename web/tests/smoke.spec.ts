@@ -24,6 +24,18 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await expect(page.getByText(/system participants/i)).toBeVisible();
 });
 
+test("research page publishes the response-curve evidence", async ({ page }) => {
+  await page.goto("/research");
+  await expect(
+    page.getByRole("heading", { name: /replaceability response curve/i })
+  ).toBeVisible();
+  await expect(page.getByText(/46\/50 runs/i)).toBeVisible();
+  await expect(page.getByText(/mean attainable regret/i)).toBeVisible();
+  await expect(page.getByRole("img", { name: /response curve comparing/i })).toBeVisible();
+  await expect(page.getByRole("table", { name: /response curve values/i })).toBeVisible();
+  await expect(page.getByText(/preliminary evidence from one focal-agent scenario/i)).toBeVisible();
+});
+
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {
   let recorded: unknown = null;
   await page.route("**/api/playthroughs*", async (route) => {

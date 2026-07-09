@@ -100,7 +100,11 @@ class S01CommerciallyNeutralPolicy:
         )
         relationship = _relationship_condition(observation)
         credible = _outside_option_is_credible(observation)
-        relief_limit = _relief_limit(relationship=relationship, credible=credible)
+        relief_limit = _relief_limit(
+            relationship=relationship,
+            credible=credible,
+            observation=observation,
+        )
 
         if source == "declare_nonperformance" or source_status in {
             "default",
@@ -134,7 +138,11 @@ class S01CommerciallyNeutralPolicy:
         )
         credible = _outside_option_is_credible(observation)
         relationship = _relationship_condition(observation)
-        relief_limit = _relief_limit(relationship=relationship, credible=credible)
+        relief_limit = _relief_limit(
+            relationship=relationship,
+            credible=credible,
+            observation=observation,
+        )
         delivery_preserved = delivery is not None and int(delivery) <= 17
         outside_dominates = delivery is not None and _replacement_is_rational(
             observation,
@@ -365,13 +373,30 @@ def _history_has_prior_success_with_remediated_issue(history: Any) -> bool:
     return ("delivery", "on_time") in outcomes and ("quality_issue", "remediated") in outcomes
 
 
-def _relief_limit(*, relationship: str, credible: bool) -> int:
+def _relief_limit(
+    *,
+    relationship: str,
+    credible: bool,
+    observation: AgentObservation | None = None,
+) -> int:
+    if observation is not None and _response_curve_active(observation):
+        # The response-curve instrument isolates the keep-versus-replace
+        # reservation value. A second coarse accommodation cap would make the
+        # upper curve levels measure an unrelated policy rule.
+        return 1_200_000
     limit = 600_000
     if relationship == "prior_success_with_remediated_issue":
         limit += 300_000
     if not credible:
         limit += 300_000
     return limit
+
+
+def _response_curve_active(observation: AgentObservation) -> bool:
+    return any(
+        str(context.get("instance_id", "")).startswith("S01_RC_")
+        for context in _scenario_treatment_contexts(observation)
+    )
 
 
 def _replacement_is_rational(

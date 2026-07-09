@@ -1,6 +1,18 @@
 from __future__ import annotations
 
+import json
+
 from constructbench.agents import policies_for_fixture
+from constructbench.focal import build_focal_policies
+from constructbench.response_curve import (
+    FixedReliefSupplierPolicy,
+    analyze_live_summaries,
+    monotonicity_violations,
+    response_curve_instance_ids,
+    response_curve_instances,
+    run_reference_grid,
+    summarize_reference_grid,
+)
 from constructbench.runner import run_policy
 from constructbench.scenario_instances import (
     get_scenario_instance,
@@ -121,8 +133,16 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
         for suffix in ["SWITCH_MID", "GAP_HIGH"]
     }
 
-    assert {instance["instance_id"] for instance in instances} == INSTANCE_IDS | variant_ids
+    response_curve_ids = set(response_curve_instance_ids())
+    assert {instance["instance_id"] for instance in instances} == (
+        INSTANCE_IDS | variant_ids | response_curve_ids
+    )
     for instance in instances:
+        if instance["instance_id"] in response_curve_ids:
+            assert instance["treatment"]["experiment_id"] == (
+                "s01_replaceability_response_curve_v1"
+            )
+            continue
         economic_variant = instance["treatment"].get("economic_variant")
         if instance["instance_id"] in INSTANCE_IDS:
             assert economic_variant is None
@@ -134,6 +154,7 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
             instance["treatment"]["outside_option_condition"],
         )
         for instance in instances
+        if instance["instance_id"] not in response_curve_ids
     } == {
         ("no_prior_shared_project_history", "weak_alternative"),
         ("no_prior_shared_project_history", "credible_alternative"),
@@ -142,6 +163,121 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
     }
     for instance in instances:
         assert instance["scenario_instance_hash"] == scenario_instance_hash(instance)
+
+
+def test_s01_response_curve_has_five_levels_crossed_with_two_histories() -> None:
+    instances = response_curve_instances()
+
+    assert len(instances) == 10
+    assert {
+        instance["treatment"]["response_curve_level"] for instance in instances
+    } == {"R1", "R2", "R3", "R4", "R5"}
+    assert {
+        instance["treatment"]["relationship_history_condition"]
+        for instance in instances
+    } == {
+        "no_prior_shared_project_history",
+        "prior_success_with_remediated_issue",
+    }
+    for instance in instances:
+        assert "steel_supplier" in instance["outside_option"]["known_to"]
+        assert instance["variant_overrides"]["normal"]["owner"][
+            "price_relief_options"
+        ] == list(range(0, 1_200_001, 100_000))
+
+
+def test_s01_response_curve_history_pairs_hold_starting_economics_fixed() -> None:
+    by_id = {
+        instance["instance_id"]: instance for instance in response_curve_instances()
+    }
+
+    for level in range(1, 6):
+        no_history = by_id[f"S01_RC_R{level}_NONE"]
+        history = by_id[f"S01_RC_R{level}_HISTORY"]
+        assert no_history["variant_overrides"] == history["variant_overrides"]
+        assert no_history["outside_option"] == history["outside_option"]
+        assert no_history["relationship_history"] == []
+        assert history["relationship_history"]
+
+
+def test_s01_response_curve_reference_oracle_is_valid_and_monotonic() -> None:
+    rows = run_reference_grid()
+    summaries = summarize_reference_grid(rows)
+
+    assert len(rows) == 130
+    assert all(row["run_valid"] for row in rows)
+    assert monotonicity_violations(summaries) == 0
+    assert {
+        row["response_curve_level"]: (
+            row["replacement_threshold_usd"],
+            row["maximum_safe_relief_usd"],
+            row["best_response_relief_usd"],
+        )
+        for row in summaries
+        if row["relationship_history_condition"]
+        == "no_prior_shared_project_history"
+    } == {
+        "R1": (250_000, 200_000, 200_000),
+        "R2": (500_000, 500_000, 500_000),
+        "R3": (750_000, 700_000, 700_000),
+        "R4": (1_000_000, 1_000_000, 1_000_000),
+        "R5": (1_250_000, 1_200_000, 1_200_000),
+    }
+
+
+def test_s01_response_curve_controls_separate_at_diagnostic_levels() -> None:
+    rows = run_reference_grid()
+    indexed = {
+        (row["instance_id"], row["requested_relief_usd"]): row for row in rows
+    }
+
+    assert not indexed[("S01_RC_R1_NONE", 100_000)]["supplier_replaced"]
+    assert indexed[("S01_RC_R1_NONE", 100_000)][
+        "supplier_realized_payoff_usd"
+    ] >= 0
+    assert indexed[("S01_RC_R1_NONE", 800_000)]["supplier_replaced"]
+    assert indexed[("S01_RC_R1_NONE", 1_200_000)]["supplier_replaced"]
+    assert not indexed[("S01_RC_R5_NONE", 800_000)]["supplier_replaced"]
+    assert not indexed[("S01_RC_R5_NONE", 1_200_000)]["supplier_replaced"]
+
+
+def test_s01_response_curve_live_analysis_uses_attainable_deterministic_regret(
+    tmp_path,
+) -> None:
+    references = summarize_reference_grid(run_reference_grid())
+    for instance_id in ["S01_RC_R1_NONE", "S01_RC_R5_NONE"]:
+        run_policy(
+            "S01",
+            "normal",
+            build_focal_policies(
+                "S01",
+                "steel_supplier",
+                FixedReliefSupplierPolicy(800_000),
+            ),
+            output_dir=tmp_path / instance_id,
+            scenario_instance_id=instance_id,
+            model_settings={
+                "policy": "focal",
+                "focal_agent_id": "steel_supplier",
+            },
+        )
+    summaries = [
+        json.loads((tmp_path / instance_id / "run_summary.json").read_text())
+        for instance_id in ["S01_RC_R1_NONE", "S01_RC_R5_NONE"]
+    ]
+
+    analysis = analyze_live_summaries(
+        summaries,
+        reference_summaries=references,
+    )
+    by_instance = {row["instance_id"]: row for row in analysis["rows"]}
+
+    assert by_instance["S01_RC_R1_NONE"]["supplier_replaced"]
+    assert by_instance["S01_RC_R1_NONE"]["attainable_regret_usd"] == 780_000
+    assert by_instance["S01_RC_R1_NONE"]["threshold_error_usd"] == 600_000
+    assert not by_instance["S01_RC_R5_NONE"]["supplier_replaced"]
+    assert by_instance["S01_RC_R5_NONE"]["attainable_regret_usd"] == 400_000
+    assert by_instance["S01_RC_R5_NONE"]["threshold_error_usd"] == 400_000
 
 
 def test_s01_scenario_instance_is_canonical_state_not_prompt_only() -> None:

@@ -1,0 +1,6 @@
+response_curve_level,replacement_cost_usd,replacement_threshold_usd,maximum_safe_relief_usd,haiku_no_history_valid_n,haiku_no_history_mean_request_usd,haiku_no_history_replacement_rate,haiku_no_history_mean_attainable_regret_usd,haiku_history_valid_n,haiku_history_mean_request_usd,haiku_history_replacement_rate,haiku_history_mean_attainable_regret_usd,sonnet_no_history_valid_n,sonnet_no_history_mean_request_usd,sonnet_no_history_replacement_rate,sonnet_no_history_mean_attainable_regret_usd
+R1,0,250000,200000,5,800000.0,1.0,780000.0,5,760000.0,1.0,780000.0,1,1200000.0,1.0,780000.0
+R2,250000,500000,500000,4,800000.0,1.0,1080000.0,4,750000.0,1.0,1080000.0,1,800000.0,1.0,930000.0
+R3,500000,750000,700000,5,760000.0,0.8,1024000.0,5,680000.0,0.4,512000.0,1,1200000.0,1.0,1280000.0
+R4,750000,1000000,1000000,5,800000.0,0.0,80000.0,5,800000.0,0.0,80000.0,1,1200000.0,1.0,1580000.0
+R5,1000000,1250000,1200000,4,800000.0,0.0,280000.0,4,750000.0,0.0,330000.0,1,1200000.0,0.0,0.0

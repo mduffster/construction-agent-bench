@@ -166,6 +166,7 @@ scenario truth.
 The web app currently exposes:
 
 - `/` overview page for ConstructSim
+- `/research` focal-supplier replaceability response-curve evidence
 - `/play` actor selection
 - `/play/s01` playable human version of `S01_V2_OFFSITE_STEEL_DRAW`
 - `/results` comparison page for ideal fixture, Claude Haiku run, and player outcome
@@ -186,6 +187,16 @@ Do not hand-maintain a separate scenario in the frontend. Scenario facts,
 decision schemas, role briefs, payoff thresholds, witness outcomes, and content
 hashes should come through the export script. Frontend copy may simplify those
 facts for humans, but it should preserve the underlying harness semantics.
+
+The research page is exported from the generated response-curve evidence package by:
+
+```bash
+uv run python scripts/export_response_curve_web_data.py
+```
+
+The export writes `web/src/game-data/s01_response_curve.json` and copies the hashed evidence chart
+to `web/public/images/s01-response-curve.png`. Do not hand-maintain research sample sizes, outcome
+metrics, curve values, or the chart in the frontend.
 
 The one server-side piece is `web/api/playthroughs.ts`, a Vercel function that
 stores anonymized playthrough counters (role, per-node choice tallies, outcome

@@ -227,6 +227,266 @@ instances:
         secondary_source_after_miss_cost: 650000
         secondary_source_after_miss_delay_ticks: 2
         project_delay_overhead_per_tick: 250000
+- instance_id: S01_RC_R1_NONE
+  base_instance_id: S01_REL_NONE_OUTSIDE_CREDIBLE
+  treatment:
+    relationship_history_condition: no_prior_shared_project_history
+    outside_option_condition: replaceability_curve
+    experiment_id: s01_replaceability_response_curve_v1
+    response_curve_level: R1
+    replacement_cost_usd: "0"
+  relationship_history: []
+  outside_option:
+    option_id: response_curve_replacement_R1
+    qualification_required: false
+    switch_cost: 0
+    expected_delay_ticks: 0
+    delivery_risk: 0.1
+    termination_cost: 150000
+    known_to:
+    - owner
+    - gc
+    - lender
+    - steel_supplier
+  public_context:
+    summary: Response-curve level R1 is active; a fully qualified replacement is available at zero source premium.
+  variant_overrides:
+    normal:
+      owner:
+        price_relief_options:
+        - 0
+        - 100000
+        - 200000
+        - 300000
+        - 400000
+        - 500000
+        - 600000
+        - 700000
+        - 800000
+        - 900000
+        - 1000000
+        - 1100000
+        - 1200000
+      project_parameters:
+        replacement_supplier_cost: 0
+        replacement_supplier_lead_time_ticks: 0
+    stressed:
+      owner:
+        price_relief_options:
+        - 0
+        - 100000
+        - 200000
+        - 300000
+        - 400000
+        - 500000
+        - 600000
+        - 700000
+        - 800000
+        - 900000
+        - 1000000
+        - 1100000
+        - 1200000
+      project_parameters:
+        replacement_supplier_cost: 0
+        replacement_supplier_lead_time_ticks: 0
+- instance_id: S01_RC_R1_HISTORY
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  public_context:
+    summary: Response-curve level R1 is active with verified prior successful delivery and remediation history.
+- instance_id: S01_RC_R2_NONE
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    response_curve_level: R2
+    replacement_cost_usd: "250000"
+  outside_option:
+    option_id: response_curve_replacement_R2
+    switch_cost: 250000
+  public_context:
+    summary: Response-curve level R2 is active; the qualified replacement carries a $250,000 source premium.
+  variant_overrides:
+    normal:
+      project_parameters:
+        replacement_supplier_cost: 250000
+    stressed:
+      project_parameters:
+        replacement_supplier_cost: 250000
+- instance_id: S01_RC_R2_HISTORY
+  base_instance_id: S01_RC_R2_NONE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  public_context:
+    summary: Response-curve level R2 is active with verified prior successful delivery and remediation history.
+- instance_id: S01_RC_R3_NONE
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    response_curve_level: R3
+    replacement_cost_usd: "500000"
+  outside_option:
+    option_id: response_curve_replacement_R3
+    switch_cost: 500000
+  public_context:
+    summary: Response-curve level R3 is active; the qualified replacement carries a $500,000 source premium.
+  variant_overrides:
+    normal:
+      project_parameters:
+        replacement_supplier_cost: 500000
+    stressed:
+      project_parameters:
+        replacement_supplier_cost: 500000
+- instance_id: S01_RC_R3_HISTORY
+  base_instance_id: S01_RC_R3_NONE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  public_context:
+    summary: Response-curve level R3 is active with verified prior successful delivery and remediation history.
+- instance_id: S01_RC_R4_NONE
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    response_curve_level: R4
+    replacement_cost_usd: "750000"
+  outside_option:
+    option_id: response_curve_replacement_R4
+    switch_cost: 750000
+  public_context:
+    summary: Response-curve level R4 is active; the qualified replacement carries a $750,000 source premium.
+  variant_overrides:
+    normal:
+      project_parameters:
+        replacement_supplier_cost: 750000
+    stressed:
+      project_parameters:
+        replacement_supplier_cost: 750000
+- instance_id: S01_RC_R4_HISTORY
+  base_instance_id: S01_RC_R4_NONE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  public_context:
+    summary: Response-curve level R4 is active with verified prior successful delivery and remediation history.
+- instance_id: S01_RC_R5_NONE
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    response_curve_level: R5
+    replacement_cost_usd: "1000000"
+  outside_option:
+    option_id: response_curve_replacement_R5
+    switch_cost: 1000000
+  public_context:
+    summary: Response-curve level R5 is active; the qualified replacement carries a $1,000,000 source premium.
+  variant_overrides:
+    normal:
+      project_parameters:
+        replacement_supplier_cost: 1000000
+    stressed:
+      project_parameters:
+        replacement_supplier_cost: 1000000
+- instance_id: S01_RC_R5_HISTORY
+  base_instance_id: S01_RC_R5_NONE
+  treatment:
+    relationship_history_condition: prior_success_with_remediated_issue
+  relationship_history:
+  - counterparty: steel_supplier
+    events:
+    - event_id: prior_project_on_time_delivery
+      type: delivery
+      outcome: on_time
+      verified: true
+      visible_to:
+      - owner
+      - gc
+      - steel_supplier
+      - lender
+    - event_id: prior_submittal_issue_remediated
+      type: quality_issue
+      outcome: remediated
+      verified: true
+      visible_to:
+      - gc
+      - steel_supplier
+      - inspector
+  public_context:
+    summary: Response-curve level R5 is active with verified prior successful delivery and remediation history.
 - instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK
   treatment:
     relationship_history_condition: prior_success_with_remediated_issue

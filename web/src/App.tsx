@@ -18,6 +18,7 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import rawGameData from "./game-data/s01_v2_game.json";
 import rawPopulationData from "./game-data/s01_v2_population.json";
+import rawResponseCurveData from "./game-data/s01_response_curve.json";
 import { fetchCrowdStats, submitPlaythrough } from "./lib/playthroughs";
 import type { CrowdStats } from "./lib/playthroughs";
 import {
@@ -45,11 +46,13 @@ import type {
   PopulationData,
   PopulationRun,
   ProjectGameState,
+  ResponseCurveData,
   RiskLevel,
 } from "./lib/types";
 
 const gameData = rawGameData as GameData;
 const populationData = rawPopulationData as PopulationData;
+const responseCurveData = rawResponseCurveData as ResponseCurveData;
 const playableRoleIds = gameData.playable_roles;
 type PlayView = "decision" | "result";
 type ProjectPhase =
@@ -153,6 +156,9 @@ export default function App() {
   if (route.pathname === "/results") {
     return <ResultsPage />;
   }
+  if (route.pathname === "/research") {
+    return <ResearchPage />;
+  }
   return <HomePage />;
 }
 
@@ -185,6 +191,9 @@ function HomePage() {
             <NavButton href="/results" icon={<Gauge size={18} />}>
               See example runs
             </NavButton>
+            <NavButton href="/research" icon={<Eye size={18} />}>
+              Read the current study
+            </NavButton>
           </div>
         </div>
         <figure className="overview-image">
@@ -210,42 +219,7 @@ function HomePage() {
         </p>
       </section>
 
-      <section className="overview-section">
-        <div className="section-title">
-          <Eye size={20} />
-          <h2>Some of what I've observed so far</h2>
-        </div>
-        <p>
-          In one scenario, with one live agent, other scripted actors, small samples,
-          and two model tiers. A couple things show up at times 
-          when an AI agent plays the steel supplier:
-        </p>
-        <ul className="findings-list">
-          <li>
-            <strong>It sometimes fails to price its own replaceability.</strong> The agent
-            demands price relief whether or not the buyer has a cheap, credible
-            replacement. It's a winning move when no good alternative exists,
-            but self-defeating otherwise. The agent gets replaced and takes a
-            loss it could have avoided by not over-asking. The project still 
-            finishes but the steel supplier loses out.
-          </li>
-          <li>
-            <strong>Its honesty tracks relationship history; but strategy does
-            not.</strong> With no prior track record, the agent overstates the cash
-            it needs; with a verified history with the counterparties, it reports accurately.
-            Yet its bargaining position stays the same either way.
-          </li>
-        </ul>
-        <p>
-          The harness scores these against each firm's private truth and
-          objective payoffs, and every run is deterministic and replayable. Code
-          and the evidence write-ups are on{" "}
-          <a href="https://github.com/mduffster/construction-agent-bench" rel="noreferrer" target="_blank">
-            GitHub
-          </a>
-          .
-        </p>
-      </section>
+      <ResearchTeaser />
 
       <section className="overview-section">
         <div className="section-title">
@@ -278,6 +252,240 @@ function HomePage() {
             </a>
           ))}
         </div>
+      </section>
+    </Shell>
+  );
+}
+
+function ResearchTeaser() {
+  const haiku = responseCurveData.haiku_confirmation;
+  const dominantAskCount = responseCurveData.haiku_request_counts["800000"] ?? 0;
+  return (
+    <section className="overview-section research-teaser">
+      <div className="section-title">
+        <Eye size={20} />
+        <h2>Current research result</h2>
+      </div>
+      <div className="research-teaser__layout">
+        <div>
+          <p className="research-kicker">The replaceability response curve</p>
+          <h3>AI suppliers did not adjust their ask when replacement got cheaper.</h3>
+          <p>
+            The safe commercial request moved from{" "}
+            <strong>{formatMoney(responseCurveData.design.minimum_safe_request_usd)}</strong>{" "}
+            to{" "}
+            <strong>{formatMoney(responseCurveData.design.maximum_safe_request_usd)}</strong>.
+            Haiku still asked for $800,000 in {dominantAskCount} of {haiku.valid_run_count}{" "}
+            valid confirmation runs. The project usually survived by replacing the
+            supplier, leaving the focal firm with an avoidable private loss.
+          </p>
+          <div className="research-mini-metrics" aria-label="Study highlights">
+            <span>
+              <strong>{Math.round(haiku.replacement_rate * 100)}%</strong>
+              replaced
+            </span>
+            <span>
+              <strong>{formatMoney(Math.round(haiku.mean_attainable_regret_usd))}</strong>
+              mean attainable regret
+            </span>
+            <span>
+              <strong>{formatModelCost(responseCurveData.recorded_total_model_cost_usd)}</strong>
+              recorded model spend
+            </span>
+          </div>
+          <NavButton href="/research" icon={<ArrowRight size={18} />}>
+            Explore the study
+          </NavButton>
+        </div>
+        <figure className="research-figure research-figure--compact">
+          <img
+            alt="Line chart showing the rational safe supplier request rising while Haiku requests stay nearly flat and Sonnet requests remain high"
+            src="/images/s01-response-curve.png"
+          />
+          <figcaption>
+            The black line is the best-response frontier. The model requests do
+            not follow it.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+  );
+}
+
+function ResearchPage() {
+  const haiku = responseCurveData.haiku_confirmation;
+  const sonnet = responseCurveData.sonnet_modal;
+  return (
+    <Shell>
+      <section className="page-head research-head">
+        <p className="eyebrow">Current experiment</p>
+        <h1>The replaceability response curve</h1>
+        <p className="lede">{responseCurveData.question}</p>
+        <p>
+          One model controls the steel supplier. Five deterministic counterparties
+          run the rest of the project. The supplier sees the same replacement
+          economics as the buyer, while its private cost shock and the project state
+          stay fixed.
+        </p>
+      </section>
+
+      <section className="overview-section">
+        <div className="section-title">
+          <Gauge size={20} />
+          <h2>What happened</h2>
+        </div>
+        <div className="metric-grid research-metric-grid">
+          <Metric
+            icon={<ClipboardCheck size={20} />}
+            label="Haiku validity"
+            value={`${haiku.valid_run_count}/${haiku.run_count} runs`}
+          />
+          <Metric
+            icon={<RotateCcw size={20} />}
+            label="Supplier replaced"
+            value={`${Math.round(haiku.replacement_rate * 100)}%`}
+          />
+          <Metric
+            icon={<DollarSign size={20} />}
+            label="Mean attainable regret"
+            value={formatMoney(Math.round(haiku.mean_attainable_regret_usd))}
+          />
+          <Metric
+            icon={<ShieldCheck size={20} />}
+            label="Recorded model spend"
+            value={formatModelCost(responseCurveData.recorded_total_model_cost_usd)}
+          />
+        </div>
+        <p className="body-copy">
+          Haiku requested $800,000 in 39 valid runs and $600,000 in seven while
+          the rational safe request moved by $1 million. A five-cell Sonnet
+          diagnostic was not better: it was replaced in{" "}
+          {Math.round(sonnet.replacement_rate * 100)}% of runs and averaged{" "}
+          {formatMoney(sonnet.mean_attainable_regret_usd)} in attainable regret.
+        </p>
+      </section>
+
+      <section className="overview-section">
+        <div className="section-title">
+          <ClipboardCheck size={20} />
+          <h2>How the test works</h2>
+        </div>
+        <div className="research-method-grid">
+          <article>
+            <span>1</span>
+            <strong>Hold the project fixed</strong>
+            <p>The supplier faces the same real cost shock, liquidity need, contract, and deadline.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <strong>Change replaceability</strong>
+            <p>Only the qualified replacement premium moves, from $0 to $1 million.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <strong>Score the request</strong>
+            <p>The harness compares each ask with the highest safe request and the best attainable payoff.</p>
+          </article>
+        </div>
+        <p className="fine-print">
+          The deterministic oracle evaluated {responseCurveData.design.deterministic_reference_trajectory_count}{" "}
+          reference trajectories before any paid model run. All were valid.
+        </p>
+      </section>
+
+      <section className="overview-section research-chart-section">
+        <div className="section-title">
+          <Eye size={20} />
+          <h2>The response curve</h2>
+        </div>
+        <p>
+          As replacement becomes more expensive, a profit-seeking supplier can
+          safely ask for more. The black frontier rises accordingly. The model
+          requests remain nearly flat or jump around instead.
+        </p>
+        <figure className="research-figure">
+          <img
+            alt="Response curve comparing the rational safe request with Haiku requests with and without relationship history and a Sonnet modal request"
+            src="/images/s01-response-curve.png"
+          />
+          <figcaption>
+            Haiku values are means over valid runs. Sonnet is one modal no-history
+            run at each level.
+          </figcaption>
+        </figure>
+        <div className="research-table" role="table" aria-label="Response curve values">
+          <div className="research-table__row research-table__row--head" role="row">
+            <span>Replacement premium</span>
+            <span>Safe request</span>
+            <span>Haiku, no history</span>
+            <span>Haiku, verified history</span>
+            <span>Sonnet modal</span>
+          </div>
+          {responseCurveData.levels.map((level) => (
+            <div className="research-table__row" role="row" key={level.response_curve_level}>
+              <span data-label="Replacement premium">
+                {formatMoney(level.replacement_cost_usd)}
+              </span>
+              <span data-label="Safe request">
+                {formatMoney(level.maximum_safe_relief_usd)}
+              </span>
+              <span data-label="Haiku, no history">
+                {formatMoney(level.haiku_no_history_mean_request_usd)}
+              </span>
+              <span data-label="Haiku, verified history">
+                {formatMoney(level.haiku_history_mean_request_usd)}
+              </span>
+              <span data-label="Sonnet modal">
+                {formatMoney(level.sonnet_no_history_mean_request_usd)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="overview-section research-reading">
+        <div>
+          <div className="section-title">
+            <DollarSign size={20} />
+            <h2>Why it matters</h2>
+          </div>
+          <p>
+            Looking only at project completion misses the failure. When the ask is
+            too high, the buyer replaces the supplier and keeps the project alive.
+            The focal firm absorbs the loss. The agent sounds commercially coherent
+            but fails to reason through the counterparty's outside option.
+          </p>
+        </div>
+        <div>
+          <div className="section-title">
+            <ShieldCheck size={20} />
+            <h2>How to read this</h2>
+          </div>
+          <p>
+            This is preliminary evidence from one focal-agent scenario, not a
+            general model leaderboard. Repairs remain an intervention, both models
+            come from one provider, and there is not yet a human baseline.
+          </p>
+        </div>
+      </section>
+
+      <section className="overview-section research-source">
+        <div className="section-title">
+          <Building2 size={20} />
+          <h2>Evidence and code</h2>
+        </div>
+        <p>
+          The public data on this page is generated from the replayable evidence
+          package rather than maintained separately in the frontend.
+        </p>
+        <a
+          className="text-link"
+          href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/evidence/response_curve/evidence_package.md"
+          rel="noreferrer"
+          target="_blank"
+        >
+          Read the full evidence package <ArrowRight size={16} />
+        </a>
       </section>
     </Shell>
   );
@@ -1174,6 +1382,18 @@ function ResultsPage() {
         </section>
       </section>
 
+      <aside className="research-crosslink">
+        <div>
+          <strong>Looking for the focal-supplier experiment?</strong>
+          <span>
+            The replaceability study is separate from these six-agent game runs.
+          </span>
+        </div>
+        <a href="/research">
+          View current research <ArrowRight size={16} />
+        </a>
+      </aside>
+
       <PopulationSection />
 
       <section className="overview-section">
@@ -1399,6 +1619,7 @@ function Shell({
         </a>
         <nav>
           <a href="/">Overview</a>
+          <a href="/research">Research</a>
           <a href="/play">Play</a>
           <a href="/results">Results</a>
         </nav>
@@ -1678,6 +1899,10 @@ function formatMoney(value: number) {
     return `${sign}$${(amount / 1_000_000).toFixed(2)}M`;
   }
   return `${sign}$${amount.toLocaleString()}`;
+}
+
+function formatModelCost(value: number) {
+  return `$${value.toFixed(2)}`;
 }
 
 function formatDelta(value: number, unit: string) {

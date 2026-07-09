@@ -210,12 +210,61 @@ def s01_outside_option_economics(
     }
 
 
-def _compose_instance(pack: ScenarioInstancePack, raw: dict[str, Any]) -> ScenarioInstance:
+def _compose_instance(
+    pack: ScenarioInstancePack,
+    raw: dict[str, Any],
+    *,
+    inheritance_stack: tuple[str, ...] = (),
+) -> ScenarioInstance:
+    """Compose a scenario instance, optionally from a named base instance.
+
+    The response-curve experiment needs several instances that differ only in a
+    handful of treatment fields. Keeping those deltas explicit avoids copying a
+    large scenario record ten times and makes the intended causal surface easier
+    to audit. Inheritance is resolved before strict ScenarioInstance validation,
+    so ``base_instance_id`` never enters runtime state or manifests.
+    """
+    base_instance_id = raw.get("base_instance_id")
+    if not base_instance_id:
+        payload = deepcopy(raw)
+    else:
+        instance_id = str(raw.get("instance_id", ""))
+        if instance_id in inheritance_stack:
+            chain = " -> ".join((*inheritance_stack, instance_id))
+            raise ValueError(f"scenario instance inheritance cycle: {chain}")
+        base_raw = next(
+            (
+                candidate
+                for candidate in pack.instances
+                if candidate.get("instance_id") == base_instance_id
+            ),
+            None,
+        )
+        if base_raw is None:
+            raise ValueError(
+                f"unknown base_instance_id {base_instance_id!r} for {instance_id!r}"
+            )
+        base = _compose_instance(
+            pack,
+            base_raw,
+            inheritance_stack=(*inheritance_stack, instance_id),
+        ).model_dump(mode="python")
+        payload = {
+            key: value
+            for key, value in base.items()
+            if key not in {"schema_version", "scenario_id"}
+        }
+        overrides = {
+            key: deepcopy(value)
+            for key, value in raw.items()
+            if key != "base_instance_id"
+        }
+        _deep_merge(payload, overrides)
     return ScenarioInstance.model_validate(
         {
             "schema_version": pack.schema_version,
             "scenario_id": pack.scenario_id,
-            **raw,
+            **payload,
         }
     )
 

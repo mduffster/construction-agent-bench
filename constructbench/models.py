@@ -282,7 +282,9 @@ def _repair_prompt_for_style(
             "counterparties, and evidence IDs visible in the observation. If an "
             "assessment evidence error is listed, include either assessment_updates "
             "with changed scores or assessment_reviews with review_result no_update "
-            "covering every evidence_id."
+            "covering every evidence_id. A private_message must name at least one visible "
+            "recipient_id; otherwise remove it or use no_communication when that explicit "
+            "choice is required."
         ),
         "observation": _observation_prompt(observation, include_role=include_role),
     }
@@ -337,6 +339,7 @@ def _observation_prompt(
             "If submission_contract.require_explicit_assessment_choice is true, include an assessment_reviews no_update record even when assessment_evidence is empty and scores stay unchanged.",
             "In assessment_phase, empty assessment_updates and empty assessment_reviews together are invalid.",
             "If submission_contract.require_explicit_communication is true, use a no_communication record with a short summary when you choose to send no message.",
+            "Every private_message must include at least one recipient_id from the visible communication powers; never emit a private_message with an empty recipient_ids list.",
             "Do not use Markdown reports, tables, long bullet lists, or multi-section memos inside communication summaries.",
             "Prefer one or two plain sentences for each communication summary.",
             "Return JSON only.",

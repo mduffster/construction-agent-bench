@@ -1,0 +1,92 @@
+{
+  "experiment_id": "s01_replaceability_response_curve_v1",
+  "generated_files": [
+    "evidence_package.md",
+    "response_curve_by_level.csv",
+    "haiku_confirmation_rows.csv",
+    "sonnet_modal_rows.csv",
+    "response_curve.png",
+    "attainable_regret.png"
+  ],
+  "limitations": {
+    "interrupted_request_unpriced": true,
+    "note": "Recorded cost excludes any provider charge for the Sonnet request interrupted before a durable run summary was written."
+  },
+  "metrics": {
+    "haiku_no_history_mean_regret_usd": 646086.9565217391,
+    "haiku_repair_attempt_count": 22,
+    "haiku_request_counts": {
+      "600000": 7,
+      "800000": 39
+    },
+    "interrupted_probe_cost_usd": 0.31104,
+    "recorded_cost_usd": 2.507715,
+    "sonnet_mean_regret_usd": 914000.0,
+    "sonnet_repair_attempt_count": 3
+  },
+  "samples": {
+    "haiku_confirmation": {
+      "invalid_run_count": 4,
+      "mean_attainable_regret_usd": 594782.6086956522,
+      "model": "claude-haiku-4-5-20251001",
+      "model_cost_usd": 1.140198,
+      "replacement_rate": 0.5217391304347826,
+      "request_monotonicity_violations": 4,
+      "run_count": 50,
+      "temperature": 1.0,
+      "valid_rate": 0.92,
+      "valid_run_count": 46
+    },
+    "sonnet_modal": {
+      "invalid_run_count": 0,
+      "mean_attainable_regret_usd": 914000.0,
+      "model": "claude-sonnet-5",
+      "model_cost_usd": 0.859434,
+      "replacement_rate": 0.8,
+      "request_monotonicity_violations": 1,
+      "run_count": 5,
+      "temperature": 0.0,
+      "valid_rate": 1.0,
+      "valid_run_count": 5
+    }
+  },
+  "schema_version": "constructbench.response_curve_evidence.v1",
+  "source_files": [
+    {
+      "path": "outputs/s01_response_curve_modal_pilot_20260709/response_curve_analysis.json",
+      "sha256": "ecb497b3c848acd41c7cc68b3aec3dd35e6f5a0123907482c2021df8650fb665"
+    },
+    {
+      "path": "outputs/s01_response_curve_modal_pilot_20260709/response_curve_rows.jsonl",
+      "sha256": "f4551311ea220706db54551ebb0fc1f051e207d0d7f162a3077a899ff1d0e958"
+    },
+    {
+      "path": "outputs/s01_response_curve_haiku_confirmation_20260709/response_curve_analysis.json",
+      "sha256": "4687e4d29211a560184f5fc1d832b5791af1269e5833251fdff527c07afab30c"
+    },
+    {
+      "path": "outputs/s01_response_curve_haiku_confirmation_20260709/response_curve_rows.jsonl",
+      "sha256": "bd79c665d85e0da586b2d62d72a8da1be2391d6bc44729f9acdcc9cef334041e"
+    },
+    {
+      "path": "outputs/s01_response_curve_haiku_confirmation_20260709/reference_summary.json",
+      "sha256": "b5b44d25bce6fe405f00d47dc7b3e490e544379a0f7e07611c0428bd9c2f27b1"
+    },
+    {
+      "path": "outputs/s01_response_curve_sonnet_no_history_promptfix_20260709/response_curve_analysis.json",
+      "sha256": "0b35d878c956b1fae828f0fbd25071076e478edadb07f5a9a9bfba80385a90f8"
+    },
+    {
+      "path": "outputs/s01_response_curve_sonnet_no_history_promptfix_20260709/response_curve_rows.jsonl",
+      "sha256": "43fcaf9a12139fe7e7cd4bb491d91f60e10b07378445be50251b61599ffbdad4"
+    },
+    {
+      "path": "outputs/s01_response_curve_sonnet_modal_20260709/raw_runs/S01_RC_R1_HISTORY_replicate_00/run_summary.json",
+      "sha256": "ea02f8e3e126c19444d741fbd29b0a023eb304f006a3c131b0cb44ade18c688b"
+    },
+    {
+      "path": "outputs/s01_response_curve_sonnet_modal_20260709/raw_runs/S01_RC_R1_NONE_replicate_00/run_summary.json",
+      "sha256": "110d2fa9dc991695ece4d5242f8afc0fa76c556ceffca5c58ad0603c2316bd9e"
+    }
+  ]
+}

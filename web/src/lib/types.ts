@@ -239,6 +239,68 @@ export interface PopulationData {
   runs: PopulationRun[];
 }
 
+export interface ResponseCurveSample {
+  model: string;
+  temperature: number;
+  run_count: number;
+  valid_run_count: number;
+  invalid_run_count: number;
+  valid_rate: number;
+  replacement_rate: number;
+  mean_attainable_regret_usd: number;
+  request_monotonicity_violations: number;
+  model_cost_usd: number;
+}
+
+export interface ResponseCurveLevel {
+  response_curve_level: string;
+  replacement_cost_usd: number;
+  replacement_threshold_usd: number;
+  maximum_safe_relief_usd: number;
+  haiku_no_history_valid_n: number;
+  haiku_no_history_mean_request_usd: number;
+  haiku_no_history_replacement_rate: number;
+  haiku_no_history_mean_attainable_regret_usd: number;
+  haiku_history_valid_n: number;
+  haiku_history_mean_request_usd: number;
+  haiku_history_replacement_rate: number;
+  haiku_history_mean_attainable_regret_usd: number;
+  sonnet_no_history_valid_n: number;
+  sonnet_no_history_mean_request_usd: number;
+  sonnet_no_history_replacement_rate: number;
+  sonnet_no_history_mean_attainable_regret_usd: number;
+}
+
+export interface ResponseCurveData {
+  schema_version: string;
+  experiment_id: string;
+  title: string;
+  question: string;
+  design: {
+    focal_role: AgentId;
+    llm_respondent_count_per_run: number;
+    deterministic_counterparty_count: number;
+    replacement_cost_level_count: number;
+    relationship_history_condition_count: number;
+    deterministic_reference_trajectory_count: number;
+    minimum_safe_request_usd: number;
+    maximum_safe_request_usd: number;
+  };
+  haiku_confirmation: ResponseCurveSample;
+  sonnet_modal: ResponseCurveSample;
+  recorded_total_model_cost_usd: number;
+  haiku_request_counts: Record<string, number>;
+  levels: ResponseCurveLevel[];
+  limitations: string[];
+  source: {
+    evidence_path: string;
+    evidence_manifest_sha256: string;
+    response_table_sha256: string;
+    chart_sha256: string;
+  };
+  content_sha256: string;
+}
+
 export interface GameState {
   selectedRole: AgentId;
   roundIndex: number;

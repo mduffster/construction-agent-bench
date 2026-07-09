@@ -44,16 +44,29 @@ Output contract:
   `run_summary.json`.
 - Debug model I/O is written only when explicitly requested.
 
-## Current Experiment Direction: S01 Low-Budget Transition
+## Current Experiment Direction: S01 Replaceability Response Curve
 
-Status: **IN DEVELOPMENT**
+Status: **CURRENT / PRELIMINARY EVIDENCE**
 
-Purpose: turn the S01 steel-market shock into a controlled focal-agent experiment on supplier
-disclosure, bargaining, relationship history, outside options, utility, and project welfare.
+Purpose: measure whether a focal LLM steel supplier adjusts its commercial relief request as a
+known qualified replacement becomes cheaper, while holding the private shock and project state
+fixed.
 
 Planning source:
 
 - `docs/constructbench_low_budget_transition_plan.md`
+- `docs/s01_replaceability_response_curve_spec.md`
+
+Current evidence:
+
+- `docs/evidence/response_curve/evidence_package.md`
+- ten treatment cells: five ordered replacement-cost levels crossed with two verified-history
+  conditions;
+- 130 valid deterministic reference trajectories with a monotonic best-response oracle;
+- 10/10 valid Haiku modal runs and 46/50 valid temperature-1 Haiku confirmation runs;
+- a five-cell no-history Sonnet modal diagnostic;
+- `$2.51` recorded model spend, excluding a possibly billable interrupted request without durable
+  telemetry.
 
 Current implemented components:
 
@@ -128,9 +141,11 @@ Current implemented components:
   a "you vs. other players" panel; when storage is unconfigured the endpoint reports
   unavailable and the panel stays hidden.
 
-Next queued components:
+Next research gate:
 
-- Rotate the focal role from supplier to GC (transition plan section 9).
+- scrutinize and, if warranted, minimally replicate the response-curve result before proposing
+  exactly one mechanismally distinct scenario. GC role rotation and S02-S05 expansion are not
+  currently queued.
 
 ## Legacy: Feedback-Cascade Suite
 
