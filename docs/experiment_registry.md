@@ -242,13 +242,20 @@ successful repairs. All live rungs selected the costly backup path and missed co
 cleanly separating correct data lineage from decision quality. V2 cost `$1.368483`; conservative
 all-program spend is `$8.476765` against the user's `$10` ceiling.
 
-Next gate status: **READY / FROZEN PROTOCOL**
+Next gate status: **COMPLETE / LOCAL MECHANISM GATE PASSED**
 
-The six-run supplier-GC contrast is frozen in
-[`s01_v2_derived_state_packet_protocol.md`](s01_v2_derived_state_packet_protocol.md). It compares
-the current observation with a neutral, harness-derived decision-state packet at the two safe
-post-R1 recovery nodes. Initial application, document routing, and all C-stage observations remain
-untreated; broader live-role confirmation waits for this descriptive local mechanism gate.
+The frozen protocol is in
+[`s01_v2_derived_state_packet_protocol.md`](s01_v2_derived_state_packet_protocol.md), and the
+completed outcome is in
+[`s01_v2_derived_state_packet_results.md`](s01_v2_derived_state_packet_results.md). Across three
+paired periods, control produced `0/3` full-sequence cures and `3/3` backup activations; treatment
+produced `3/3` full-sequence cures and `0/3` backup activations. All runs were valid,
+repair-free, project-successful, and lineage-complete. A zero-call archived-submission replay after
+correcting a duplicated supplier recovery-spend deduction gives coalition success `0/3` control
+versus `3/3` treatment, so the predeclared local advancement rule passes.
+
+The next low-cost gate is a component ablation of the supplier B1 packet without the GC B2 packet.
+Broader live-role confirmation should follow only after that component boundary is clear.
 
 ## Legacy: Feedback-Cascade Suite
 

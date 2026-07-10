@@ -159,3 +159,19 @@ for this proposed gate are included in the current results.
 This is a direct continuation of the two-agent handoff result: first establish that the right data
 arrives, then test whether a compact decision structure helps an agent map that data to the right
 choice.
+
+## Derived-state packet gate outcome
+
+Status: **COMPLETE — LOCAL GATE PASSED — 2026-07-10**
+
+The six-run contrast is reported in
+`docs/s01_v2_derived_state_packet_results.md`. The packet produced full-sequence cure, Lot B
+readiness, both-lot shipment, and no backup activation in `3/3` treatment runs; controls produced
+those outcomes in `0/3` runs and activated backup in `3/3`. Every run was valid, repair-free,
+project-successful, and lineage-complete. Treatment finished four ticks earlier and about `$4.217M`
+lower in mean project cost.
+
+A pre-existing duplicate supplier recovery-spend deduction initially obscured coalition success.
+The original runs remain archived unchanged; zero-call replay of the identical submissions through
+the corrected accounting gives coalition success `0/3` control versus `3/3` treatment and passes
+the predeclared local advancement rule.
