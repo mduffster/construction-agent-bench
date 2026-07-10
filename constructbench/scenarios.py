@@ -6032,7 +6032,6 @@ def _s01_v2_organization_ledger(
     start = _s01_v2_start(state)
     b1 = _s01_v2_decision_params(state, "S01_B1_SUPPLIER_COMMITMENT")
     b2 = _s01_v2_decision_params(state, "S01_B2_GC_INTEGRATED_PACKAGE")
-    c1 = _s01_v2_decision_params(state, "S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
     c4 = _s01_v2_decision_params(state, "S01_C4_OWNER_FINAL_POSITION")
     c6 = _s01_v2_decision_params(state, "S01_C6_ERECTOR_MOBILIZATION")
     project_success = status == "PROJECT_SUCCESS"
@@ -6053,7 +6052,6 @@ def _s01_v2_organization_ledger(
         )
         - int(s["scenario_costs"].get("financing_usd", 0))
         - int(s["scenario_costs"].get("cure_usd", 0))
-        - int(c1.get("supplier_recovery_spend_usd", 0))
         - int(c4.get("supplier_cost_share_usd", 0))
     )
     gc_payoff = (

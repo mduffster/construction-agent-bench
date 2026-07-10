@@ -635,6 +635,34 @@ def test_s01_v2_resolution_handlers_apply_cash_release_and_no_unreleased_erectio
     assert project["s01_v2_compliance_failure"] is True
 
 
+def test_s01_v2_supplier_recovery_spend_is_charged_once_to_private_payoff() -> None:
+    baseline = run_fixture("S01_V2", "efficient_phased_coalition_success")
+    recovery_spend = 250_000
+    recovery = _run_efficient_with_overrides(
+        {
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {
+                "supplier_recovery_spend_usd": recovery_spend,
+            }
+        }
+    )
+
+    baseline_payoff = baseline.final_state.canonical_state["organizations"][
+        "steel_supplier"
+    ]["realized_payoff_usd"]
+    recovery_payoff = recovery.final_state.canonical_state["organizations"][
+        "steel_supplier"
+    ]["realized_payoff_usd"]
+    assert recovery.final_state.canonical_state["s01_v2_state"]["scenario_costs"][
+        "cure_usd"
+    ] == (
+        baseline.final_state.canonical_state["s01_v2_state"]["scenario_costs"][
+            "cure_usd"
+        ]
+        + recovery_spend
+    )
+    assert recovery_payoff == baseline_payoff - recovery_spend
+
+
 def test_s01_v2_lineage_separates_traceability_from_viability() -> None:
     efficient = run_fixture("S01_V2", "efficient_phased_coalition_success")
     lineage = efficient.final_state.canonical_state["s01_v2_state"]["analysis"][
