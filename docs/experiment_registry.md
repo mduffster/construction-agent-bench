@@ -201,7 +201,7 @@ chat, new scenarios, and stronger-model arms remain deferred.
 
 ## Staged Experiment: S01 V2 Multiplayer Lineage Bridge
 
-Status: **V2 DETERMINISTICALLY QUALIFIED / LIVE LADDER PENDING**
+Status: **V2 LIVE QUALIFICATION COMPLETE**
 
 Purpose: test whether a growing set of AI-run firms can preserve and act on business data across
 the supplier-document, GC-routing, inspector-release, lender-draw, supplier-readiness, shipment,
@@ -210,6 +210,7 @@ and labor-mobilization chain.
 Planning source:
 
 - `docs/s01_v2_multiplayer_bridge_spec.md`
+- `docs/s01_v2_multiplayer_bridge_results.md`
 
 Implemented surface:
 
@@ -235,10 +236,16 @@ Deterministic command:
 uv run python scripts/run_s01_v2_multiplayer_ladder.py --preflight-only
 ```
 
-The v2 prior ledger is `$7.108282`, including v1. Its default reservation projects total program
-spend to `$9.028282`; the hard stop is `$9.50`
-against the user's `$10` ceiling. The live ladder requires `--allow-live-batch` and stops at the
-first invalid or incomplete-lineage rung.
+The completed V2 ladder passed all four rungs. Every rung was project-successful,
+lineage-complete, and viability-preserving, with no realized clips. The full-six run needed three
+successful repairs. All live rungs selected the costly backup path and missed coalition success,
+cleanly separating correct data lineage from decision quality. V2 cost `$1.368483`; conservative
+all-program spend is `$8.476765` against the user's `$10` ceiling.
+
+The next gate is a six-run supplier-GC contrast at the earliest common divergence: current
+observation versus a neutral, harness-derived decision-state packet for document-supported value,
+funding thresholds, funding-source status, and operative caps. Broader live-role confirmation waits
+for that local mechanism gate.
 
 ## Legacy: Feedback-Cascade Suite
 

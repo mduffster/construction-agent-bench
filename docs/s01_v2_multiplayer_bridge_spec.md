@@ -1,6 +1,6 @@
 # S01 V2 live multiplayer lineage bridge
 
-Status: **V2 DETERMINISTICALLY QUALIFIED; LIVE LADDER PENDING — 2026-07-10**
+Status: **V2 LIVE QUALIFICATION COMPLETE — 2026-07-10**
 
 Experiment ID: `s01_v2_live_multiplayer_ladder_v2`
 
@@ -147,7 +147,10 @@ uv run python scripts/run_s01_v2_multiplayer_ladder.py --allow-live-batch
 
 ## Interpretation boundary
 
-A successful ladder would establish that this particular multi-hop chain can be executed and
-diagnosed under controlled role expansion. It would not validate all six-agent social dynamics,
+The successful ladder establishes that this particular multi-hop chain can be executed and
+diagnosed under controlled role expansion. It does not validate all six-agent social dynamics,
 human negotiation, or general construction decision-making. Broader commercial degrees of freedom
 should still be added one at a time, with a new consequence audit and explicit research contrast.
+
+The completed outcome record and next gate are reported in
+`docs/s01_v2_multiplayer_bridge_results.md`.
