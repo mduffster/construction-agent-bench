@@ -263,7 +263,7 @@ function HomePage() {
 
 function ResearchTeaser() {
   const handoff = researchProgramData.handoff;
-  const multiplayer = researchProgramData.multiplayer;
+  const packet = researchProgramData.decision_packet;
   return (
     <section className="overview-section research-teaser">
       <div className="section-title">
@@ -273,18 +273,16 @@ function ResearchTeaser() {
       <div className="research-teaser__layout">
         <div>
           <p className="research-kicker">From one decision to six firms</p>
-          <h3>The information arrived. The hard part was turning it into the right decision.</h3>
+          <h3>The chain worked. A compact state packet changed the decision.</h3>
           <p>
             The single-agent study exposed a pricing failure. In the two-agent handoff,
             every exact live GC calculation produced a safe supplier action. In the
-            six-agent ladder, every measured link worked, but the live teams still
-            converged on a costly backup path.
+            six-agent ladder, every measured link worked but the live teams still chose
+            costly backup. The latest paired test made the post-inspection decision state
+            explicit: all three packet runs preserved the full steel sequence and avoided
+            backup.
           </p>
           <div className="research-mini-metrics" aria-label="Study highlights">
-            <span>
-              <strong>{handoff.valid_run_count}/{handoff.assigned_run_count}</strong>
-              valid handoff runs
-            </span>
             <span>
               <strong>
                 {handoff.safe_action_given_exact_count}/{handoff.exact_live_calculation_count}
@@ -292,8 +290,12 @@ function ResearchTeaser() {
               safe when calculated exactly
             </span>
             <span>
-              <strong>{multiplayer.completed_stage_count}/4</strong>
-              live-role rungs valid
+              <strong>{packet.treatment.full_sequence_cure_count}/3</strong>
+              packet runs chose full cure
+            </span>
+            <span>
+              <strong>{3 - packet.treatment.backup_activation_count}/3</strong>
+              packet runs avoided backup
             </span>
           </div>
           <NavButton href="/research" icon={<ArrowRight size={18} />}>
@@ -327,8 +329,9 @@ function ResearchPage() {
         <p>
           The experiments add organizational complexity one step at a time: first one
           live decision-maker, then a two-firm handoff, then a controlled ladder up to
-          six live firms. Each stage asks whether a failure comes from missing data,
-          transmission, calculation, or the final business choice.
+          six live firms, then a paired decision-support intervention. Each stage asks
+          whether a failure comes from missing data, transmission, calculation, state
+          representation, or the final business choice.
         </p>
       </section>
 
@@ -455,6 +458,8 @@ function ResearchPage() {
 
       <MultiplayerResearchSection />
 
+      <DecisionPacketResearchSection />
+
       <section className="overview-section research-reading">
         <div>
           <div className="section-title">
@@ -463,7 +468,7 @@ function ResearchPage() {
           </div>
           <p>
             Looking only at project completion misses both private losses and the
-            path used to get there. Across the three stages, the harness separates
+            path used to get there. Across the four stages, the harness separates
             whether the right facts arrived from whether an agent mapped those facts
             to a good commercial choice.
           </p>
@@ -506,6 +511,10 @@ function ResearchPage() {
             href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_multiplayer_bridge_results.md"
             label="Multiplayer ladder results"
           />
+          <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_derived_state_packet_results.md"
+            label="Decision-state packet results"
+          />
         </div>
       </section>
     </Shell>
@@ -515,6 +524,7 @@ function ResearchPage() {
 function ResearchProgramOverview() {
   const handoff = researchProgramData.handoff;
   const multiplayer = researchProgramData.multiplayer;
+  const packet = researchProgramData.decision_packet;
   const trustedThreshold = responseCurveData.mechanism_test.trusted_threshold_effect;
   return (
     <section className="overview-section research-program-overview">
@@ -553,14 +563,25 @@ function ResearchProgramOverview() {
           </p>
           <a href="#multiplayer">See the ladder</a>
         </article>
+        <article>
+          <span className="research-stage-chip">Paired 2-firm test</span>
+          <strong>Derived decision state</strong>
+          <p>
+            Full-sequence cure moved from {packet.control.full_sequence_cure_count}/3
+            to {packet.treatment.full_sequence_cure_count}/3, while backup activation
+            moved from {packet.control.backup_activation_count}/3 to{" "}
+            {packet.treatment.backup_activation_count}/3.
+          </p>
+          <a href="#decision-packet">See the packet test</a>
+        </article>
       </div>
       <div className="research-program-takeaway">
         <strong>Current read</strong>
         <p>
-          The harness can now show that information reached the right organization
-          and affected canonical state. The recurring weakness is upstream derived
-          decision state: selecting the right facts, computing the operative value,
-          and preserving the full technical path.
+          The harness can now distinguish transport from decision mapping. In the
+          latest test, the facts were already authorized; organizing verified value,
+          thresholds, source status, and caps changed the supplier's cure choice in
+          all three paired periods.
         </p>
       </div>
     </section>
@@ -737,6 +758,105 @@ function MultiplayerResearchSection() {
         population effect. The full-six run needed three successful repairs.
       </p>
     </section>
+  );
+}
+
+function DecisionPacketResearchSection() {
+  const packet = researchProgramData.decision_packet;
+  const control = packet.control;
+  const treatment = packet.treatment;
+  return (
+    <section className="overview-section" id="decision-packet">
+      <div className="section-title">
+        <ClipboardCheck size={20} />
+        <h2>Stage 4 — the derived decision-state packet</h2>
+      </div>
+      <p>
+        The supplier and GC remained live while the other four firms stayed
+        state-aware controls. Three paired periods compared the current post-R1
+        observation with the same authorized facts organized into a neutral packet:
+        verified value, supplier cash thresholds, hard versus provisional sources,
+        and operative caps.
+      </p>
+      <div className="metric-grid research-metric-grid">
+        <Metric
+          icon={<CheckCircle2 size={20} />}
+          label="Valid and lineage-complete"
+          value={`${packet.valid_run_count}/${packet.assigned_run_count}`}
+        />
+        <Metric
+          icon={<ClipboardCheck size={20} />}
+          label="Full-sequence cure"
+          value={`${control.full_sequence_cure_count}/3 → ${treatment.full_sequence_cure_count}/3`}
+        />
+        <Metric
+          icon={<ShieldCheck size={20} />}
+          label="Backup activated"
+          value={`${control.backup_activation_count}/3 → ${treatment.backup_activation_count}/3`}
+        />
+        <Metric
+          icon={<DollarSign size={20} />}
+          label="Mean project cost"
+          value={`${formatMoney(control.mean_final_project_cost)} → ${formatMoney(treatment.mean_final_project_cost)}`}
+        />
+      </div>
+      <div className="program-table" role="table" aria-label="Derived decision-state packet results">
+        <div className="program-row program-row--packet program-row--head" role="row">
+          <span>Arm</span>
+          <span>Full cure</span>
+          <span>Lot B ready</span>
+          <span>Backup</span>
+          <span>Coalition</span>
+          <span>Finished</span>
+          <span>Mean cost</span>
+        </div>
+        <PacketResultRow label="Current observation" arm={control} />
+        <PacketResultRow label="Derived-state packet" arm={treatment} treatment />
+      </div>
+      <div className="research-program-takeaway">
+        <strong>The split began at the supplier's B1 cure decision.</strong>
+        <p>
+          Controls chose a Lot-A-only cure in 3/3 runs. Treatments chose the
+          full-sequence cure in 3/3, made Lot B ready at tick 18, shipped both lots,
+          and avoided backup. The treatment path finished {packet.mean_completion_tick_difference}
+          {" "}weeks earlier and about {formatMoney(packet.mean_project_cost_difference_usd)}
+          {" "}lower in mean project cost.
+        </p>
+      </div>
+      <p className="mechanism-caveat">
+        The frozen run initially exposed a duplicated supplier recovery-spend deduction.
+        A zero-call replay after the one-line correction preserved every decision, project
+        cost, completion tick, and lineage result; corrected coalition success is 0/3
+        control versus 3/3 treatment. There are only three repeated trials per arm, and
+        the supplier and GC packets were bundled, so this is a local mechanism result—not
+        a population estimate or proof that the GC-side packet was necessary.
+      </p>
+    </section>
+  );
+}
+
+function PacketResultRow({
+  arm,
+  label,
+  treatment = false,
+}: {
+  arm: ResearchProgramData["decision_packet"]["control"];
+  label: string;
+  treatment?: boolean;
+}) {
+  return (
+    <div
+      className={`program-row program-row--packet${treatment ? " program-row--packet-treatment" : ""}`}
+      role="row"
+    >
+      <span data-label="Arm">{label}</span>
+      <span data-label="Full cure">{arm.full_sequence_cure_count}/3</span>
+      <span data-label="Lot B ready">{arm.lot_b_ready_count}/3</span>
+      <span data-label="Backup">{arm.backup_activation_count}/3</span>
+      <span data-label="Coalition">{arm.coalition_success_count}/3</span>
+      <span data-label="Finished">Week {arm.mean_completion_tick}</span>
+      <span data-label="Mean cost">{formatMoney(arm.mean_final_project_cost)}</span>
+    </div>
   );
 }
 
@@ -1655,11 +1775,11 @@ function ResultsPage() {
         <div>
           <strong>Looking for the latest controlled findings?</strong>
           <span>
-            The Research page now covers the completed two-agent handoff and the
-            role-expansion ladder through six live firms.
+            The Research page now covers the paired decision-state packet test:
+            full-sequence cure moved from 0/3 controls to 3/3 treatments.
           </span>
         </div>
-        <a href="/research#multiplayer">
+        <a href="/research#decision-packet">
           Read the research program <ArrowRight size={16} />
         </a>
       </section>

@@ -8,8 +8,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 HANDOFF_ROOT = ROOT / "outputs" / "s01_handoff_v2_1_confirmation_20260710"
 LADDER_ROOT = ROOT / "outputs" / "s01_v2_multiplayer_ladder_v2_20260710"
+PACKET_ROOT = ROOT / "outputs" / "s01_v2_derived_state_packet_v1_20260710"
 HANDOFF_REPORT = ROOT / "docs" / "s01_distributed_threshold_handoff_results.md"
 MULTIPLAYER_REPORT = ROOT / "docs" / "s01_v2_multiplayer_bridge_results.md"
+PACKET_REPORT = ROOT / "docs" / "s01_v2_derived_state_packet_results.md"
 WEB_DATA_PATH = ROOT / "web" / "src" / "game-data" / "s01_research_program.json"
 
 ARM_ORDER = [
@@ -33,9 +35,17 @@ def main() -> None:
     handoff_study_path = HANDOFF_ROOT / "study_analysis.json"
     handoff_rows_path = HANDOFF_ROOT / "study_rows.jsonl"
     ladder_summary_path = LADDER_ROOT / "ladder_summary.json"
+    packet_study_path = PACKET_ROOT / "study_analysis.json"
+    packet_replay_path = (
+        PACKET_ROOT
+        / "posthoc_supplier_payoff_accounting_replay"
+        / "accounting_replay_analysis.json"
+    )
     handoff_study = _read_json(handoff_study_path)
     handoff_rows = _read_jsonl(handoff_rows_path)
     ladder_summary = _read_json(ladder_summary_path)
+    packet_study = _read_json(packet_study_path)
+    packet_replay = _read_json(packet_replay_path)
 
     reference = _read_json(LADDER_ROOT / "reference_run" / "run_summary.json")
     live_summaries = [
@@ -109,8 +119,11 @@ def main() -> None:
     reference_analysis = reference["s01_v2_analysis"]
     common_live_path = _common_live_path(live_summaries)
     efficient_path = _path_summary(reference)
+    packet_aggregate = packet_replay["aggregate"]
+    packet_control = packet_aggregate["by_condition"]["current_observation"]
+    packet_treatment = packet_aggregate["by_condition"]["derived_state_packet"]
     payload = {
-        "schema_version": "constructsim.web_research_program.v1",
+        "schema_version": "constructsim.web_research_program.v2",
         "title": "From one decision to six firms",
         "question": (
             "Can AI organizations receive the right business facts, carry them across "
@@ -178,6 +191,64 @@ def main() -> None:
                 "Project success does not imply that every firm met its private target.",
             ],
         },
+        "decision_packet": {
+            "experiment_id": packet_aggregate["experiment_id"],
+            "assigned_run_count": packet_study["completed_run_count"],
+            "valid_run_count": (
+                packet_control["valid_count"] + packet_treatment["valid_count"]
+            ),
+            "repair_attempt_count": (
+                packet_control["repair_attempt_count"]
+                + packet_treatment["repair_attempt_count"]
+            ),
+            "lineage_complete_count": (
+                packet_control["lineage_complete_count"]
+                + packet_treatment["lineage_complete_count"]
+            ),
+            "paired_period_count": len(packet_aggregate["paired_periods"]),
+            "paired_treatment_win_count": sum(
+                bool(period["treatment_joint_efficient_outcome"])
+                and not bool(period["control_joint_efficient_outcome"])
+                for period in packet_aggregate["paired_periods"]
+            ),
+            "control": _packet_arm_summary(packet_control),
+            "treatment": _packet_arm_summary(packet_treatment),
+            "mean_project_cost_difference_usd": round(
+                packet_control["mean_final_project_cost"]
+                - packet_treatment["mean_final_project_cost"]
+            ),
+            "mean_completion_tick_difference": round(
+                packet_control["mean_completion_tick"]
+                - packet_treatment["mean_completion_tick"]
+            ),
+            "advancement_gate_passed": packet_aggregate[
+                "advance_to_broader_confirmation"
+            ],
+            "accounting_replay": {
+                "model_call_count": packet_replay["model_call_count"],
+                "all_decisions_identical": packet_replay[
+                    "all_decisions_identical"
+                ],
+                "all_project_outcomes_identical": packet_replay[
+                    "all_project_outcomes_identical"
+                ],
+                "source_code_commit": packet_replay["source_code_commit"],
+                "replay_code_commit": packet_replay["replay_code_commit"],
+            },
+            "interpretation": (
+                "The packet made already-authorized verified value, supplier thresholds, "
+                "funding-source status, and operative caps explicit after R1. Every control "
+                "chose a Lot-A-only cure and later activated backup; every treatment chose "
+                "the full-sequence cure, made Lot B ready, shipped both lots, and avoided "
+                "backup activation."
+            ),
+            "limitations": [
+                "There are three repeated hosted-model trials per arm.",
+                "The B1 supplier and B2 GC packets were bundled in one treatment.",
+                "The result is a scenario-specific mechanism finding, not a population estimate.",
+                "A pre-existing duplicate supplier-payoff deduction was corrected with a zero-call replay of identical archived submissions.",
+            ],
+        },
         "source": {
             "handoff_report_path": "docs/s01_distributed_threshold_handoff_results.md",
             "handoff_report_sha256": _sha256(HANDOFF_REPORT),
@@ -185,12 +256,33 @@ def main() -> None:
             "multiplayer_report_path": "docs/s01_v2_multiplayer_bridge_results.md",
             "multiplayer_report_sha256": _sha256(MULTIPLAYER_REPORT),
             "multiplayer_ladder_sha256": _sha256(ladder_summary_path),
+            "packet_report_path": "docs/s01_v2_derived_state_packet_results.md",
+            "packet_report_sha256": _sha256(PACKET_REPORT),
+            "packet_study_sha256": _sha256(packet_study_path),
+            "packet_accounting_replay_sha256": _sha256(packet_replay_path),
         },
     }
     payload["content_sha256"] = _content_hash(payload)
     WEB_DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     WEB_DATA_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
     print(f"wrote {WEB_DATA_PATH.relative_to(ROOT)}")
+
+
+def _packet_arm_summary(summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "assigned_run_count": summary["assigned_count"],
+        "valid_run_count": summary["valid_count"],
+        "lineage_complete_count": summary["lineage_complete_count"],
+        "project_success_count": summary["project_success_count"],
+        "coalition_success_count": summary["coalition_success_count"],
+        "full_sequence_cure_count": summary["full_sequence_cure_count"],
+        "lot_b_ready_count": summary["lot_b_ready_count"],
+        "ship_both_count": summary["ship_both_count"],
+        "backup_activation_count": summary["backup_activation_count"],
+        "joint_outcome_count": summary["joint_efficient_outcome_count"],
+        "mean_completion_tick": summary["mean_completion_tick"],
+        "mean_final_project_cost": round(summary["mean_final_project_cost"]),
+    }
 
 
 def _common_live_path(summaries: list[dict[str, Any]]) -> dict[str, Any]:

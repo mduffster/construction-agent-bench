@@ -292,7 +292,7 @@ input {
 .research-program-grid {
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .research-program-grid article {
@@ -386,6 +386,15 @@ input {
 
 .program-row--ladder {
   grid-template-columns: 0.8fr 0.7fr 0.7fr 1fr 0.8fr 0.55fr;
+}
+
+.program-row--packet {
+  grid-template-columns: 1.25fr repeat(4, 0.65fr) 0.8fr 1fr;
+}
+
+.program-row--packet-treatment {
+  background: #dcefe7;
+  box-shadow: inset 8px 0 0 #1d6b5e;
 }
 
 .program-row--head {
@@ -2327,7 +2336,8 @@ h2 {
   }
 
   .program-row--handoff,
-  .program-row--ladder {
+  .program-row--ladder,
+  .program-row--packet {
     gap: 7px;
     grid-template-columns: 1fr;
     padding: 12px;

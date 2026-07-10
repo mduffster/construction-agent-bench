@@ -1,5 +1,59 @@
 {
-  "content_sha256": "bc892f9736d3314f692587f2fc69328806f527ab67036613cde2b31d537f7d88",
+  "content_sha256": "94c75dd76d9c213db24661f3db120220b2144438d05e3379d8811d8e19ef486a",
+  "decision_packet": {
+    "accounting_replay": {
+      "all_decisions_identical": true,
+      "all_project_outcomes_identical": true,
+      "model_call_count": 0,
+      "replay_code_commit": "da13b40b380b117392eeba3bd4d1087574aa22a7",
+      "source_code_commit": "a797246f8a3fdc8e027d8ddc91a0a14c5fd6650f"
+    },
+    "advancement_gate_passed": true,
+    "assigned_run_count": 6,
+    "control": {
+      "assigned_run_count": 3,
+      "backup_activation_count": 3,
+      "coalition_success_count": 0,
+      "full_sequence_cure_count": 0,
+      "joint_outcome_count": 0,
+      "lineage_complete_count": 3,
+      "lot_b_ready_count": 0,
+      "mean_completion_tick": 45.0,
+      "mean_final_project_cost": 100310000,
+      "project_success_count": 3,
+      "ship_both_count": 0,
+      "valid_run_count": 3
+    },
+    "experiment_id": "s01_v2_supplier_gc_derived_state_packet_v1",
+    "interpretation": "The packet made already-authorized verified value, supplier thresholds, funding-source status, and operative caps explicit after R1. Every control chose a Lot-A-only cure and later activated backup; every treatment chose the full-sequence cure, made Lot B ready, shipped both lots, and avoided backup activation.",
+    "limitations": [
+      "There are three repeated hosted-model trials per arm.",
+      "The B1 supplier and B2 GC packets were bundled in one treatment.",
+      "The result is a scenario-specific mechanism finding, not a population estimate.",
+      "A pre-existing duplicate supplier-payoff deduction was corrected with a zero-call replay of identical archived submissions."
+    ],
+    "lineage_complete_count": 6,
+    "mean_completion_tick_difference": 4,
+    "mean_project_cost_difference_usd": 4216667,
+    "paired_period_count": 3,
+    "paired_treatment_win_count": 3,
+    "repair_attempt_count": 0,
+    "treatment": {
+      "assigned_run_count": 3,
+      "backup_activation_count": 0,
+      "coalition_success_count": 3,
+      "full_sequence_cure_count": 3,
+      "joint_outcome_count": 3,
+      "lineage_complete_count": 3,
+      "lot_b_ready_count": 3,
+      "mean_completion_tick": 41.0,
+      "mean_final_project_cost": 96093333,
+      "project_success_count": 3,
+      "ship_both_count": 3,
+      "valid_run_count": 3
+    },
+    "valid_run_count": 6
+  },
   "handoff": {
     "arms": [
       {
@@ -217,14 +271,18 @@
     "stop_reason": null
   },
   "question": "Can AI organizations receive the right business facts, carry them across organizational boundaries, and turn them into good commercial decisions?",
-  "schema_version": "constructsim.web_research_program.v1",
+  "schema_version": "constructsim.web_research_program.v2",
   "source": {
     "handoff_report_path": "docs/s01_distributed_threshold_handoff_results.md",
     "handoff_report_sha256": "e193030f8dbbfc7ba6ee970a4952dade5086eb67fc3cba0fb55c68d80c3fa566",
     "handoff_study_sha256": "1fe42d41595dd8d185cc2e13078f20d1e2dd1fd1d1103b3df8ceddc1e29a8a91",
     "multiplayer_ladder_sha256": "7a54e676472b934cd497156165c9210bdd283c26760cad06a379013da6b13d7b",
     "multiplayer_report_path": "docs/s01_v2_multiplayer_bridge_results.md",
-    "multiplayer_report_sha256": "72b6ee7b20ac85d74a4bcdec284fc11b80a2bb6e9ba32165babc414a79ac6999"
+    "multiplayer_report_sha256": "76495c1f8dc6cf1c56a7138ffdff6696c24f4fdee2f2e42e2fd7f5a395584f1e",
+    "packet_accounting_replay_sha256": "f8f2d85db4a6c4ce899c2c4333129a9eb383d2439c6eda12301424bce59d9fd8",
+    "packet_report_path": "docs/s01_v2_derived_state_packet_results.md",
+    "packet_report_sha256": "867909267adc14324b2388d26831291f22f9886d7ea174722e4cca1ba31b32f2",
+    "packet_study_sha256": "7d62733b2a96fa81834dc4aee4be055fb80e4d7fe063fe43ff0ed699a56eb46a"
   },
   "title": "From one decision to six firms"
 }

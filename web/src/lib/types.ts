@@ -374,6 +374,21 @@ export interface ResearchProgramLadderRow {
   clip_count: number;
 }
 
+export interface ResearchProgramPacketArm {
+  assigned_run_count: number;
+  valid_run_count: number;
+  lineage_complete_count: number;
+  project_success_count: number;
+  coalition_success_count: number;
+  full_sequence_cure_count: number;
+  lot_b_ready_count: number;
+  ship_both_count: number;
+  backup_activation_count: number;
+  joint_outcome_count: number;
+  mean_completion_tick: number;
+  mean_final_project_cost: number;
+}
+
 export interface ResearchProgramData {
   schema_version: string;
   title: string;
@@ -419,6 +434,29 @@ export interface ResearchProgramData {
     interpretation: string;
     limitations: string[];
   };
+  decision_packet: {
+    experiment_id: string;
+    assigned_run_count: number;
+    valid_run_count: number;
+    repair_attempt_count: number;
+    lineage_complete_count: number;
+    paired_period_count: number;
+    paired_treatment_win_count: number;
+    control: ResearchProgramPacketArm;
+    treatment: ResearchProgramPacketArm;
+    mean_project_cost_difference_usd: number;
+    mean_completion_tick_difference: number;
+    advancement_gate_passed: boolean;
+    accounting_replay: {
+      model_call_count: number;
+      all_decisions_identical: boolean;
+      all_project_outcomes_identical: boolean;
+      source_code_commit: string;
+      replay_code_commit: string;
+    };
+    interpretation: string;
+    limitations: string[];
+  };
   source: {
     handoff_report_path: string;
     handoff_report_sha256: string;
@@ -426,6 +464,10 @@ export interface ResearchProgramData {
     multiplayer_report_path: string;
     multiplayer_report_sha256: string;
     multiplayer_ladder_sha256: string;
+    packet_report_path: string;
+    packet_report_sha256: string;
+    packet_study_sha256: string;
+    packet_accounting_replay_sha256: string;
   };
   content_sha256: string;
 }

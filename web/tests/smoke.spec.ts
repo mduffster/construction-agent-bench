@@ -44,6 +44,10 @@ test("research page publishes the staged research evidence", async ({ page }) =>
   await expect(page.getByRole("heading", { name: /controlled multiplayer ladder/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
   await expect(page.getByText(/complete lineage did not guarantee a good strategy/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /derived decision-state packet/i })).toBeVisible();
+  await expect(page.getByRole("table", { name: /derived decision-state packet results/i })).toBeVisible();
+  await expect(page.getByText(/0\/3 control versus 3\/3 treatment/i)).toBeVisible();
+  await expect(page.getByText(/zero-call replay/i)).toBeVisible();
 });
 
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {
@@ -115,6 +119,7 @@ test.describe("mobile layout", () => {
     await expect(page.getByRole("heading", { name: /from one decision to six firms/i })).toBeVisible();
     await expect(page.getByRole("table", { name: /two-agent handoff results/i })).toBeVisible();
     await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
+    await expect(page.getByRole("table", { name: /derived decision-state packet results/i })).toBeVisible();
     const dimensions = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
