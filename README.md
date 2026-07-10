@@ -43,7 +43,7 @@ uv run python scripts/run_s01_response_curve.py --stage haiku-confirmation --all
 
 The handoff runner also exposes guarded modal stages for scripted structured/prose records, a silent
 control, and handoff-only live GC structured/prose records. They are not run by the deterministic
-command above and require `--allow-live-model`. The frozen V2 protocol and `$8.50` program ceiling
+command above and require `--allow-live-model`. The frozen V2.1 protocol and `$8.50` program ceiling
 are documented in `docs/s01_distributed_threshold_handoff_spec.md`.
 
 Rebuild the frozen evidence packet from named outputs:

@@ -18,7 +18,7 @@ from constructbench.state import (
     RunState,
 )
 
-HANDOFF_EXPERIMENT_ID = "s01_distributed_threshold_handoff_v2"
+HANDOFF_EXPERIMENT_ID = "s01_distributed_threshold_handoff_v2_1"
 HANDOFF_SCENARIO_ID = "S01_STEEL_MARKET_SHOCK"
 HANDOFF_NODE_ID = "S01_GC_THRESHOLD_HANDOFF"
 HandoffProtocol = Literal["structured_numeric", "rendered_prose"]
@@ -99,10 +99,26 @@ class HandoffOnlyGCPolicy:
     handoff_policy: AgentPolicy
     delegate: S01CommerciallyNeutralPolicy = field(default_factory=S01CommerciallyNeutralPolicy)
 
+    def initialize(self, briefing: Any) -> None:
+        if hasattr(self.handoff_policy, "initialize"):
+            self.handoff_policy.initialize(briefing)  # type: ignore[attr-defined]
+
     def decide(self, observation: AgentObservation) -> AgentSubmission:
         if any(request.node_id == HANDOFF_NODE_ID for request in observation.required_decisions):
             return self.handoff_policy.decide(observation)
         return self.delegate.decide(observation)
+
+    def repair(self, observation: AgentObservation, errors: list[str]) -> AgentSubmission:
+        if any(request.node_id == HANDOFF_NODE_ID for request in observation.required_decisions):
+            if hasattr(self.handoff_policy, "repair"):
+                return self.handoff_policy.repair(observation, errors)  # type: ignore[attr-defined]
+            return self.handoff_policy.decide(observation)
+        return self.delegate.decide(observation)
+
+    def drain_model_io(self) -> list[dict[str, Any]]:
+        if hasattr(self.handoff_policy, "drain_model_io"):
+            return self.handoff_policy.drain_model_io()  # type: ignore[attr-defined]
+        return []
 
 
 @dataclass

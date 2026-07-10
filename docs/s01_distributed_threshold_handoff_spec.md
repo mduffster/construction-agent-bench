@@ -1,12 +1,18 @@
 # S01 distributed threshold handoff experiment
 
-Status: **V2 FROZEN PILOT PROTOCOL — 2026-07-10**
+Status: **V2.1 FROZEN PILOT PROTOCOL — 2026-07-10**
 
-Experiment ID: `s01_distributed_threshold_handoff_v2`
+Experiment ID: `s01_distributed_threshold_handoff_v2_1`
 
 The three live R1 runs made before this freeze are development diagnostics. They cost `$0.05809`,
 were produced from changing dirty worktrees, and are excluded from every V2 effect estimate. The
 successful diagnostic also required one repair. Their only use was instrument debugging.
+
+The first V2 modal qualification is also excluded. It exposed that the handoff-only GC wrapper did
+not forward model repair and usage hooks. Known V2 qualification cost plus a conservative `$0.25`
+allowance for the unrecorded call brings excluded pre-V2.1 spend to `$0.563522`. V2.1 adds a
+deterministic lifecycle test and refreezes before any evidentiary call. The new V2.1 modal-gate cost
+will also be excluded and added to the program ledger before confirmation.
 
 ## Research question
 

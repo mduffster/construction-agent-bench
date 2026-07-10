@@ -16,6 +16,7 @@ def main() -> None:
         description="Combine frozen S01 handoff arms into one descriptive pilot analysis."
     )
     parser.add_argument("study_dir", type=Path)
+    parser.add_argument("--excluded-development-spend-usd", type=float, default=0.0)
     args = parser.parse_args()
 
     row_paths = sorted(args.study_dir.glob("*/handoff_rows.jsonl"))
@@ -24,7 +25,10 @@ def main() -> None:
     rows: list[dict[str, Any]] = []
     for path in row_paths:
         rows.extend(json.loads(line) for line in path.read_text().splitlines() if line.strip())
-    analysis = analyze_handoff_study(rows)
+    analysis = analyze_handoff_study(
+        rows,
+        excluded_development_spend_usd=args.excluded_development_spend_usd,
+    )
     (args.study_dir / "study_analysis.json").write_text(
         json.dumps(analysis, indent=2, sort_keys=True) + "\n"
     )

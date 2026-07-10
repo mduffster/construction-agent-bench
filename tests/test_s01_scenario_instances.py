@@ -147,7 +147,7 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
             continue
         if instance["instance_id"] in handoff_ids:
             assert instance["treatment"]["experiment_id"] == (
-                "s01_distributed_threshold_handoff_v2"
+                "s01_distributed_threshold_handoff_v2_1"
             )
             continue
         economic_variant = instance["treatment"].get("economic_variant")

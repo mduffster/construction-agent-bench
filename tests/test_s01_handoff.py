@@ -16,6 +16,7 @@ from constructbench.handoff import (
     parse_threshold_prose,
     run_handoff_reference_grid,
 )
+from constructbench.models import LLMPolicy
 from constructbench.response_curve import run_reference_grid, summarize_reference_grid
 from constructbench.runner import run_policy
 from constructbench.scenario_instances import get_scenario_instance
@@ -31,6 +32,20 @@ class RecordingHandoffPolicy:
     def decide(self, observation):
         self.phase_ids.append(observation.phase_id)
         return ScriptedGCHandoffPolicy("structured").decide(observation)
+
+
+class FakeUsageAdapter:
+    model = "claude-haiku-4-5-20251001"
+
+    def __init__(self, responses: list[str]) -> None:
+        self.responses = responses
+        self.model_parameters = {"temperature": 0.0, "max_tokens": 4096}
+
+    def chat(self, messages: list[dict[str, str]]) -> str:
+        return self.responses.pop(0)
+
+    def drain_usage(self) -> dict[str, int]:
+        return {"input_tokens": 100, "output_tokens": 20}
 
 
 def _run(instance_id: str, mode: ScriptedHandoffMode, *, output_dir=None):
@@ -150,6 +165,44 @@ def test_live_gc_policy_is_scoped_to_the_handoff_phase() -> None:
     assert result.final_state.run_valid
     assert recording.phase_ids == ["gc_precommercial_threshold_handoff"]
     assert "S01_GC_PROCUREMENT_PLAN" in result.final_state.decisions
+
+
+def test_handoff_only_wrapper_forwards_repair_and_model_usage() -> None:
+    repaired = json.dumps(
+        {
+            "decisions": [
+                {
+                    "node_id": "S01_GC_THRESHOLD_HANDOFF",
+                    "parameters": {
+                        "computed_threshold_usd": 250_000,
+                        "handoff_confidence": 1.0,
+                        "share_with_supplier": True,
+                    },
+                }
+            ],
+            "communications": [],
+            "assessment_updates": [],
+            "assessment_reviews": [],
+            "private_notes": "calculated replacement threshold",
+        }
+    )
+    gc_policy = HandoffOnlyGCPolicy(LLMPolicy(FakeUsageAdapter(["{}", repaired]), "gc"))
+
+    result = run_policy(
+        "S01",
+        "normal",
+        build_handoff_policies(
+            gc_policy=gc_policy,
+            supplier_policy=ThresholdResponsiveSupplierPolicy(),
+        ),
+        scenario_instance_id="S01_DH_R1_STRUCTURED",
+        repair_budget=1,
+    )
+
+    assert result.final_state.run_valid
+    assert len(result.final_state.histories["repair_attempts"]) == 1
+    assert len(result.final_state.histories["model_io"]) == 2
+    assert result.final_state.histories["model_io"][1]["repair"] is True
 
 
 def test_rendered_prose_is_equivalent_and_silence_does_not_leak_record() -> None:

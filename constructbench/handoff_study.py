@@ -24,7 +24,11 @@ CONTRASTS = {
 }
 
 
-def analyze_handoff_study(rows: list[dict[str, Any]]) -> dict[str, Any]:
+def analyze_handoff_study(
+    rows: list[dict[str, Any]],
+    *,
+    excluded_development_spend_usd: float = 0.0,
+) -> dict[str, Any]:
     cells: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         cells[(str(row["handoff_condition"]), str(row["response_curve_level"]))].append(row)
@@ -54,9 +58,10 @@ def analyze_handoff_study(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "total_model_cost_usd": round(
             sum(float(row.get("model_cost_usd", 0.0) or 0.0) for row in rows), 6
         ),
-        "development_spend_excluded_usd": 0.05809,
+        "development_spend_excluded_usd": round(excluded_development_spend_usd, 6),
         "program_spend_including_development_usd": round(
-            0.05809 + sum(float(row.get("model_cost_usd", 0.0) or 0.0) for row in rows),
+            excluded_development_spend_usd
+            + sum(float(row.get("model_cost_usd", 0.0) or 0.0) for row in rows),
             6,
         ),
         "cell_summaries": cell_summaries,

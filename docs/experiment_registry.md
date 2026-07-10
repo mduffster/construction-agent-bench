@@ -161,7 +161,7 @@ Next research gate:
 
 ## Staged Experiment: S01 Distributed Threshold Handoff
 
-Status: **V2 FROZEN PILOT / V1 DEVELOPMENT RUNS EXCLUDED**
+Status: **V2.1 FROZEN PILOT / EARLIER DEVELOPMENT AND QUALIFICATION RUNS EXCLUDED**
 
 Purpose: test whether a GC and steel supplier can move a decision-relevant reservation value across
 an organizational boundary. The GC privately knows replacement economics; the supplier privately
@@ -192,8 +192,9 @@ uv run python scripts/run_s01_handoff.py --stage references
 The nine deterministic reference runs must pass before any live stage. The V2 staircase uses
 `scripted-prose-modal`, `scripted-structured-modal`, `scripted-silent-modal`,
 `live-structured-modal`, and `live-prose-modal`; every stage requires `--allow-live-model`.
-Three earlier R1 troubleshooting runs cost `$0.05809` and are excluded from V2 estimates. The
-frozen paid-program ceiling is `$8.50`, including that development spend. Unrestricted chat,
+Three earlier R1 troubleshooting runs and the wrapper-failing V2 modal qualification are excluded;
+the conservative pre-V2.1 program ledger is `$0.563522`. The frozen paid-program ceiling is
+`$8.50`, including excluded spend and the new modal gate. Unrestricted chat,
 stochastic six-agent batches, new scenarios, and stronger-model arms remain deferred.
 
 ## Legacy: Feedback-Cascade Suite

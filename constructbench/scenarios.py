@@ -1619,7 +1619,7 @@ class S01SteelMarketShock(Scenario):
             .get("scenario_instance", {})
             .get("treatment", {})
         )
-        if treatment.get("experiment_id") != "s01_distributed_threshold_handoff_v2":
+        if treatment.get("experiment_id") != "s01_distributed_threshold_handoff_v2_1":
             return None
         protocol = treatment.get("handoff_protocol")
         if protocol not in {"structured_numeric", "rendered_prose"}:

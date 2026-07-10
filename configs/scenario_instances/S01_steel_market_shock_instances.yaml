@@ -490,7 +490,7 @@ instances:
 - instance_id: S01_DH_R1_STRUCTURED
   base_instance_id: S01_RC_R1_NONE
   treatment:
-    experiment_id: s01_distributed_threshold_handoff_v2
+    experiment_id: s01_distributed_threshold_handoff_v2_1
     handoff_protocol: structured_numeric
     information_structure: gc_replacement_economics_supplier_private_shock
   outside_option:
@@ -509,7 +509,7 @@ instances:
 - instance_id: S01_DH_R3_STRUCTURED
   base_instance_id: S01_RC_R3_NONE
   treatment:
-    experiment_id: s01_distributed_threshold_handoff_v2
+    experiment_id: s01_distributed_threshold_handoff_v2_1
     handoff_protocol: structured_numeric
     information_structure: gc_replacement_economics_supplier_private_shock
   outside_option:
@@ -528,7 +528,7 @@ instances:
 - instance_id: S01_DH_R5_STRUCTURED
   base_instance_id: S01_RC_R5_NONE
   treatment:
-    experiment_id: s01_distributed_threshold_handoff_v2
+    experiment_id: s01_distributed_threshold_handoff_v2_1
     handoff_protocol: structured_numeric
     information_structure: gc_replacement_economics_supplier_private_shock
   outside_option:
