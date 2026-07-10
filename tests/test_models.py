@@ -91,7 +91,9 @@ def _valid_supplier_json() -> str:
 
 def test_llm_policy_parses_fenced_json() -> None:
     observation = _supplier_observation()
-    policy = LLMPolicy(FakeAdapter(["```json\n" + _valid_supplier_json() + "\n```"]), "steel_supplier")
+    policy = LLMPolicy(
+        FakeAdapter(["```json\n" + _valid_supplier_json() + "\n```"]), "steel_supplier"
+    )
 
     submission = policy.decide(observation)
 
@@ -125,6 +127,28 @@ def test_llm_policy_targeted_repair_can_produce_valid_submission() -> None:
     repaired = policy.repair(observation, errors)
 
     assert errors
+    assert _validate_submission(observation, repaired) == []
+
+
+def test_llm_policy_includes_decision_scaffold_in_initial_and_repair_prompts() -> None:
+    observation = _supplier_observation()
+    scaffold = {
+        "intervention_id": "replacement_threshold_worksheet_v1",
+        "instruction": "Calculate the replacement threshold before choosing.",
+    }
+    policy = LLMPolicy(
+        FakeAdapter(["{}", _valid_supplier_json()]),
+        "steel_supplier",
+        decision_scaffold=scaffold,
+    )
+
+    first = policy.decide(observation)
+    errors = _validate_submission(observation, first)
+    repaired = policy.repair(observation, errors)
+    prompts = [record["prompt"] for record in policy.drain_model_io()]
+
+    assert prompts[0]["decision_scaffold"] == scaffold
+    assert prompts[1]["observation"]["decision_scaffold"] == scaffold
     assert _validate_submission(observation, repaired) == []
 
 
@@ -212,7 +236,10 @@ def test_llm_policy_normalizes_message_body_field() -> None:
     submission = policy.decide(observation)
 
     assert _validate_submission(observation, submission) == []
-    assert submission.communications[0].summary == "Steel will arrive on the current standard schedule."
+    assert (
+        submission.communications[0].summary
+        == "Steel will arrive on the current standard schedule."
+    )
 
 
 def test_llm_policy_normalizes_recipient_agent_ids_field() -> None:
@@ -522,7 +549,7 @@ def test_llm_policy_normalizes_score_dimension_alias_update() -> None:
                     "dimension": "performance_reliability",
                     "new_score": 0.80,
                     "rationale": "Inspector preserved the reserved inspection slot.",
-                }
+                },
             ],
             "assessment_reviews": [],
             "private_notes": "Outcome supports confidence in GC coordination.",
@@ -692,7 +719,9 @@ def test_validation_accepts_current_source_alias_for_current_standard() -> None:
 
     assert _validate_submission(observation, submission) == []
     source_plan = next(
-        decision for decision in submission.decisions if decision.node_id == "S01_SUPPLIER_SOURCE_PLAN"
+        decision
+        for decision in submission.decisions
+        if decision.node_id == "S01_SUPPLIER_SOURCE_PLAN"
     )
     assert source_plan.option_id == "current_standard"
 
@@ -718,9 +747,7 @@ def test_anthropic_adapter_omits_temperature_for_no_sampling_models(monkeypatch)
             return False
 
         def read(self):
-            return _json.dumps(
-                {"content": [{"type": "text", "text": "{}"}], "usage": {}}
-            ).encode()
+            return _json.dumps({"content": [{"type": "text", "text": "{}"}], "usage": {}}).encode()
 
     def _fake_urlopen(request, timeout=0):
         return _FakeResponse(request.data)

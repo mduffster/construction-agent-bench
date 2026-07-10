@@ -60,11 +60,22 @@ Planning source:
 Current evidence:
 
 - `docs/evidence/response_curve/evidence_package.md`
+- `docs/evidence/response_curve/threshold_scaffold_modal.md`
+- `docs/evidence/response_curve/trusted_threshold_modal.md`
 - ten treatment cells: five ordered replacement-cost levels crossed with two verified-history
   conditions;
 - 130 valid deterministic reference trajectories with a monotonic best-response oracle;
 - 10/10 valid Haiku modal runs and 46/50 valid temperature-1 Haiku confirmation runs;
 - a five-cell no-history Sonnet modal diagnostic;
+- a ten-cell Haiku replacement-threshold worksheet diagnostic: 9/10 valid, but it failed the
+  frozen mechanism gate because regret fell only 29.6% and monotonicity worsened from one to three
+  violations. None of the nine valid runs stated the correct replacement threshold or the correct
+  discrete safe request, and three selected a request above their own stated ceiling;
+- a trusted-threshold intervention that removed fact-selection and arithmetic ambiguity: the
+  10/10-valid modal arm cut mean attainable regret 90%, eliminated replacement, and restored a
+  monotonic request curve. A frozen 30-run temperature-1 confirmation was 30/30 valid, cut regret
+  87.9% versus the unassisted confirmation, and again produced zero replacements and zero
+  monotonicity violations. The remaining high-level $800,000 anchor leaves upside unrealized;
 - `$2.51` recorded model spend, excluding a possibly billable interrupted request without durable
   telemetry.
 
@@ -143,9 +154,11 @@ Current implemented components:
 
 Next research gate:
 
-- scrutinize and, if warranted, minimally replicate the response-curve result before proposing
-  exactly one mechanismally distinct scenario. GC role rotation and S02-S05 expansion are not
-  currently queued.
+- stop model expansion on this instrument. The calculation worksheet failed, while the trusted
+  threshold passed both modal and stochastic gates, localizing the main bottleneck to fact binding
+  and arithmetic with residual high-level anchoring. The next useful work is packaging this causal
+  sequence clearly and adding the deferred practitioner comparison when available. GC role rotation
+  and S02-S05 expansion are not currently queued.
 
 ## Legacy: Feedback-Cascade Suite
 

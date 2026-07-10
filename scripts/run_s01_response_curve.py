@@ -15,10 +15,14 @@ from constructbench.models import (
 )
 from constructbench.response_curve import (
     RESPONSE_CURVE_EXPERIMENT_ID,
+    THRESHOLD_WORKSHEET_INTERVENTION_ID,
+    TRUSTED_THRESHOLD_INTERVENTION_ID,
     analyze_live_summaries,
     response_curve_instance_ids,
     run_reference_grid,
     summarize_reference_grid,
+    threshold_worksheet_scaffold,
+    trusted_threshold_scaffold,
 )
 from constructbench.runner import run_policy
 
@@ -45,10 +49,28 @@ def main() -> None:
     )
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--allow-live-model", action="store_true")
+    parser.add_argument(
+        "--intervention",
+        choices=[
+            "none",
+            THRESHOLD_WORKSHEET_INTERVENTION_ID,
+            TRUSTED_THRESHOLD_INTERVENTION_ID,
+        ],
+        default="none",
+        help="Optional decision scaffold; baseline behavior remains the default.",
+    )
+    parser.add_argument(
+        "--baseline-analysis",
+        type=Path,
+        help="Optional baseline response_curve_analysis.json for a paired arm comparison.",
+    )
     args = parser.parse_args()
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    root = args.output_dir or Path("outputs") / f"s01_response_curve_{args.stage}_{stamp}"
+    intervention_suffix = "" if args.intervention == "none" else f"_{args.intervention}"
+    root = args.output_dir or Path("outputs") / (
+        f"s01_response_curve_{args.stage}{intervention_suffix}_{stamp}"
+    )
     root.mkdir(parents=True, exist_ok=True)
 
     reference_rows = run_reference_grid()
@@ -66,12 +88,8 @@ def main() -> None:
     defaults = _live_defaults(args.stage)
     model = args.model or defaults["model"]
     replicates = args.replicates_per_cell or defaults["replicates_per_cell"]
-    temperature = (
-        args.temperature if args.temperature is not None else defaults["temperature"]
-    )
-    max_cost_usd = (
-        args.max_cost_usd if args.max_cost_usd is not None else defaults["max_cost_usd"]
-    )
+    temperature = args.temperature if args.temperature is not None else defaults["temperature"]
+    max_cost_usd = args.max_cost_usd if args.max_cost_usd is not None else defaults["max_cost_usd"]
 
     raw_root = root / "raw_runs"
     raw_root.mkdir(parents=True, exist_ok=True)
@@ -84,7 +102,14 @@ def main() -> None:
     unknown_ids = sorted(set(instance_ids) - set(response_curve_instance_ids()))
     if unknown_ids:
         raise ValueError(f"unknown response-curve instance IDs: {unknown_ids}")
+    references_by_instance = {
+        str(reference["instance_id"]): reference for reference in reference_summaries
+    }
     for instance_id in instance_ids:
+        decision_scaffold = _decision_scaffold(
+            args.intervention,
+            reference=references_by_instance[instance_id],
+        )
         for replicate_index in range(replicates):
             run_dir = raw_root / f"{instance_id}_replicate_{replicate_index:02d}"
             summary_path = run_dir / "run_summary.json"
@@ -100,6 +125,7 @@ def main() -> None:
                 AnthropicModelAdapter(model=model, temperature=temperature),
                 "steel_supplier",
                 prompt_style="anthropic_structured",
+                decision_scaffold=decision_scaffold,
             )
             result = run_policy(
                 "S01",
@@ -126,6 +152,8 @@ def main() -> None:
                     "replicate_index": replicate_index,
                     "experiment_id": RESPONSE_CURVE_EXPERIMENT_ID,
                     "experiment_stage": args.stage,
+                    "intervention_id": args.intervention,
+                    "decision_scaffold": decision_scaffold,
                 },
             )
             cost = float(
@@ -163,10 +191,17 @@ def main() -> None:
     analysis["repair_budget"] = args.repair_budget
     analysis["max_cost_usd"] = max_cost_usd
     analysis["instance_ids"] = instance_ids
+    analysis["intervention_id"] = args.intervention
     analysis["modal_gate"] = _modal_gate(analysis) if args.stage == "modal-pilot" else None
     rows = analysis.pop("rows")
     _write_json(root / "response_curve_analysis.json", analysis)
     _write_jsonl(root / "response_curve_rows.jsonl", rows)
+    if args.baseline_analysis is not None:
+        baseline = json.loads(args.baseline_analysis.read_text())
+        _write_json(
+            root / "intervention_comparison.json",
+            _compare_arms(baseline, analysis),
+        )
     print(f"wrote {root}")
     print(
         f"runs={analysis['run_count']} valid={analysis['valid_run_count']} "
@@ -202,8 +237,7 @@ def _live_defaults(stage: str) -> dict[str, Any]:
 
 def _modal_gate(analysis: dict[str, Any]) -> dict[str, Any]:
     rows_path_signal = bool(
-        analysis["mean_attainable_regret_usd"]
-        and analysis["mean_attainable_regret_usd"] > 0
+        analysis["mean_attainable_regret_usd"] and analysis["mean_attainable_regret_usd"] > 0
     )
     checks = {
         "valid_rate_at_least_90_percent": analysis["valid_rate"] >= 0.9,
@@ -211,19 +245,82 @@ def _modal_gate(analysis: dict[str, Any]) -> dict[str, Any]:
         "informative_response_or_consequential_failure": (
             analysis["request_monotonicity_violations"] > 0 or rows_path_signal
         ),
-        "within_cost_cap": analysis["total_model_cost_usd"]
-        <= analysis["max_cost_usd"],
+        "within_cost_cap": analysis["total_model_cost_usd"] <= analysis["max_cost_usd"],
     }
     return {"passed": all(checks.values()), "checks": checks}
 
 
 def _summary_cost(summary: dict[str, Any]) -> float:
     return float(
-        summary.get("model_usage_summary", {})
-        .get("total", {})
-        .get("cost_usd", 0.0)
-        or 0.0
+        summary.get("model_usage_summary", {}).get("total", {}).get("cost_usd", 0.0) or 0.0
     )
+
+
+def _decision_scaffold(intervention_id: str, *, reference: dict[str, Any]) -> dict[str, Any] | None:
+    if intervention_id == THRESHOLD_WORKSHEET_INTERVENTION_ID:
+        return threshold_worksheet_scaffold()
+    if intervention_id == TRUSTED_THRESHOLD_INTERVENTION_ID:
+        return trusted_threshold_scaffold(int(reference["replacement_threshold_usd"]))
+    return None
+
+
+def _compare_arms(baseline: dict[str, Any], intervention: dict[str, Any]) -> dict[str, Any]:
+    baseline_regret = baseline.get("mean_attainable_regret_usd")
+    intervention_regret = intervention.get("mean_attainable_regret_usd")
+    regret_reduction = (
+        float(baseline_regret) - float(intervention_regret)
+        if baseline_regret is not None and intervention_regret is not None
+        else None
+    )
+    regret_reduction_fraction = (
+        regret_reduction / float(baseline_regret)
+        if regret_reduction is not None and float(baseline_regret) > 0
+        else None
+    )
+    baseline_cell_count = _analysis_cell_count(baseline)
+    intervention_cell_count = _analysis_cell_count(intervention)
+    checks = {
+        "intervention_valid_rate_at_least_90_percent": intervention["valid_rate"] >= 0.9,
+        "same_cell_count": intervention_cell_count == baseline_cell_count,
+        "mean_regret_reduced_by_at_least_half": (
+            regret_reduction_fraction is not None and regret_reduction_fraction >= 0.5
+        ),
+        "monotonicity_not_worse": intervention["request_monotonicity_violations"]
+        <= baseline["request_monotonicity_violations"],
+    }
+    return {
+        "schema_version": "constructbench.response_curve_intervention_comparison.v1",
+        "baseline_intervention_id": baseline.get("intervention_id", "none"),
+        "intervention_id": intervention.get("intervention_id"),
+        "baseline_run_count": baseline["run_count"],
+        "intervention_run_count": intervention["run_count"],
+        "baseline_cell_count": baseline_cell_count,
+        "intervention_cell_count": intervention_cell_count,
+        "baseline_mean_attainable_regret_usd": baseline_regret,
+        "intervention_mean_attainable_regret_usd": intervention_regret,
+        "mean_attainable_regret_reduction_usd": regret_reduction,
+        "mean_attainable_regret_reduction_fraction": regret_reduction_fraction,
+        "baseline_replacement_rate": baseline.get("replacement_rate"),
+        "intervention_replacement_rate": intervention.get("replacement_rate"),
+        "baseline_request_monotonicity_violations": baseline["request_monotonicity_violations"],
+        "intervention_request_monotonicity_violations": intervention[
+            "request_monotonicity_violations"
+        ],
+        "mechanism_gate": {"passed": all(checks.values()), "checks": checks},
+    }
+
+
+def _analysis_cell_count(analysis: dict[str, Any]) -> int:
+    instance_ids = analysis.get("instance_ids")
+    if isinstance(instance_ids, list) and instance_ids:
+        return len(set(str(instance_id) for instance_id in instance_ids))
+    replicates = int(analysis.get("replicates_per_cell", 1) or 1)
+    run_count = int(analysis["run_count"])
+    if run_count % replicates != 0:
+        raise ValueError(
+            f"run_count={run_count} is not divisible by replicates_per_cell={replicates}"
+        )
+    return run_count // replicates
 
 
 def _write_json(path: Path, value: Any) -> None:

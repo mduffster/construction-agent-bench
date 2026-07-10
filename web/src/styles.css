@@ -313,6 +313,101 @@ input {
   white-space: nowrap;
 }
 
+.mechanism-result {
+  background: #fffaf0;
+  box-shadow: 6px 6px 0 #1d6b5e;
+}
+
+.mechanism-lede {
+  color: #45524f;
+  line-height: 1.5;
+  max-width: 920px;
+}
+
+.mechanism-lede strong {
+  color: #10201e;
+}
+
+.mechanism-table {
+  border: 4px solid #10201e;
+  display: grid;
+  margin: 18px 0;
+}
+
+.mechanism-row {
+  align-items: center;
+  border-bottom: 3px solid #d8caa8;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(190px, 1.5fr) minmax(150px, 1.15fr) 0.55fr 0.75fr 0.55fr 0.6fr;
+  padding: 13px 14px;
+}
+
+.mechanism-row:last-child {
+  border-bottom: 0;
+}
+
+.mechanism-row--head {
+  background: #10201e;
+  color: #fffaf0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mechanism-row:not(.mechanism-row--head) {
+  background: #f2ead9;
+  font-weight: 850;
+}
+
+.mechanism-row--threshold_worksheet {
+  background: #fbf0d2 !important;
+}
+
+.mechanism-row--trusted_threshold {
+  background: #dcefe7 !important;
+  box-shadow: inset 8px 0 0 #1d6b5e;
+}
+
+.mechanism-condition {
+  display: grid;
+  gap: 4px;
+}
+
+.mechanism-condition small {
+  color: #59645f;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.mechanism-takeaway {
+  align-items: start;
+  background: #e2b647;
+  border: 4px solid #10201e;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(190px, 0.7fr) minmax(0, 2fr);
+  padding: 16px 18px;
+}
+
+.mechanism-takeaway strong {
+  font-size: 1.35rem;
+  line-height: 1.05;
+}
+
+.mechanism-takeaway p,
+.mechanism-caveat {
+  margin: 0;
+}
+
+.mechanism-caveat {
+  color: #59645f;
+  font-size: 0.86rem;
+  font-weight: 750;
+  margin-top: 12px;
+}
+
 .eyebrow {
   color: #a9442b;
   font-size: 0.78rem;
@@ -1933,6 +2028,10 @@ h2 {
     grid-template-columns: 1fr;
   }
 
+  .mechanism-takeaway {
+    grid-template-columns: 1fr;
+  }
+
   .research-teaser__layout,
   .research-method-grid,
   .research-reading {
@@ -2030,5 +2129,35 @@ h2 {
   .research-crosslink {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .mechanism-row--head {
+    display: none;
+  }
+
+  .mechanism-row {
+    gap: 8px;
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .mechanism-row > span {
+    align-items: baseline;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: minmax(125px, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .mechanism-row > span::before {
+    color: #59645f;
+    content: attr(data-label);
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .mechanism-condition strong,
+  .mechanism-condition small {
+    grid-column: 2;
   }
 }

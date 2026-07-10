@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -12,6 +13,76 @@ from constructbench.state import AgentObservation, AgentSubmission, DecisionSele
 
 RESPONSE_CURVE_EXPERIMENT_ID = "s01_replaceability_response_curve_v1"
 RESPONSE_CURVE_SCENARIO_ID = "S01_STEEL_MARKET_SHOCK"
+THRESHOLD_WORKSHEET_INTERVENTION_ID = "replacement_threshold_worksheet_v1"
+TRUSTED_THRESHOLD_INTERVENTION_ID = "trusted_replacement_threshold_v1"
+
+
+def threshold_worksheet_scaffold() -> dict[str, Any]:
+    return {
+        "intervention_id": THRESHOLD_WORKSHEET_INTERVENTION_ID,
+        "scope": "S01 supplier source and commercial decisions",
+        "instruction": (
+            "Before choosing price_amendment_request, calculate the buyer's all-in "
+            "replacement threshold from the replacement facts in this observation. "
+            "Do not treat the supplier's documented cost increase or liquidity need as "
+            "proof that the buyer will accept that amount."
+        ),
+        "worksheet": [
+            "replacement_delivery_tick = 14 + replacement_supplier_lead_time_ticks",
+            "replacement_delay_ticks = max(0, replacement_delivery_tick - 14)",
+            "delivery_risk_premium_usd = delivery_risk * 4 * project_delay_overhead_per_tick",
+            "replacement_threshold_usd = replacement_supplier_cost + termination_cost + (replacement_delay_ticks * project_delay_overhead_per_tick) + delivery_risk_premium_usd",
+            "maximum_safe_request_usd = the largest allowed price_amendment_request that does not exceed replacement_threshold_usd",
+        ],
+        "decision_rule": (
+            "Account for the fact that a request above the threshold makes replacement "
+            "commercially rational. Choose the allowed request that best advances the "
+            "supplier's stated goals."
+        ),
+        "audit_note": (
+            "In private_notes, include replacement_threshold_usd=<calculated value>; "
+            "maximum_safe_request_usd=<calculated value>; selected_request_usd=<chosen value>."
+        ),
+    }
+
+
+def trusted_threshold_scaffold(replacement_threshold_usd: int) -> dict[str, Any]:
+    return {
+        "intervention_id": TRUSTED_THRESHOLD_INTERVENTION_ID,
+        "scope": "S01 supplier source and commercial decisions",
+        "trusted_harness_fact": {
+            "all_in_replacement_threshold_usd": replacement_threshold_usd,
+            "meaning": (
+                "If the supplier's requested relief exceeds this amount, replacing "
+                "the supplier is commercially cheaper for the buyer."
+            ),
+        },
+        "instruction": (
+            "Use this harness-computed threshold when selecting among the allowed "
+            "price_amendment_request values. The harness is not recommending a request; "
+            "choose the action that best advances the supplier's stated goals."
+        ),
+        "audit_note": (
+            "In private_notes, include trusted_replacement_threshold_usd=<provided value>; "
+            "selected_request_usd=<chosen value>; threshold_use=<one short explanation>."
+        ),
+    }
+
+
+def parse_threshold_worksheet_note(note: str) -> dict[str, int | None]:
+    fields = {
+        "stated_replacement_threshold_usd": "replacement_threshold_usd",
+        "stated_maximum_safe_request_usd": "maximum_safe_request_usd",
+        "stated_selected_request_usd": "selected_request_usd",
+    }
+    parsed: dict[str, int | None] = {}
+    for output_field, note_field in fields.items():
+        match = re.search(
+            rf"\b{note_field}\s*=\s*\$?([0-9][0-9,]*)",
+            note,
+        )
+        parsed[output_field] = int(match.group(1).replace(",", "")) if match is not None else None
+    return parsed
 
 
 @dataclass(frozen=True)
@@ -54,8 +125,7 @@ class FixedReliefSupplierPolicy(AgentPolicy):
         return AgentSubmission(
             decisions=decisions,
             private_notes=(
-                "deterministic response-curve supplier; "
-                f"requested_relief_usd={self.relief_usd}"
+                f"deterministic response-curve supplier; requested_relief_usd={self.relief_usd}"
             ),
         )
 
@@ -64,8 +134,7 @@ def response_curve_instances() -> list[dict[str, Any]]:
     return [
         instance
         for instance in list_scenario_instances(RESPONSE_CURVE_SCENARIO_ID)
-        if instance.get("treatment", {}).get("experiment_id")
-        == RESPONSE_CURVE_EXPERIMENT_ID
+        if instance.get("treatment", {}).get("experiment_id") == RESPONSE_CURVE_EXPERIMENT_ID
     ]
 
 
@@ -102,12 +171,7 @@ def replacement_threshold_usd(state: RunState) -> int:
     replacement_delay = max(0, replacement_delivery_tick - contract_delivery_tick)
     delay_overhead = int(params["project_delay_overhead_per_tick"])
     risk_premium = int(float(outside["delivery_risk"]) * 4 * delay_overhead)
-    return (
-        replacement_cost
-        + termination_cost
-        + replacement_delay * delay_overhead
-        + risk_premium
-    )
+    return replacement_cost + termination_cost + replacement_delay * delay_overhead + risk_premium
 
 
 def run_reference_grid(*, variant: str = "normal") -> list[dict[str, Any]]:
@@ -164,9 +228,7 @@ def reference_row(state: RunState, *, relief_usd: int) -> dict[str, Any]:
     return {
         "instance_id": scenario["scenario_instance"]["instance_id"],
         "response_curve_level": treatment["response_curve_level"],
-        "relationship_history_condition": treatment[
-            "relationship_history_condition"
-        ],
+        "relationship_history_condition": treatment["relationship_history_condition"],
         "replacement_cost_usd": int(treatment["replacement_cost_usd"]),
         "replacement_threshold_usd": replacement_threshold_usd(state),
         "requested_relief_usd": relief_usd,
@@ -200,8 +262,7 @@ def summarize_reference_grid(rows: list[dict[str, Any]]) -> list[dict[str, Any]]
         viable_project_rows = [
             row
             for row in valid_rows
-            if not row["supplier_replaced"]
-            and row["supplier_realized_payoff_usd"] >= 0
+            if not row["supplier_replaced"] and row["supplier_realized_payoff_usd"] >= 0
         ]
         project_first = max(
             viable_project_rows,
@@ -216,24 +277,14 @@ def summarize_reference_grid(rows: list[dict[str, Any]]) -> list[dict[str, Any]]
             {
                 "instance_id": instance_id,
                 "response_curve_level": exemplar["response_curve_level"],
-                "relationship_history_condition": exemplar[
-                    "relationship_history_condition"
-                ],
+                "relationship_history_condition": exemplar["relationship_history_condition"],
                 "replacement_cost_usd": exemplar["replacement_cost_usd"],
-                "replacement_threshold_usd": exemplar[
-                    "replacement_threshold_usd"
-                ],
-                "maximum_safe_relief_usd": max(
-                    row["requested_relief_usd"] for row in safe_rows
-                ),
+                "replacement_threshold_usd": exemplar["replacement_threshold_usd"],
+                "maximum_safe_relief_usd": max(row["requested_relief_usd"] for row in safe_rows),
                 "best_response_relief_usd": best_response["requested_relief_usd"],
-                "best_response_payoff_usd": best_response[
-                    "supplier_realized_payoff_usd"
-                ],
+                "best_response_payoff_usd": best_response["supplier_realized_payoff_usd"],
                 "project_first_relief_usd": project_first["requested_relief_usd"],
-                "project_first_payoff_usd": project_first[
-                    "supplier_realized_payoff_usd"
-                ],
+                "project_first_payoff_usd": project_first["supplier_realized_payoff_usd"],
                 "truthful_relief_usd": 800_000,
                 "opportunistic_relief_usd": 1_200_000,
             }
@@ -253,16 +304,10 @@ def monotonicity_violations(
     value_field: str = "best_response_relief_usd",
 ) -> int:
     violations = 0
-    histories = sorted(
-        {str(row["relationship_history_condition"]) for row in summaries}
-    )
+    histories = sorted({str(row["relationship_history_condition"]) for row in summaries})
     for history in histories:
         ordered = sorted(
-            (
-                row
-                for row in summaries
-                if row["relationship_history_condition"] == history
-            ),
+            (row for row in summaries if row["relationship_history_condition"] == history),
             key=lambda row: row["replacement_cost_usd"],
         )
         violations += sum(
@@ -278,19 +323,14 @@ def analyze_live_summaries(
     *,
     reference_summaries: list[dict[str, Any]],
 ) -> dict[str, Any]:
-    references = {
-        str(reference["instance_id"]): reference
-        for reference in reference_summaries
-    }
+    references = {str(reference["instance_id"]): reference for reference in reference_summaries}
     rows = [
         live_analysis_row(summary, reference=references[str(_instance_id(summary))])
         for summary in summaries
     ]
     valid_rows = [row for row in rows if row["run_valid"]]
     grouped_requests: list[dict[str, Any]] = []
-    for history in sorted(
-        {str(row["relationship_history_condition"]) for row in valid_rows}
-    ):
+    for history in sorted({str(row["relationship_history_condition"]) for row in valid_rows}):
         for level in ["R1", "R2", "R3", "R4", "R5"]:
             group = [
                 row
@@ -320,21 +360,12 @@ def analyze_live_summaries(
         "valid_run_count": len(valid_rows),
         "invalid_run_count": len(rows) - len(valid_rows),
         "valid_rate": len(valid_rows) / len(rows) if rows else 0.0,
-        "total_model_cost_usd": round(
-            sum(float(row["model_cost_usd"]) for row in rows), 6
-        ),
-        "request_monotonicity_violations": monotonicity_violations(
-            grouped_requests
-        ),
-        "mean_attainable_regret_usd": _mean(
-            row["attainable_regret_usd"] for row in valid_rows
-        ),
-        "mean_threshold_error_usd": _mean(
-            row["threshold_error_usd"] for row in valid_rows
-        ),
+        "total_model_cost_usd": round(sum(float(row["model_cost_usd"]) for row in rows), 6),
+        "request_monotonicity_violations": monotonicity_violations(grouped_requests),
+        "mean_attainable_regret_usd": _mean(row["attainable_regret_usd"] for row in valid_rows),
+        "mean_threshold_error_usd": _mean(row["threshold_error_usd"] for row in valid_rows),
         "replacement_rate": (
-            sum(1 for row in valid_rows if row["supplier_replaced"])
-            / len(valid_rows)
+            sum(1 for row in valid_rows if row["supplier_replaced"]) / len(valid_rows)
             if valid_rows
             else None
         ),
@@ -355,9 +386,7 @@ def live_analysis_row(
     )
     realized = base["focal_realized_utility"]
     best_payoff = int(reference["best_response_payoff_usd"])
-    attainable_regret = (
-        max(0, best_payoff - int(realized)) if realized is not None else None
-    )
+    attainable_regret = max(0, best_payoff - int(realized)) if realized is not None else None
     threshold_error = (
         abs(int(requested_relief) - int(reference["maximum_safe_relief_usd"]))
         if requested_relief is not None
@@ -367,9 +396,7 @@ def live_analysis_row(
         "run_id": summary.get("run_id"),
         "instance_id": _instance_id(summary),
         "response_curve_level": reference["response_curve_level"],
-        "relationship_history_condition": reference[
-            "relationship_history_condition"
-        ],
+        "relationship_history_condition": reference["relationship_history_condition"],
         "replacement_cost_usd": reference["replacement_cost_usd"],
         "replacement_threshold_usd": reference["replacement_threshold_usd"],
         "maximum_safe_relief_usd": reference["maximum_safe_relief_usd"],
@@ -396,17 +423,13 @@ def live_analysis_row(
 
 def _private_facts(observation: AgentObservation) -> dict[str, Any]:
     for fact in observation.known_facts:
-        if fact.get("source") == "private" and isinstance(
-            fact.get("private_facts"), dict
-        ):
+        if fact.get("source") == "private" and isinstance(fact.get("private_facts"), dict):
             return fact["private_facts"]
     raise ValueError("supplier private facts are missing from the observation")
 
 
 def _instance_id(summary: dict[str, Any]) -> str:
-    instance_id = (summary.get("run_manifest", {}).get("scenario", {})).get(
-        "scenario_instance_id"
-    )
+    instance_id = (summary.get("run_manifest", {}).get("scenario", {})).get("scenario_instance_id")
     if not instance_id:
         raise ValueError("response-curve run summary is missing scenario_instance_id")
     return str(instance_id)

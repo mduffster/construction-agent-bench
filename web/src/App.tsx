@@ -434,6 +434,8 @@ function ResearchPage() {
         </div>
       </section>
 
+      <ResponseCurveMechanismSection />
+
       <section className="overview-section research-reading">
         <div>
           <div className="section-title">
@@ -1373,18 +1375,6 @@ function ResultsPage() {
         </section>
       </section>
 
-      <aside className="research-crosslink">
-        <div>
-          <strong>Looking for the focal-supplier experiment?</strong>
-          <span>
-            The replaceability study is separate from these six-agent game runs.
-          </span>
-        </div>
-        <a href="/research">
-          View current research <ArrowRight size={16} />
-        </a>
-      </aside>
-
       <PopulationSection />
 
       <section className="overview-section">
@@ -1411,6 +1401,82 @@ function ResultsPage() {
       </section>
     </Shell>
   );
+}
+
+function ResponseCurveMechanismSection() {
+  const mechanism = responseCurveData.mechanism_test;
+  const reduction = Math.round(
+    mechanism.trusted_threshold_effect.mean_attainable_regret_reduction_fraction * 100
+  );
+  return (
+    <section className="overview-section mechanism-result">
+      <div className="section-title">
+        <Eye size={20} />
+        <h2>What explains the supplier failure?</h2>
+      </div>
+      <p className="mechanism-lede">
+        <strong>Giving the model a formula was not enough. Giving it the computed threshold was.</strong>{" "}
+        We reran the same focal-supplier task with progressively stronger decision support while
+        keeping the project and deterministic counterparties fixed.
+      </p>
+
+      <div className="mechanism-table" role="table" aria-label="Response curve mechanism comparison">
+        <div className="mechanism-row mechanism-row--head" role="row">
+          <span>Condition</span>
+          <span>Evidence</span>
+          <span>Valid</span>
+          <span>Mean regret</span>
+          <span>Replaced</span>
+          <span>Curve breaks</span>
+        </div>
+        {mechanism.conditions.map((condition) => (
+          <div
+            className={`mechanism-row mechanism-row--${condition.condition_id}`}
+            role="row"
+            key={condition.condition_id}
+          >
+            <span className="mechanism-condition" data-label="Condition">
+              <strong>{condition.label}</strong>
+              <small>{condition.description}</small>
+            </span>
+            <span data-label="Evidence">{mechanismEvidenceLabel(condition.evidence_tier)}</span>
+            <span data-label="Valid">
+              {condition.valid_run_count}/{condition.run_count}
+            </span>
+            <span data-label="Mean regret">
+              {formatMoney(Math.round(condition.mean_attainable_regret_usd))}
+            </span>
+            <span data-label="Replaced">{Math.round(condition.replacement_rate * 100)}%</span>
+            <span data-label="Curve breaks">{condition.request_monotonicity_violations}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mechanism-takeaway">
+        <strong>{reduction}% less attainable regret</strong>
+        <p>
+          The trusted threshold eliminated replacement and restored a monotonic response. That
+          localizes much of the failure to fact binding and arithmetic—not simply ignorance that
+          replaceability matters. The remaining {formatMoney(
+            mechanism.trusted_threshold_effect.residual_high_level_anchor_usd
+          )} anchor still leaves bargaining upside unrealized.
+        </p>
+      </div>
+      <p className="mechanism-caveat">
+        The formula worksheet is a one-run-per-cell modal diagnostic. The trusted threshold is an
+        oracle fact, not evidence that the model can calculate it unassisted.
+      </p>
+    </section>
+  );
+}
+
+function mechanismEvidenceLabel(value: string) {
+  const labels: Record<string, string> = {
+    five_per_cell_confirmation: "5/cell confirmation",
+    one_per_cell_modal_diagnostic: "1/cell modal diagnostic",
+    three_per_cell_confirmation: "3/cell confirmation",
+  };
+  return labels[value] ?? value;
 }
 
 function PopulationSection() {

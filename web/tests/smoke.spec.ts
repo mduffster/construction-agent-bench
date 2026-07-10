@@ -34,6 +34,9 @@ test("research page publishes the response-curve evidence", async ({ page }) => 
   await expect(page.getByRole("img", { name: /response curve comparing/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /response curve values/i })).toBeVisible();
   await expect(page.getByText(/preliminary evidence from one focal-agent scenario/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /what explains the supplier failure/i })).toBeVisible();
+  await expect(page.getByText(/trusted computed threshold/i)).toBeVisible();
+  await expect(page.getByText(/88% less attainable regret/i)).toBeVisible();
 });
 
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {

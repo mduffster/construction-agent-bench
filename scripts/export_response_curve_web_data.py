@@ -17,7 +17,9 @@ def main() -> None:
     manifest_path = EVIDENCE_DIR / "evidence_manifest.json"
     table_path = EVIDENCE_DIR / "response_curve_by_level.csv"
     chart_path = EVIDENCE_DIR / "response_curve.png"
+    intervention_path = EVIDENCE_DIR / "intervention_summary.json"
     manifest = json.loads(manifest_path.read_text())
+    interventions = json.loads(intervention_path.read_text())
     levels = _read_levels(table_path)
     haiku = _public_sample(manifest["samples"]["haiku_confirmation"])
     sonnet = _public_sample(manifest["samples"]["sonnet_modal"])
@@ -36,15 +38,18 @@ def main() -> None:
             "replacement_cost_level_count": len(levels),
             "relationship_history_condition_count": 2,
             "deterministic_reference_trajectory_count": 130,
-            "minimum_safe_request_usd": min(
-                level["maximum_safe_relief_usd"] for level in levels
-            ),
-            "maximum_safe_request_usd": max(
-                level["maximum_safe_relief_usd"] for level in levels
-            ),
+            "minimum_safe_request_usd": min(level["maximum_safe_relief_usd"] for level in levels),
+            "maximum_safe_request_usd": max(level["maximum_safe_relief_usd"] for level in levels),
         },
         "haiku_confirmation": haiku,
         "sonnet_modal": sonnet,
+        "mechanism_test": {
+            "question": interventions["question"],
+            "conditions": interventions["conditions"],
+            "trusted_threshold_effect": interventions["trusted_threshold_effect"],
+            "interpretation": interventions["interpretation"],
+            "limitations": interventions["limitations"],
+        },
         "haiku_request_counts": manifest["metrics"]["haiku_request_counts"],
         "levels": levels,
         "limitations": [
@@ -58,6 +63,7 @@ def main() -> None:
             "evidence_manifest_sha256": _sha256(manifest_path),
             "response_table_sha256": _sha256(table_path),
             "chart_sha256": _sha256(chart_path),
+            "intervention_summary_sha256": _sha256(intervention_path),
         },
     }
     payload["content_sha256"] = hashlib.sha256(
@@ -73,11 +79,7 @@ def main() -> None:
 
 def _public_sample(sample: dict[str, Any]) -> dict[str, Any]:
     """Keep operational spend metadata out of the public web artifact."""
-    return {
-        key: value
-        for key, value in sample.items()
-        if key != "model_cost_usd"
-    }
+    return {key: value for key, value in sample.items() if key != "model_cost_usd"}
 
 
 def _read_levels(path: Path) -> list[dict[str, Any]]:
@@ -90,32 +92,20 @@ def _read_levels(path: Path) -> list[dict[str, Any]]:
             "replacement_threshold_usd": int(row["replacement_threshold_usd"]),
             "maximum_safe_relief_usd": int(row["maximum_safe_relief_usd"]),
             "haiku_no_history_valid_n": int(row["haiku_no_history_valid_n"]),
-            "haiku_no_history_mean_request_usd": float(
-                row["haiku_no_history_mean_request_usd"]
-            ),
-            "haiku_no_history_replacement_rate": float(
-                row["haiku_no_history_replacement_rate"]
-            ),
+            "haiku_no_history_mean_request_usd": float(row["haiku_no_history_mean_request_usd"]),
+            "haiku_no_history_replacement_rate": float(row["haiku_no_history_replacement_rate"]),
             "haiku_no_history_mean_attainable_regret_usd": float(
                 row["haiku_no_history_mean_attainable_regret_usd"]
             ),
             "haiku_history_valid_n": int(row["haiku_history_valid_n"]),
-            "haiku_history_mean_request_usd": float(
-                row["haiku_history_mean_request_usd"]
-            ),
-            "haiku_history_replacement_rate": float(
-                row["haiku_history_replacement_rate"]
-            ),
+            "haiku_history_mean_request_usd": float(row["haiku_history_mean_request_usd"]),
+            "haiku_history_replacement_rate": float(row["haiku_history_replacement_rate"]),
             "haiku_history_mean_attainable_regret_usd": float(
                 row["haiku_history_mean_attainable_regret_usd"]
             ),
             "sonnet_no_history_valid_n": int(row["sonnet_no_history_valid_n"]),
-            "sonnet_no_history_mean_request_usd": float(
-                row["sonnet_no_history_mean_request_usd"]
-            ),
-            "sonnet_no_history_replacement_rate": float(
-                row["sonnet_no_history_replacement_rate"]
-            ),
+            "sonnet_no_history_mean_request_usd": float(row["sonnet_no_history_mean_request_usd"]),
+            "sonnet_no_history_replacement_rate": float(row["sonnet_no_history_replacement_rate"]),
             "sonnet_no_history_mean_attainable_regret_usd": float(
                 row["sonnet_no_history_mean_attainable_regret_usd"]
             ),

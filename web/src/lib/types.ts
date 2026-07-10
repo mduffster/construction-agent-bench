@@ -270,6 +270,26 @@ export interface ResponseCurveLevel {
   sonnet_no_history_mean_attainable_regret_usd: number;
 }
 
+export interface ResponseCurveMechanismCondition {
+  condition_id: "unassisted" | "threshold_worksheet" | "trusted_threshold";
+  label: string;
+  description: string;
+  evidence_tier:
+    | "five_per_cell_confirmation"
+    | "one_per_cell_modal_diagnostic"
+    | "three_per_cell_confirmation";
+  run_count: number;
+  valid_run_count: number;
+  valid_rate: number;
+  mean_attainable_regret_usd: number;
+  replacement_rate: number;
+  request_monotonicity_violations: number;
+  mechanism_gate_passed: boolean | null;
+  correct_threshold_count?: number;
+  parseable_calculation_count?: number;
+  stated_ceiling_override_count?: number;
+}
+
 export interface ResponseCurveData {
   schema_version: string;
   experiment_id: string;
@@ -287,6 +307,19 @@ export interface ResponseCurveData {
   };
   haiku_confirmation: ResponseCurveSample;
   sonnet_modal: ResponseCurveSample;
+  mechanism_test: {
+    question: string;
+    conditions: ResponseCurveMechanismCondition[];
+    trusted_threshold_effect: {
+      mean_attainable_regret_reduction_fraction: number;
+      mean_attainable_regret_reduction_usd: number;
+      modal_gate_passed: boolean;
+      confirmation_gate_passed: boolean;
+      residual_high_level_anchor_usd: number;
+    };
+    interpretation: string;
+    limitations: string[];
+  };
   haiku_request_counts: Record<string, number>;
   levels: ResponseCurveLevel[];
   limitations: string[];
@@ -295,6 +328,7 @@ export interface ResponseCurveData {
     evidence_manifest_sha256: string;
     response_table_sha256: string;
     chart_sha256: string;
+    intervention_summary_sha256: string;
   };
   content_sha256: string;
 }

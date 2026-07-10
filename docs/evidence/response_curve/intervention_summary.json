@@ -1,0 +1,97 @@
+{
+  "conditions": [
+    {
+      "condition_id": "unassisted",
+      "description": "The supplier receives the replacement facts but no decision aid.",
+      "evidence_tier": "five_per_cell_confirmation",
+      "label": "Unassisted",
+      "mean_attainable_regret_usd": 594782.6086956522,
+      "mechanism_gate_passed": null,
+      "replacement_rate": 0.5217391304347826,
+      "request_monotonicity_violations": 4,
+      "run_count": 50,
+      "valid_rate": 0.92,
+      "valid_run_count": 46
+    },
+    {
+      "condition_id": "threshold_worksheet",
+      "correct_threshold_count": 0,
+      "description": "The prompt supplies the formula and requires an auditable calculation.",
+      "evidence_tier": "one_per_cell_modal_diagnostic",
+      "label": "Formula worksheet",
+      "mean_attainable_regret_usd": 506666.6666666667,
+      "mechanism_gate_passed": false,
+      "parseable_calculation_count": 9,
+      "replacement_rate": 0.4444444444444444,
+      "request_monotonicity_violations": 3,
+      "run_count": 10,
+      "stated_ceiling_override_count": 3,
+      "valid_rate": 0.9,
+      "valid_run_count": 9
+    },
+    {
+      "condition_id": "trusted_threshold",
+      "description": "The harness supplies the correct threshold as a fact, but not the action.",
+      "evidence_tier": "three_per_cell_confirmation",
+      "label": "Trusted computed threshold",
+      "mean_attainable_regret_usd": 72000.0,
+      "mechanism_gate_passed": true,
+      "replacement_rate": 0.0,
+      "request_monotonicity_violations": 0,
+      "run_count": 30,
+      "valid_rate": 1.0,
+      "valid_run_count": 30
+    }
+  ],
+  "content_sha256": "3c2a38337bbc5716039194eb911e11dec1e5363e61f398c33ae8be99ef07a686",
+  "experiment_id": "s01_replaceability_response_curve_v1",
+  "interpretation": "A formula alone did not repair the response curve. Supplying the computed reservation value eliminated replacement and restored monotonicity, localizing much of the failure to fact binding and arithmetic. Persistent high-level under-asking indicates a separate anchoring effect.",
+  "limitations": [
+    "The worksheet condition is a one-run-per-cell modal diagnostic.",
+    "The trusted threshold is an oracle-information intervention, not unassisted reasoning.",
+    "All model conditions use one provider and there is not yet a practitioner baseline."
+  ],
+  "question": "Does explicit calculation support repair the supplier's failure to price its own replaceability?",
+  "schema_version": "constructbench.response_curve_interventions.v1",
+  "source_files": [
+    {
+      "path": "outputs/s01_response_curve_haiku_confirmation_20260709/response_curve_analysis.json",
+      "sha256": "4687e4d29211a560184f5fc1d832b5791af1269e5833251fdff527c07afab30c"
+    },
+    {
+      "path": "outputs/s01_response_curve_threshold_scaffold_modal_20260709/response_curve_analysis.json",
+      "sha256": "aca110c3ef477278f9bccbfe381b612cd8da2f91496c46b9e61c1168be29f523"
+    },
+    {
+      "path": "outputs/s01_response_curve_threshold_scaffold_modal_20260709/intervention_comparison.json",
+      "sha256": "cfff0ee25fc58461d16337a43c2f8bb2c2b4dcec73d6fa7bfd4535249151d0b0"
+    },
+    {
+      "path": "outputs/s01_response_curve_threshold_scaffold_modal_20260709/threshold_worksheet_audit.json",
+      "sha256": "cef7c1c9f2061f07b346b8ff305d4eae61b4f718bd76872029b1b06554e71014"
+    },
+    {
+      "path": "outputs/s01_response_curve_trusted_threshold_modal_20260709/response_curve_analysis.json",
+      "sha256": "8b6b5a33873e6767a9d33023311e2c03024d55601397ae33448a784476c5af9a"
+    },
+    {
+      "path": "outputs/s01_response_curve_trusted_threshold_modal_20260709/intervention_comparison.json",
+      "sha256": "04fc5cb34229f4683abd0d328cb66631b51688493720c5386fe257633c54d60c"
+    },
+    {
+      "path": "outputs/s01_response_curve_trusted_threshold_confirmation_20260709/response_curve_analysis.json",
+      "sha256": "8762d24fb44709ff32701b29b8d1253e0417b1a58b3d04ccbf19086f48c240c2"
+    },
+    {
+      "path": "outputs/s01_response_curve_trusted_threshold_confirmation_20260709/intervention_comparison.json",
+      "sha256": "a25152eec97a2d32a4421cf818b5ae9a7bc93c2c62711386bce19e169c69e2c1"
+    }
+  ],
+  "trusted_threshold_effect": {
+    "confirmation_gate_passed": true,
+    "mean_attainable_regret_reduction_fraction": 0.8789473684210526,
+    "mean_attainable_regret_reduction_usd": 522782.6086956522,
+    "modal_gate_passed": true,
+    "residual_high_level_anchor_usd": 800000
+  }
+}

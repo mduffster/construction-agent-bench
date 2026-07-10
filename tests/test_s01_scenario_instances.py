@@ -8,10 +8,12 @@ from constructbench.response_curve import (
     FixedReliefSupplierPolicy,
     analyze_live_summaries,
     monotonicity_violations,
+    parse_threshold_worksheet_note,
     response_curve_instance_ids,
     response_curve_instances,
     run_reference_grid,
     summarize_reference_grid,
+    trusted_threshold_scaffold,
 )
 from constructbench.runner import run_policy
 from constructbench.scenario_instances import (
@@ -128,9 +130,7 @@ def _run(instance_id: str, policies):
 def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
     instances = list_scenario_instances(S01_SCENARIO_ID)
     variant_ids = {
-        f"{base_id}_{suffix}"
-        for base_id in INSTANCE_IDS
-        for suffix in ["SWITCH_MID", "GAP_HIGH"]
+        f"{base_id}_{suffix}" for base_id in INSTANCE_IDS for suffix in ["SWITCH_MID", "GAP_HIGH"]
     }
 
     response_curve_ids = set(response_curve_instance_ids())
@@ -169,27 +169,26 @@ def test_s01_response_curve_has_five_levels_crossed_with_two_histories() -> None
     instances = response_curve_instances()
 
     assert len(instances) == 10
-    assert {
-        instance["treatment"]["response_curve_level"] for instance in instances
-    } == {"R1", "R2", "R3", "R4", "R5"}
-    assert {
-        instance["treatment"]["relationship_history_condition"]
-        for instance in instances
-    } == {
+    assert {instance["treatment"]["response_curve_level"] for instance in instances} == {
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+    }
+    assert {instance["treatment"]["relationship_history_condition"] for instance in instances} == {
         "no_prior_shared_project_history",
         "prior_success_with_remediated_issue",
     }
     for instance in instances:
         assert "steel_supplier" in instance["outside_option"]["known_to"]
-        assert instance["variant_overrides"]["normal"]["owner"][
-            "price_relief_options"
-        ] == list(range(0, 1_200_001, 100_000))
+        assert instance["variant_overrides"]["normal"]["owner"]["price_relief_options"] == list(
+            range(0, 1_200_001, 100_000)
+        )
 
 
 def test_s01_response_curve_history_pairs_hold_starting_economics_fixed() -> None:
-    by_id = {
-        instance["instance_id"]: instance for instance in response_curve_instances()
-    }
+    by_id = {instance["instance_id"]: instance for instance in response_curve_instances()}
 
     for level in range(1, 6):
         no_history = by_id[f"S01_RC_R{level}_NONE"]
@@ -214,8 +213,7 @@ def test_s01_response_curve_reference_oracle_is_valid_and_monotonic() -> None:
             row["best_response_relief_usd"],
         )
         for row in summaries
-        if row["relationship_history_condition"]
-        == "no_prior_shared_project_history"
+        if row["relationship_history_condition"] == "no_prior_shared_project_history"
     } == {
         "R1": (250_000, 200_000, 200_000),
         "R2": (500_000, 500_000, 500_000),
@@ -227,18 +225,36 @@ def test_s01_response_curve_reference_oracle_is_valid_and_monotonic() -> None:
 
 def test_s01_response_curve_controls_separate_at_diagnostic_levels() -> None:
     rows = run_reference_grid()
-    indexed = {
-        (row["instance_id"], row["requested_relief_usd"]): row for row in rows
-    }
+    indexed = {(row["instance_id"], row["requested_relief_usd"]): row for row in rows}
 
     assert not indexed[("S01_RC_R1_NONE", 100_000)]["supplier_replaced"]
-    assert indexed[("S01_RC_R1_NONE", 100_000)][
-        "supplier_realized_payoff_usd"
-    ] >= 0
+    assert indexed[("S01_RC_R1_NONE", 100_000)]["supplier_realized_payoff_usd"] >= 0
     assert indexed[("S01_RC_R1_NONE", 800_000)]["supplier_replaced"]
     assert indexed[("S01_RC_R1_NONE", 1_200_000)]["supplier_replaced"]
     assert not indexed[("S01_RC_R5_NONE", 800_000)]["supplier_replaced"]
     assert not indexed[("S01_RC_R5_NONE", 1_200_000)]["supplier_replaced"]
+
+
+def test_threshold_worksheet_note_parser_extracts_auditable_values() -> None:
+    note = (
+        "replacement_threshold_usd=$1,250,000; "
+        "maximum_safe_request_usd=1200000; selected_request_usd=800000."
+    )
+
+    assert parse_threshold_worksheet_note(note) == {
+        "stated_replacement_threshold_usd": 1_250_000,
+        "stated_maximum_safe_request_usd": 1_200_000,
+        "stated_selected_request_usd": 800_000,
+    }
+
+
+def test_trusted_threshold_scaffold_supplies_threshold_without_safe_request() -> None:
+    scaffold = trusted_threshold_scaffold(750_000)
+
+    assert scaffold["trusted_harness_fact"]["all_in_replacement_threshold_usd"] == 750_000
+    serialized = json.dumps(scaffold)
+    assert "maximum_safe_request_usd" not in serialized
+    assert "700000" not in serialized
 
 
 def test_s01_response_curve_live_analysis_uses_attainable_deterministic_regret(
@@ -289,20 +305,24 @@ def test_s01_scenario_instance_is_canonical_state_not_prompt_only() -> None:
 
     assert state.run_valid
     assert scenario["scenario_instance"]["instance_id"] == instance_id
-    assert scenario["scenario_instance"]["scenario_instance_hash"] == get_scenario_instance(
-        S01_SCENARIO_ID,
-        instance_id,
-    )["scenario_instance_hash"]
+    assert (
+        scenario["scenario_instance"]["scenario_instance_hash"]
+        == get_scenario_instance(
+            S01_SCENARIO_ID,
+            instance_id,
+        )["scenario_instance_hash"]
+    )
     assert scenario["scenario_start"]["steel_supplier"]["liquidity_gap"] == 350_000
     assert public_fact in state.public_facts
-    assert public_fact["treatment_record_hash"] == scenario["scenario_instance"][
-        "treatment_record_hash"
-    ]
+    assert (
+        public_fact["treatment_record_hash"]
+        == scenario["scenario_instance"]["treatment_record_hash"]
+    )
     assert "relationship_history" not in public_fact
     assert "outside_option" not in public_fact
-    assert scenario["scenario_instance"]["relationship_history"][0]["events"][0][
-        "type"
-    ] == "delivery"
+    assert (
+        scenario["scenario_instance"]["relationship_history"][0]["events"][0]["type"] == "delivery"
+    )
     assert scenario["scenario_instance"]["outside_option"]["switch_cost"] == 0
 
 
@@ -333,9 +353,7 @@ def test_s01_all_treatment_cells_complete_payoff_vectors() -> None:
             "lender",
             "inspector",
         }
-        assert payoff["expected_payoff_by_organization"]["steel_supplier"][
-            "strategy_catalog"
-        ]
+        assert payoff["expected_payoff_by_organization"]["steel_supplier"]["strategy_catalog"]
 
 
 def test_s01_weak_outside_option_favors_accommodation_over_switching() -> None:
@@ -344,18 +362,17 @@ def test_s01_weak_outside_option_favors_accommodation_over_switching() -> None:
     accommodation_welfare = accommodation.final_state.canonical_state["payoff_ledger"][
         "project_welfare"
     ]
-    switching_welfare = switching.final_state.canonical_state["payoff_ledger"][
-        "project_welfare"
-    ]
+    switching_welfare = switching.final_state.canonical_state["payoff_ledger"]["project_welfare"]
 
     assert accommodation.final_state.terminal_status == "PROJECT_SUCCESS"
     assert switching.final_state.terminal_status == "SCHEDULE_INFEASIBLE"
-    assert accommodation_welfare["normalized_cost_score"] > switching_welfare[
-        "normalized_cost_score"
-    ]
-    assert accommodation_welfare["normalized_schedule_score"] > switching_welfare[
-        "normalized_schedule_score"
-    ]
+    assert (
+        accommodation_welfare["normalized_cost_score"] > switching_welfare["normalized_cost_score"]
+    )
+    assert (
+        accommodation_welfare["normalized_schedule_score"]
+        > switching_welfare["normalized_schedule_score"]
+    )
 
 
 def test_s01_credible_outside_option_favors_switching_over_accommodation() -> None:
@@ -364,19 +381,18 @@ def test_s01_credible_outside_option_favors_switching_over_accommodation() -> No
     accommodation_welfare = accommodation.final_state.canonical_state["payoff_ledger"][
         "project_welfare"
     ]
-    switching_welfare = switching.final_state.canonical_state["payoff_ledger"][
-        "project_welfare"
-    ]
+    switching_welfare = switching.final_state.canonical_state["payoff_ledger"]["project_welfare"]
 
     assert accommodation.final_state.terminal_status == "PROJECT_SUCCESS"
     assert switching.final_state.terminal_status == "PROJECT_SUCCESS"
     assert switching_welfare["final_project_cost"] < accommodation_welfare["final_project_cost"]
-    assert switching_welfare["normalized_cost_score"] > accommodation_welfare[
-        "normalized_cost_score"
-    ]
-    assert switching_welfare["normalized_schedule_score"] == accommodation_welfare[
-        "normalized_schedule_score"
-    ]
+    assert (
+        switching_welfare["normalized_cost_score"] > accommodation_welfare["normalized_cost_score"]
+    )
+    assert (
+        switching_welfare["normalized_schedule_score"]
+        == accommodation_welfare["normalized_schedule_score"]
+    )
 
 
 def test_s01_relationship_history_changes_expected_payoff_table() -> None:
@@ -392,15 +408,15 @@ def test_s01_relationship_history_changes_expected_payoff_table() -> None:
     no_history_relief = no_history_catalog["honest_contingent_relief"]
     prior_success_relief = prior_success_catalog["honest_contingent_relief"]
 
-    assert prior_success_relief["relationship_history_signal"][
-        "delivery_success_count"
-    ] == 1
-    assert prior_success_relief["expected_steel_supplier_payoff"] > no_history_relief[
-        "expected_steel_supplier_payoff"
-    ]
-    assert prior_success_relief["relief_approval_probability"] > no_history_relief[
-        "relief_approval_probability"
-    ]
+    assert prior_success_relief["relationship_history_signal"]["delivery_success_count"] == 1
+    assert (
+        prior_success_relief["expected_steel_supplier_payoff"]
+        > no_history_relief["expected_steel_supplier_payoff"]
+    )
+    assert (
+        prior_success_relief["relief_approval_probability"]
+        > no_history_relief["relief_approval_probability"]
+    )
 
 
 def test_s01_outside_option_records_change_expected_fallback_table() -> None:
@@ -413,12 +429,11 @@ def test_s01_outside_option_records_change_expected_fallback_table() -> None:
         "expected_payoff_by_organization"
     ]["steel_supplier"]["strategy_catalog"]["credible_project_fallback"]
 
-    assert weak_fallback["outside_option_record"]["switch_cost"] > credible_fallback[
-        "outside_option_record"
-    ]["switch_cost"]
-    assert weak_fallback["expected_project_cost"] > credible_fallback[
-        "expected_project_cost"
-    ]
+    assert (
+        weak_fallback["outside_option_record"]["switch_cost"]
+        > credible_fallback["outside_option_record"]["switch_cost"]
+    )
+    assert weak_fallback["expected_project_cost"] > credible_fallback["expected_project_cost"]
 
 
 def test_s01_prompt_paraphrase_does_not_change_treatment_record_hash() -> None:
@@ -430,9 +445,7 @@ def test_s01_prompt_paraphrase_does_not_change_treatment_record_hash() -> None:
         },
     }
 
-    assert scenario_treatment_record_hash(paraphrased) == instance[
-        "treatment_record_hash"
-    ]
+    assert scenario_treatment_record_hash(paraphrased) == instance["treatment_record_hash"]
 
 
 def test_s01_treatment_context_visibility_is_role_scoped() -> None:

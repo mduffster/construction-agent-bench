@@ -41,8 +41,7 @@ def model_rejects_sampling_params(model: str) -> bool:
 class ChatAdapter(Protocol):
     model: str
 
-    def chat(self, messages: list[dict[str, str]]) -> str:
-        ...
+    def chat(self, messages: list[dict[str, str]]) -> str: ...
 
 
 class AnthropicModelAdapter:
@@ -95,7 +94,9 @@ class AnthropicModelAdapter:
                 data = json.loads(response.read().decode())
         except urllib.error.HTTPError as exc:
             body = exc.read().decode(errors="replace")
-            raise RuntimeError(f"Anthropic API request failed with HTTP {exc.code}: {body}") from exc
+            raise RuntimeError(
+                f"Anthropic API request failed with HTTP {exc.code}: {body}"
+            ) from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"could not reach Anthropic API at {self.base_url}") from exc
         self._last_usage = dict(data.get("usage", {}))
@@ -130,10 +131,12 @@ class LLMPolicy(AgentPolicy):
         agent_id: str,
         *,
         prompt_style: PromptStyle = "anthropic_structured",
+        decision_scaffold: dict[str, Any] | None = None,
     ) -> None:
         self.adapter = adapter
         self.agent_id = agent_id
         self.prompt_style = prompt_style
+        self.decision_scaffold = dict(decision_scaffold) if decision_scaffold else None
         self.initialized = False
         self.messages: list[dict[str, str]] = [
             {
@@ -158,6 +161,7 @@ class LLMPolicy(AgentPolicy):
             observation,
             include_role=not self.initialized,
             prompt_style=self.prompt_style,
+            decision_scaffold=self.decision_scaffold,
         )
         raw = self._call(prompt, phase_id=observation.phase_id, repair=False)
         try:
@@ -171,6 +175,7 @@ class LLMPolicy(AgentPolicy):
             errors,
             include_role=not self.initialized,
             prompt_style=self.prompt_style,
+            decision_scaffold=self.decision_scaffold,
         )
         raw = self._call(repair_prompt, phase_id=observation.phase_id, repair=True)
         try:
@@ -208,6 +213,7 @@ class LLMPolicy(AgentPolicy):
             }
         )
         return raw
+
 
 def base_system_prompt(prompt_style: PromptStyle = "anthropic_structured") -> str:
     return (
@@ -262,8 +268,12 @@ def _prompt_for_style(
     *,
     include_role: bool,
     prompt_style: PromptStyle,
+    decision_scaffold: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    return _observation_prompt(observation, include_role=include_role)
+    prompt = _observation_prompt(observation, include_role=include_role)
+    if decision_scaffold is not None:
+        prompt["decision_scaffold"] = decision_scaffold
+    return prompt
 
 
 def _repair_prompt_for_style(
@@ -272,7 +282,11 @@ def _repair_prompt_for_style(
     *,
     include_role: bool,
     prompt_style: PromptStyle,
+    decision_scaffold: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    observation_prompt = _observation_prompt(observation, include_role=include_role)
+    if decision_scaffold is not None:
+        observation_prompt["decision_scaffold"] = decision_scaffold
     return {
         "repair_required": True,
         "validation_errors": errors,
@@ -286,7 +300,7 @@ def _repair_prompt_for_style(
             "recipient_id; otherwise remove it or use no_communication when that explicit "
             "choice is required."
         ),
-        "observation": _observation_prompt(observation, include_role=include_role),
+        "observation": observation_prompt,
     }
 
 
@@ -370,8 +384,7 @@ def _decision_slots(observation: AgentObservation) -> list[dict[str, Any]]:
             )
         else:
             parameter_specs = {
-                name: spec.model_dump(mode="json")
-                for name, spec in request.parameter_specs.items()
+                name: spec.model_dump(mode="json") for name, spec in request.parameter_specs.items()
             }
             slots.append(
                 {
@@ -602,7 +615,9 @@ def _normalize_assessment_update(
         "evidence_ids": normalized.get("evidence_ids", []),
         "prior": prior.model_dump(mode="json"),
         "updated": updated_values,
-        "reason": normalized.get("reason") or private_notes or "Dimension-specific assessment update.",
+        "reason": normalized.get("reason")
+        or private_notes
+        or "Dimension-specific assessment update.",
     }
 
 
@@ -633,7 +648,9 @@ def _merge_assessment_updates(updates: list[dict[str, Any]]) -> list[dict[str, A
     merged: dict[tuple[str, tuple[str, ...], str], dict[str, Any]] = {}
     passthrough = []
     for update in updates:
-        if not all(key in update for key in ["counterparty_id", "evidence_ids", "prior", "updated"]):
+        if not all(
+            key in update for key in ["counterparty_id", "evidence_ids", "prior", "updated"]
+        ):
             passthrough.append(update)
             continue
         key = (
