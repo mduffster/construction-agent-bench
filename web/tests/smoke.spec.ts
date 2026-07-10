@@ -10,7 +10,7 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await page.getByRole("link", { name: /see example runs/i }).click();
   await expect(page.getByRole("heading", { name: /how to read these numbers/i })).toBeVisible();
   await expect(page.getByText(/success limits/i)).toBeVisible();
-  await expect(page.getByRole("heading", { name: /what the ai agents actually did/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /earlier exploratory all-agent runs/i })).toBeVisible();
   await expect(page.getByText(/firms met target/i).first()).toBeVisible();
   await expect(page.getByText(/failed — too late/i).first()).toBeVisible();
   await expect(page.getByText(/success — some firms lost/i).first()).toBeVisible();
@@ -24,19 +24,26 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await expect(page.getByText(/system participants/i)).toBeVisible();
 });
 
-test("research page publishes the response-curve evidence", async ({ page }) => {
+test("research page publishes the staged research evidence", async ({ page }) => {
   await page.goto("/research");
   await expect(
-    page.getByRole("heading", { name: /replaceability response curve/i })
+    page.getByRole("heading", { name: /from one decision to six firms/i })
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: /single-agent response curve/i })).toBeVisible();
   await expect(page.getByText(/46\/50 runs/i)).toBeVisible();
-  await expect(page.getByText(/mean attainable regret/i)).toBeVisible();
+  await expect(page.getByText("Mean attainable regret", { exact: true })).toBeVisible();
   await expect(page.getByRole("img", { name: /response curve comparing/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /response curve values/i })).toBeVisible();
-  await expect(page.getByText(/preliminary evidence from one focal-agent scenario/i)).toBeVisible();
+  await expect(page.getByText(/staged findings from one construction scenario family/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /what explains the supplier failure/i })).toBeVisible();
   await expect(page.getByText(/trusted computed threshold/i)).toBeVisible();
   await expect(page.getByText(/88% less attainable regret/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /two-agent threshold handoff/i })).toBeVisible();
+  await expect(page.getByRole("table", { name: /two-agent handoff results/i })).toBeVisible();
+  await expect(page.getByText(/18\/18/i).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: /controlled multiplayer ladder/i })).toBeVisible();
+  await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
+  await expect(page.getByText(/complete lineage did not guarantee a good strategy/i)).toBeVisible();
 });
 
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {
@@ -102,6 +109,18 @@ test("end screen stays clean when playthrough stats are unavailable", async ({ p
 
 test.describe("mobile layout", () => {
   test.use({ viewport: { width: 375, height: 812 } });
+
+  test("research program tables fit the phone viewport", async ({ page }) => {
+    await page.goto("/research");
+    await expect(page.getByRole("heading", { name: /from one decision to six firms/i })).toBeVisible();
+    await expect(page.getByRole("table", { name: /two-agent handoff results/i })).toBeVisible();
+    await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
+    const dimensions = await page.evaluate(() => ({
+      clientWidth: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  });
 
   test("choice cards stack full-width on phones", async ({ page }) => {
     await page.goto("/play/s01?role=gc");

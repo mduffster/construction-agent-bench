@@ -333,6 +333,103 @@ export interface ResponseCurveData {
   content_sha256: string;
 }
 
+export interface ResearchProgramHandoffArm {
+  arm_id: string;
+  sender: string;
+  representation: string;
+  assigned_run_count: number;
+  valid_run_count: number;
+  exact_calculation_itt_rate: number;
+  exact_transfer_itt_rate: number;
+  safe_action_itt_rate: number;
+  end_to_end_success_rate: number;
+  replacement_rate: number;
+}
+
+export interface ResearchProgramPathSummary {
+  supplier_payment_request_usd: number;
+  gc_inspector_routed_document_count: number;
+  gc_initial_backup_action: string;
+  supplier_cure_plan: string;
+  gc_package_backup_action: string;
+  supplier_ship_action: string;
+  gc_recovery_plan: string;
+}
+
+export interface ResearchProgramLadderRow {
+  stage_id: string;
+  live_role_count: number;
+  live_roles: AgentId[];
+  run_valid: boolean;
+  project_success: boolean;
+  coalition_success: boolean;
+  first_pass_live_decision_count: number;
+  live_decision_count: number;
+  repair_attempt_count: number;
+  completion_tick: number;
+  final_project_cost: number;
+  path_label: string;
+  lineage_complete: boolean;
+  viability_preserving_chain: boolean;
+  clip_count: number;
+}
+
+export interface ResearchProgramData {
+  schema_version: string;
+  title: string;
+  question: string;
+  handoff: {
+    experiment_id: string;
+    assigned_run_count: number;
+    valid_run_count: number;
+    invalid_run_count: number;
+    live_run_count: number;
+    exact_live_calculation_count: number;
+    safe_action_given_exact_count: number;
+    end_to_end_success_given_exact_count: number;
+    arms: ResearchProgramHandoffArm[];
+    interpretation: string;
+    limitations: string[];
+  };
+  multiplayer: {
+    experiment_id: string;
+    code_commit: string;
+    completed_stage_count: number;
+    stop_reason: string | null;
+    reference: {
+      live_role_count: number;
+      run_valid: boolean;
+      project_success: boolean;
+      coalition_success: boolean;
+      repair_attempt_count: number;
+      completion_tick: number;
+      final_project_cost: number;
+      path_label: string;
+    };
+    rows: ResearchProgramLadderRow[];
+    expected_exposure_count: number;
+    operative_link_count: number;
+    live_decision_count: number;
+    first_pass_live_decision_count: number;
+    repair_attempt_count: number;
+    project_cost_min: number;
+    project_cost_max: number;
+    common_live_path: ResearchProgramPathSummary;
+    efficient_reference_path: ResearchProgramPathSummary;
+    interpretation: string;
+    limitations: string[];
+  };
+  source: {
+    handoff_report_path: string;
+    handoff_report_sha256: string;
+    handoff_study_sha256: string;
+    multiplayer_report_path: string;
+    multiplayer_report_sha256: string;
+    multiplayer_ladder_sha256: string;
+  };
+  content_sha256: string;
+}
+
 export interface GameState {
   selectedRole: AgentId;
   roundIndex: number;

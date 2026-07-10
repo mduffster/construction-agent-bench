@@ -1,0 +1,230 @@
+{
+  "content_sha256": "bc892f9736d3314f692587f2fc69328806f527ab67036613cde2b31d537f7d88",
+  "handoff": {
+    "arms": [
+      {
+        "arm_id": "scripted-silent",
+        "assigned_run_count": 30,
+        "end_to_end_success_rate": 0.0,
+        "exact_calculation_itt_rate": 1.0,
+        "exact_transfer_itt_rate": 0.0,
+        "replacement_rate": 0.6666666666666666,
+        "representation": "No handoff",
+        "safe_action_itt_rate": 0.3333333333333333,
+        "sender": "Scripted GC",
+        "valid_run_count": 30
+      },
+      {
+        "arm_id": "scripted-prose",
+        "assigned_run_count": 30,
+        "end_to_end_success_rate": 0.9333333333333332,
+        "exact_calculation_itt_rate": 0.9333333333333332,
+        "exact_transfer_itt_rate": 0.9333333333333332,
+        "replacement_rate": 0.0,
+        "representation": "Rendered prose",
+        "safe_action_itt_rate": 0.9333333333333332,
+        "sender": "Scripted GC",
+        "valid_run_count": 28
+      },
+      {
+        "arm_id": "scripted-structured",
+        "assigned_run_count": 30,
+        "end_to_end_success_rate": 1.0,
+        "exact_calculation_itt_rate": 1.0,
+        "exact_transfer_itt_rate": 1.0,
+        "replacement_rate": 0.0,
+        "representation": "Structured record",
+        "safe_action_itt_rate": 1.0,
+        "sender": "Scripted GC",
+        "valid_run_count": 30
+      },
+      {
+        "arm_id": "live-prose",
+        "assigned_run_count": 30,
+        "end_to_end_success_rate": 0.3,
+        "exact_calculation_itt_rate": 0.3,
+        "exact_transfer_itt_rate": 0.3,
+        "replacement_rate": 0.4185185185185185,
+        "representation": "Rendered prose",
+        "safe_action_itt_rate": 0.5666666666666667,
+        "sender": "Live GC",
+        "valid_run_count": 29
+      },
+      {
+        "arm_id": "live-structured",
+        "assigned_run_count": 30,
+        "end_to_end_success_rate": 0.3,
+        "exact_calculation_itt_rate": 0.3,
+        "exact_transfer_itt_rate": 0.3,
+        "replacement_rate": 0.45925925925925926,
+        "representation": "Structured record",
+        "safe_action_itt_rate": 0.5333333333333333,
+        "sender": "Live GC",
+        "valid_run_count": 29
+      }
+    ],
+    "assigned_run_count": 150,
+    "end_to_end_success_given_exact_count": 18,
+    "exact_live_calculation_count": 18,
+    "experiment_id": "s01_distributed_threshold_handoff_v2_1",
+    "interpretation": "When the GC calculated the threshold correctly, the supplier acted safely. Structured and prose representations performed identically with a live GC, localizing the dominant failure before transmission: binding the right facts and calculating the derived value.",
+    "invalid_run_count": 4,
+    "limitations": [
+      "Replicates are repeated API trials, not seeded independent model samples.",
+      "Binary ITT outcomes count invalid runs and missing handoffs as failures.",
+      "Regret means are conditional on valid terminal runs and use the frozen deterministic reference policy.",
+      "Contrasts are descriptive pilot effect sizes; no null-hypothesis test is claimed."
+    ],
+    "live_run_count": 60,
+    "safe_action_given_exact_count": 18,
+    "valid_run_count": 146
+  },
+  "multiplayer": {
+    "code_commit": "cdeff2cc329935ee7d7ec979299015bb8742ee8f",
+    "common_live_path": {
+      "gc_initial_backup_action": "RESERVE",
+      "gc_inspector_routed_document_count": 4,
+      "gc_package_backup_action": "MAINTAIN",
+      "gc_recovery_plan": "ACTIVATE_BACKUP",
+      "supplier_cure_plan": "LOT_A_CURE",
+      "supplier_payment_request_usd": 1800000,
+      "supplier_ship_action": "SHIP_A"
+    },
+    "completed_stage_count": 4,
+    "efficient_reference_path": {
+      "gc_initial_backup_action": "NONE",
+      "gc_inspector_routed_document_count": 6,
+      "gc_package_backup_action": "DROP",
+      "gc_recovery_plan": "PROCEED_PHASED",
+      "supplier_cure_plan": "FULL_SEQUENCE_CURE",
+      "supplier_payment_request_usd": 1200000,
+      "supplier_ship_action": "SHIP_BOTH"
+    },
+    "expected_exposure_count": 6,
+    "experiment_id": "s01_v2_live_multiplayer_ladder_v2",
+    "first_pass_live_decision_count": 45,
+    "interpretation": "The measured data chain worked, but every live rung narrowed the technical scope to Lot A and later used expensive backup steel. The next target is the supplier-GC decision boundary where that narrowing first appears.",
+    "limitations": [
+      "There is one frozen temperature-zero trajectory per live-role rung.",
+      "The cumulative role additions do not identify an individual-role effect.",
+      "Project success does not imply that every firm met its private target."
+    ],
+    "live_decision_count": 48,
+    "operative_link_count": 7,
+    "project_cost_max": 100310000,
+    "project_cost_min": 100260000,
+    "reference": {
+      "coalition_success": true,
+      "completion_tick": 41,
+      "final_project_cost": 95650000,
+      "live_role_count": 0,
+      "path_label": "phased_coalition_success",
+      "project_success": true,
+      "repair_attempt_count": 0,
+      "run_valid": true
+    },
+    "repair_attempt_count": 3,
+    "rows": [
+      {
+        "clip_count": 0,
+        "coalition_success": false,
+        "completion_tick": 45,
+        "final_project_cost": 100310000,
+        "first_pass_live_decision_count": 6,
+        "lineage_complete": true,
+        "live_decision_count": 6,
+        "live_role_count": 2,
+        "live_roles": [
+          "steel_supplier",
+          "gc"
+        ],
+        "path_label": "backup_project_success",
+        "project_success": true,
+        "repair_attempt_count": 0,
+        "run_valid": true,
+        "stage_id": "supplier_gc",
+        "viability_preserving_chain": true
+      },
+      {
+        "clip_count": 0,
+        "coalition_success": false,
+        "completion_tick": 45,
+        "final_project_cost": 100260000,
+        "first_pass_live_decision_count": 9,
+        "lineage_complete": true,
+        "live_decision_count": 9,
+        "live_role_count": 3,
+        "live_roles": [
+          "steel_supplier",
+          "gc",
+          "inspector"
+        ],
+        "path_label": "backup_project_success",
+        "project_success": true,
+        "repair_attempt_count": 0,
+        "run_valid": true,
+        "stage_id": "add_inspector",
+        "viability_preserving_chain": true
+      },
+      {
+        "clip_count": 0,
+        "coalition_success": false,
+        "completion_tick": 45,
+        "final_project_cost": 100310000,
+        "first_pass_live_decision_count": 15,
+        "lineage_complete": true,
+        "live_decision_count": 15,
+        "live_role_count": 5,
+        "live_roles": [
+          "steel_supplier",
+          "gc",
+          "inspector",
+          "owner",
+          "lender"
+        ],
+        "path_label": "backup_project_success",
+        "project_success": true,
+        "repair_attempt_count": 0,
+        "run_valid": true,
+        "stage_id": "add_owner_lender",
+        "viability_preserving_chain": true
+      },
+      {
+        "clip_count": 0,
+        "coalition_success": false,
+        "completion_tick": 45,
+        "final_project_cost": 100310000,
+        "first_pass_live_decision_count": 15,
+        "lineage_complete": true,
+        "live_decision_count": 18,
+        "live_role_count": 6,
+        "live_roles": [
+          "owner",
+          "gc",
+          "steel_supplier",
+          "labor_subcontractor",
+          "lender",
+          "inspector"
+        ],
+        "path_label": "backup_project_success",
+        "project_success": true,
+        "repair_attempt_count": 3,
+        "run_valid": true,
+        "stage_id": "full_six",
+        "viability_preserving_chain": true
+      }
+    ],
+    "stop_reason": null
+  },
+  "question": "Can AI organizations receive the right business facts, carry them across organizational boundaries, and turn them into good commercial decisions?",
+  "schema_version": "constructsim.web_research_program.v1",
+  "source": {
+    "handoff_report_path": "docs/s01_distributed_threshold_handoff_results.md",
+    "handoff_report_sha256": "e193030f8dbbfc7ba6ee970a4952dade5086eb67fc3cba0fb55c68d80c3fa566",
+    "handoff_study_sha256": "1fe42d41595dd8d185cc2e13078f20d1e2dd1fd1d1103b3df8ceddc1e29a8a91",
+    "multiplayer_ladder_sha256": "7a54e676472b934cd497156165c9210bdd283c26760cad06a379013da6b13d7b",
+    "multiplayer_report_path": "docs/s01_v2_multiplayer_bridge_results.md",
+    "multiplayer_report_sha256": "72b6ee7b20ac85d74a4bcdec284fc11b80a2bb6e9ba32165babc414a79ac6999"
+  },
+  "title": "From one decision to six firms"
+}

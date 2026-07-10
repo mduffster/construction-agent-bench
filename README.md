@@ -18,12 +18,19 @@ then assigned 150 runs across structured, prose, and silent handoffs. Exact scri
 arms reached `30%`. All `18/18` exact live GC calculations produced safe actions, while most errors
 occurred before transmission when the GC bound the wrong business values into its calculation.
 
+The controlled multiplayer ladder then added live organizations cumulatively through all six
+firms. All four rungs were valid and project-successful, with `6/6` expected information exposures,
+`7/7` operative links realized, and no clipping. But every live rung narrowed the path to Lot A,
+activated expensive backup steel, and missed coalition success. The result separates successful
+data lineage from decision quality and localizes the next experiment at the supplier-GC boundary.
+
 Read the generated [response-curve evidence package](docs/evidence/response_curve/evidence_package.md)
 and the frozen [experiment specification](docs/s01_replaceability_response_curve_spec.md).
 The completed dyad has a frozen
 [protocol](docs/s01_distributed_threshold_handoff_spec.md) and
-[results report](docs/s01_distributed_threshold_handoff_results.md). The next-stage design is the
-[S01 V2 multiplayer lineage bridge](docs/s01_v2_multiplayer_bridge_spec.md).
+[results report](docs/s01_distributed_threshold_handoff_results.md). The completed multiplayer
+lineage bridge also has a frozen [protocol](docs/s01_v2_multiplayer_bridge_spec.md) and
+[results report](docs/s01_v2_multiplayer_bridge_results.md).
 
 ## Reproduce
 
@@ -58,6 +65,7 @@ Rebuild the frozen evidence packet from named outputs:
 
 ```bash
 uv run python scripts/build_response_curve_evidence.py
+uv run python scripts/export_research_program_web_data.py
 ```
 
 The wider S00-S05 suite remains useful for deterministic runtime regression, but it is not the

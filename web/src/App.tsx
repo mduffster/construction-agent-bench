@@ -18,6 +18,7 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 
 import rawGameData from "./game-data/s01_v2_game.json";
 import rawPopulationData from "./game-data/s01_v2_population.json";
+import rawResearchProgramData from "./game-data/s01_research_program.json";
 import rawResponseCurveData from "./game-data/s01_response_curve.json";
 import { fetchCrowdStats, submitPlaythrough } from "./lib/playthroughs";
 import type { CrowdStats } from "./lib/playthroughs";
@@ -46,12 +47,15 @@ import type {
   PopulationData,
   PopulationRun,
   ProjectGameState,
+  ResearchProgramData,
+  ResearchProgramLadderRow,
   ResponseCurveData,
   RiskLevel,
 } from "./lib/types";
 
 const gameData = rawGameData as GameData;
 const populationData = rawPopulationData as PopulationData;
+const researchProgramData = rawResearchProgramData as ResearchProgramData;
 const responseCurveData = rawResponseCurveData as ResponseCurveData;
 const playableRoleIds = gameData.playable_roles;
 type PlayView = "decision" | "result";
@@ -192,7 +196,7 @@ function HomePage() {
               See example runs
             </NavButton>
             <NavButton href="/research" icon={<Eye size={18} />}>
-              Read the current study
+              Read the research program
             </NavButton>
           </div>
         </div>
@@ -258,39 +262,42 @@ function HomePage() {
 }
 
 function ResearchTeaser() {
-  const haiku = responseCurveData.haiku_confirmation;
-  const dominantAskCount = responseCurveData.haiku_request_counts["800000"] ?? 0;
+  const handoff = researchProgramData.handoff;
+  const multiplayer = researchProgramData.multiplayer;
   return (
     <section className="overview-section research-teaser">
       <div className="section-title">
         <Eye size={20} />
-        <h2>Current research result</h2>
+        <h2>Current research program</h2>
       </div>
       <div className="research-teaser__layout">
         <div>
-          <p className="research-kicker">The replaceability response curve</p>
-          <h3>AI suppliers did not adjust their ask when replacement got cheaper.</h3>
+          <p className="research-kicker">From one decision to six firms</p>
+          <h3>The information arrived. The hard part was turning it into the right decision.</h3>
           <p>
-            The safe commercial request moved from{" "}
-            <strong>{formatMoney(responseCurveData.design.minimum_safe_request_usd)}</strong>{" "}
-            to{" "}
-            <strong>{formatMoney(responseCurveData.design.maximum_safe_request_usd)}</strong>.
-            Haiku still asked for $800,000 in {dominantAskCount} of {haiku.valid_run_count}{" "}
-            valid confirmation runs. The project usually survived by replacing the
-            supplier, leaving the focal firm with an avoidable private loss.
+            The single-agent study exposed a pricing failure. In the two-agent handoff,
+            every exact live GC calculation produced a safe supplier action. In the
+            six-agent ladder, every measured link worked, but the live teams still
+            converged on a costly backup path.
           </p>
           <div className="research-mini-metrics" aria-label="Study highlights">
             <span>
-              <strong>{Math.round(haiku.replacement_rate * 100)}%</strong>
-              replaced
+              <strong>{handoff.valid_run_count}/{handoff.assigned_run_count}</strong>
+              valid handoff runs
             </span>
             <span>
-              <strong>{formatMoney(Math.round(haiku.mean_attainable_regret_usd))}</strong>
-              mean attainable regret
+              <strong>
+                {handoff.safe_action_given_exact_count}/{handoff.exact_live_calculation_count}
+              </strong>
+              safe when calculated exactly
+            </span>
+            <span>
+              <strong>{multiplayer.completed_stage_count}/4</strong>
+              live-role rungs valid
             </span>
           </div>
           <NavButton href="/research" icon={<ArrowRight size={18} />}>
-            Explore the study
+            Explore the program
           </NavButton>
         </div>
         <figure className="research-figure research-figure--compact">
@@ -299,8 +306,8 @@ function ResearchTeaser() {
             src="/images/s01-response-curve.png"
           />
           <figcaption>
-            The black line is the best-response frontier. The model requests do
-            not follow it.
+            The program began with this response-curve failure, then followed the
+            same decision problem across two firms and into a six-firm workflow.
           </figcaption>
         </figure>
       </div>
@@ -314,22 +321,30 @@ function ResearchPage() {
   return (
     <Shell>
       <section className="page-head research-head">
-        <p className="eyebrow">Current experiment</p>
-        <h1>The replaceability response curve</h1>
-        <p className="lede">{responseCurveData.question}</p>
+        <p className="eyebrow">Research program</p>
+        <h1>{researchProgramData.title}</h1>
+        <p className="lede">{researchProgramData.question}</p>
         <p>
-          One model controls the steel supplier. Five deterministic counterparties
-          run the rest of the project. The supplier sees the same replacement
-          economics as the buyer, while its private cost shock and the project state
-          stay fixed.
+          The experiments add organizational complexity one step at a time: first one
+          live decision-maker, then a two-firm handoff, then a controlled ladder up to
+          six live firms. Each stage asks whether a failure comes from missing data,
+          transmission, calculation, or the final business choice.
         </p>
       </section>
 
-      <section className="overview-section">
+      <ResearchProgramOverview />
+
+      <section className="overview-section" id="response-curve">
         <div className="section-title">
           <Gauge size={20} />
-          <h2>What happened</h2>
+          <h2>Stage 1 — the single-agent response curve</h2>
         </div>
+        <p>
+          One model controls the steel supplier while five deterministic
+          counterparties hold the rest of the project fixed. As a qualified
+          replacement gets cheaper, does the supplier reduce the price relief it
+          asks for?
+        </p>
         <div className="metric-grid research-metric-grid">
           <Metric
             icon={<ClipboardCheck size={20} />}
@@ -436,6 +451,10 @@ function ResearchPage() {
 
       <ResponseCurveMechanismSection />
 
+      <HandoffResearchSection />
+
+      <MultiplayerResearchSection />
+
       <section className="overview-section research-reading">
         <div>
           <div className="section-title">
@@ -443,10 +462,10 @@ function ResearchPage() {
             <h2>Why it matters</h2>
           </div>
           <p>
-            Looking only at project completion misses the failure. When the ask is
-            too high, the buyer replaces the supplier and keeps the project alive.
-            The focal firm absorbs the loss. The agent sounds commercially coherent
-            but fails to reason through the counterparty's outside option.
+            Looking only at project completion misses both private losses and the
+            path used to get there. Across the three stages, the harness separates
+            whether the right facts arrived from whether an agent mapped those facts
+            to a good commercial choice.
           </p>
         </div>
         <div>
@@ -455,9 +474,11 @@ function ResearchPage() {
             <h2>How to read this</h2>
           </div>
           <p>
-            This is preliminary evidence from one focal-agent scenario, not a
-            general model leaderboard. Repairs remain an intervention, both models
-            come from one provider, and there is not yet a human baseline.
+            These are staged findings from one construction scenario family, not a
+            general model leaderboard. The multiplayer ladder has one trajectory per
+            role count, repeated API trials are not independent human-like samples,
+            the evaluated models come from one provider, and there is not yet a
+            practitioner baseline.
           </p>
         </div>
       </section>
@@ -468,19 +489,274 @@ function ResearchPage() {
           <h2>Evidence and code</h2>
         </div>
         <p>
-          The public data on this page is generated from the replayable evidence
-          package rather than maintained separately in the frontend.
+          The public numbers on this page are exported from frozen study summaries
+          and replayable run outputs rather than maintained separately in the
+          frontend.
         </p>
-        <a
-          className="text-link"
-          href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/evidence/response_curve/evidence_package.md"
-          rel="noreferrer"
-          target="_blank"
-        >
-          Read the full evidence package <ArrowRight size={16} />
-        </a>
+        <div className="research-source-links">
+          <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/evidence/response_curve/evidence_package.md"
+            label="Response-curve evidence"
+          />
+          <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_distributed_threshold_handoff_results.md"
+            label="Two-agent handoff results"
+          />
+          <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_multiplayer_bridge_results.md"
+            label="Multiplayer ladder results"
+          />
+        </div>
       </section>
     </Shell>
+  );
+}
+
+function ResearchProgramOverview() {
+  const handoff = researchProgramData.handoff;
+  const multiplayer = researchProgramData.multiplayer;
+  const trustedThreshold = responseCurveData.mechanism_test.trusted_threshold_effect;
+  return (
+    <section className="overview-section research-program-overview">
+      <div className="section-title">
+        <ClipboardCheck size={20} />
+        <h2>What the program has established so far</h2>
+      </div>
+      <div className="research-program-grid">
+        <article>
+          <span className="research-stage-chip">1 live firm</span>
+          <strong>Decision support</strong>
+          <p>
+            The supplier did not price its own replaceability. Supplying the
+            computed threshold reduced mean attainable regret by{" "}
+            {Math.round(trustedThreshold.mean_attainable_regret_reduction_fraction * 100)}%.
+          </p>
+          <a href="#response-curve">See the response curve</a>
+        </article>
+        <article>
+          <span className="research-stage-chip">2 live firms</span>
+          <strong>Information handoff</strong>
+          <p>
+            {handoff.valid_run_count} of {handoff.assigned_run_count} assignments were
+            valid. All {handoff.exact_live_calculation_count} exact live GC
+            calculations produced safe supplier actions.
+          </p>
+          <a href="#handoff">See the handoff</a>
+        </article>
+        <article>
+          <span className="research-stage-chip">Up to 6 live firms</span>
+          <strong>Decision lineage</strong>
+          <p>
+            All {multiplayer.completed_stage_count} role-expansion rungs were valid
+            and project-successful. The measured chain stayed complete, but every
+            live rung missed coalition success.
+          </p>
+          <a href="#multiplayer">See the ladder</a>
+        </article>
+      </div>
+      <div className="research-program-takeaway">
+        <strong>Current read</strong>
+        <p>
+          The harness can now show that information reached the right organization
+          and affected canonical state. The recurring weakness is upstream derived
+          decision state: selecting the right facts, computing the operative value,
+          and preserving the full technical path.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function HandoffResearchSection() {
+  const handoff = researchProgramData.handoff;
+  return (
+    <section className="overview-section" id="handoff">
+      <div className="section-title">
+        <MessageSquare size={20} />
+        <h2>Stage 2 — the two-agent threshold handoff</h2>
+      </div>
+      <p>
+        The GC privately computes the supplier's reservation threshold and sends it
+        across an organizational boundary. The supplier then chooses a commercial
+        request. Scripted senders test the channel; live senders test calculation
+        plus transmission.
+      </p>
+      <div className="metric-grid research-metric-grid">
+        <Metric
+          icon={<ClipboardCheck size={20} />}
+          label="Valid assignments"
+          value={`${handoff.valid_run_count}/${handoff.assigned_run_count}`}
+        />
+        <Metric
+          icon={<CheckCircle2 size={20} />}
+          label="Safe when live calculation was exact"
+          value={`${handoff.safe_action_given_exact_count}/${handoff.exact_live_calculation_count}`}
+        />
+        <Metric
+          icon={<MessageSquare size={20} />}
+          label="Live prose end-to-end"
+          value={formatRate(handoff.arms.find((arm) => arm.arm_id === "live-prose")!.end_to_end_success_rate)}
+        />
+        <Metric
+          icon={<Building2 size={20} />}
+          label="Live structured end-to-end"
+          value={formatRate(handoff.arms.find((arm) => arm.arm_id === "live-structured")!.end_to_end_success_rate)}
+        />
+      </div>
+      <div className="program-table" role="table" aria-label="Two-agent handoff results">
+        <div className="program-row program-row--handoff program-row--head" role="row">
+          <span>Sender</span>
+          <span>Representation</span>
+          <span>Valid</span>
+          <span>Exact transfer</span>
+          <span>End-to-end</span>
+          <span>Replaced</span>
+        </div>
+        {handoff.arms.map((arm) => (
+          <div className="program-row program-row--handoff" role="row" key={arm.arm_id}>
+            <span data-label="Sender">{arm.sender}</span>
+            <span data-label="Representation">{arm.representation}</span>
+            <span data-label="Valid">
+              {arm.valid_run_count}/{arm.assigned_run_count}
+            </span>
+            <span data-label="Exact transfer">{formatRate(arm.exact_transfer_itt_rate)}</span>
+            <span data-label="End-to-end">{formatRate(arm.end_to_end_success_rate)}</span>
+            <span data-label="Replaced">{formatRate(arm.replacement_rate)}</span>
+          </div>
+        ))}
+      </div>
+      <div className="research-program-takeaway research-program-takeaway--plain">
+        <strong>The format was not the main bottleneck.</strong>
+        <p>{handoff.interpretation}</p>
+      </div>
+      <p className="mechanism-caveat">
+        These are repeated API trials, not independent human-like samples. Invalid
+        assignments count as failures in the intent-to-treat rates, and one repair
+        was allowed per required decision.
+      </p>
+    </section>
+  );
+}
+
+function MultiplayerResearchSection() {
+  const multiplayer = researchProgramData.multiplayer;
+  const reference = multiplayer.reference;
+  const efficient = multiplayer.efficient_reference_path;
+  const live = multiplayer.common_live_path;
+  return (
+    <section className="overview-section" id="multiplayer">
+      <div className="section-title">
+        <Users size={20} />
+        <h2>Stage 3 — the controlled multiplayer ladder</h2>
+      </div>
+      <p>
+        Live organizations were added cumulatively: supplier and GC, then inspector,
+        then owner and lender, then labor. Scripted organizations remained
+        state-aware controls. The ladder stopped on invalid output or a broken
+        lineage chain.
+      </p>
+      <div className="metric-grid research-metric-grid">
+        <Metric
+          icon={<CheckCircle2 size={20} />}
+          label="Valid live-role rungs"
+          value={`${multiplayer.completed_stage_count}/4`}
+        />
+        <Metric
+          icon={<Eye size={20} />}
+          label="Expected exposures"
+          value={`${multiplayer.expected_exposure_count}/${multiplayer.expected_exposure_count}`}
+        />
+        <Metric
+          icon={<ShieldCheck size={20} />}
+          label="Operative links realized"
+          value={`${multiplayer.operative_link_count}/${multiplayer.operative_link_count}`}
+        />
+        <Metric
+          icon={<ClipboardCheck size={20} />}
+          label="First-pass live decisions"
+          value={`${multiplayer.first_pass_live_decision_count}/${multiplayer.live_decision_count}`}
+        />
+      </div>
+      <div className="program-table" role="table" aria-label="Controlled multiplayer ladder results">
+        <div className="program-row program-row--ladder program-row--head" role="row">
+          <span>Live firms</span>
+          <span>Project</span>
+          <span>Coalition</span>
+          <span>Final cost</span>
+          <span>Finished</span>
+          <span>Repairs</span>
+        </div>
+        <div className="program-row program-row--ladder program-row--reference" role="row">
+          <span data-label="Live firms">Reference</span>
+          <span data-label="Project">{yesNo(reference.project_success)}</span>
+          <span data-label="Coalition">{yesNo(reference.coalition_success)}</span>
+          <span data-label="Final cost">{formatMoney(reference.final_project_cost)}</span>
+          <span data-label="Finished">Week {reference.completion_tick}</span>
+          <span data-label="Repairs">0</span>
+        </div>
+        {multiplayer.rows.map((row) => (
+          <div className="program-row program-row--ladder" role="row" key={row.stage_id}>
+            <span data-label="Live firms">{ladderStageLabel(row)}</span>
+            <span data-label="Project">{yesNo(row.project_success)}</span>
+            <span data-label="Coalition">{yesNo(row.coalition_success)}</span>
+            <span data-label="Final cost">{formatMoney(row.final_project_cost)}</span>
+            <span data-label="Finished">Week {row.completion_tick}</span>
+            <span data-label="Repairs">{row.repair_attempt_count}</span>
+          </div>
+        ))}
+      </div>
+      <div className="path-contrast-grid">
+        <article>
+          <span>Efficient reference</span>
+          <strong>{formatMoney(efficient.supplier_payment_request_usd)} request</strong>
+          <ul>
+            <li>{efficient.gc_inspector_routed_document_count} records routed to inspection</li>
+            <li>Full-sequence cure</li>
+            <li>Both lots shipped</li>
+            <li>Phased recovery; backup dropped</li>
+          </ul>
+        </article>
+        <article className="path-contrast-grid__live">
+          <span>Every live rung</span>
+          <strong>{formatMoney(live.supplier_payment_request_usd)} request</strong>
+          <ul>
+            <li>{live.gc_inspector_routed_document_count} clean Lot A records routed</li>
+            <li>Lot-A-only cure</li>
+            <li>Lot A shipped; Lot B held</li>
+            <li>Backup maintained, then activated</li>
+          </ul>
+        </article>
+      </div>
+      <div className="research-program-takeaway research-program-takeaway--plain">
+        <strong>Complete lineage did not guarantee a good strategy.</strong>
+        <p>{multiplayer.interpretation}</p>
+      </div>
+      <p className="mechanism-caveat">
+        This is qualification evidence: one frozen temperature-zero trajectory per
+        role count. The cumulative ladder does not estimate an individual-role or
+        population effect. The full-six run needed three successful repairs.
+      </p>
+    </section>
+  );
+}
+
+function ladderStageLabel(row: ResearchProgramLadderRow) {
+  return `${row.live_role_count} live`;
+}
+
+function yesNo(value: boolean) {
+  return value ? "Yes" : "No";
+}
+
+function formatRate(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function ResearchSourceLink({ href, label }: { href: string; label: string }) {
+  return (
+    <a className="text-link" href={href} rel="noreferrer" target="_blank">
+      {label} <ArrowRight size={16} />
+    </a>
   );
 }
 
@@ -1375,6 +1651,19 @@ function ResultsPage() {
         </section>
       </section>
 
+      <section className="research-crosslink" aria-label="Latest controlled experiment">
+        <div>
+          <strong>Looking for the latest controlled findings?</strong>
+          <span>
+            The Research page now covers the completed two-agent handoff and the
+            role-expansion ladder through six live firms.
+          </span>
+        </div>
+        <a href="/research#multiplayer">
+          Read the research program <ArrowRight size={16} />
+        </a>
+      </section>
+
       <PopulationSection />
 
       <section className="overview-section">
@@ -1492,12 +1781,13 @@ function PopulationSection() {
     <section className="overview-section">
       <div className="section-title">
         <Users size={20} />
-        <h2>What the AI agents actually did</h2>
+        <h2>Earlier exploratory all-agent runs</h2>
       </div>
       <p>
+        These runs predate the controlled role-expansion ladder and combine
+        temperature-zero and temperature-one batches with different repair budgets.
         Each row is one complete run with <strong>{modelLabel}</strong> playing
-        all six firms. Every decision is
-        made by the model. {population.project_success_count} of{" "}
+        all six firms. Every decision is made by the model. {population.project_success_count} of{" "}
         {population.valid_run_count} valid runs finished as project successes;
         final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
         {formatMoney(population.cost_max ?? 0)}. "Firms met target" counts how
