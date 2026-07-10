@@ -136,8 +136,21 @@ def collect_contexts(
     contexts_by_node: dict[str, list[tuple[RunState, Phase, DecisionRequest]]] = {
         node_id: [] for node_id in scenario.actors
     }
-    root = scenario.create_state(run_id=f"audit_{scenario_key}_{variant}", variant=variant)  # type: ignore[arg-type]
-    queue = [root]
+    roots = [
+        scenario.create_state(
+            run_id=f"audit_{scenario_key}_{variant}",
+            variant=variant,  # type: ignore[arg-type]
+        )
+    ]
+    for instance_id in getattr(scenario, "choice_audit_scenario_instance_ids", []):
+        roots.append(
+            scenario.create_state(
+                run_id=f"audit_{scenario_key}_{variant}_{instance_id}",
+                variant=variant,  # type: ignore[arg-type]
+                model_settings={"scenario_instance_id": instance_id},
+            )
+        )
+    queue = roots
     seen: set[str] = set()
     steps = 0
     while queue and steps < max_steps:
@@ -148,6 +161,11 @@ def collect_contexts(
                 "decisions": state.decisions,
                 "phase_history": state.histories["phase_history"],
                 "terminal_status": state.terminal_status,
+                "scenario_instance_id": (
+                    state.canonical_state.get("scenario", {})
+                    .get("scenario_instance", {})
+                    .get("instance_id")
+                ),
             },
             sort_keys=True,
             default=str,

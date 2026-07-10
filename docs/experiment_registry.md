@@ -154,11 +154,47 @@ Current implemented components:
 
 Next research gate:
 
-- stop model expansion on this instrument. The calculation worksheet failed, while the trusted
-  threshold passed both modal and stochastic gates, localizing the main bottleneck to fact binding
-  and arithmetic with residual high-level anchoring. The next useful work is packaging this causal
-  sequence clearly and adding the deferred practitioner comparison when available. GC role rotation
-  and S02-S05 expansion are not currently queued.
+- model expansion on the single-focal response curve is closed. The calculation worksheet failed,
+  while the trusted threshold passed both modal and stochastic gates, localizing the main
+  bottleneck to fact binding and arithmetic with residual high-level anchoring. The staged
+  distributed-handoff experiment below is the next research target.
+
+## Staged Experiment: S01 Distributed Threshold Handoff
+
+Status: **V2 FROZEN PILOT / V1 DEVELOPMENT RUNS EXCLUDED**
+
+Purpose: test whether a GC and steel supplier can move a decision-relevant reservation value across
+an organizational boundary. The GC privately knows replacement economics; the supplier privately
+knows its cost shock and liquidity position; the other four firms remain deterministic.
+
+Planning source:
+
+- `docs/s01_distributed_threshold_handoff_spec.md`
+
+Implemented surface:
+
+- three diagnostic replacement levels: R1, R3, and R5;
+- structured numeric and semantically equivalent rendered-prose protocols;
+- a distinct GC pre-commercial phase before the supplier acts;
+- counterparty attribution without labeling GC statements as harness truth;
+- deterministic truthful structured, truthful prose, and silent controls;
+- a handoff-only live GC, live supplier, and deterministic downstream adjudicator;
+- fixed supplier source and non-price actions for causal identification;
+- handoff analysis for calculation accuracy, transmission, viable deals, replacement, supplier
+  regret, request error, ITT chain completion, and representation-to-action consistency.
+
+Deterministic command:
+
+```bash
+uv run python scripts/run_s01_handoff.py --stage references
+```
+
+The nine deterministic reference runs must pass before any live stage. The V2 staircase uses
+`scripted-prose-modal`, `scripted-structured-modal`, `scripted-silent-modal`,
+`live-structured-modal`, and `live-prose-modal`; every stage requires `--allow-live-model`.
+Three earlier R1 troubleshooting runs cost `$0.05809` and are excluded from V2 estimates. The
+frozen paid-program ceiling is `$8.50`, including that development spend. Unrestricted chat,
+stochastic six-agent batches, new scenarios, and stronger-model arms remain deferred.
 
 ## Legacy: Feedback-Cascade Suite
 

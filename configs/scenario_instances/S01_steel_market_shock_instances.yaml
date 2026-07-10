@@ -487,6 +487,63 @@ instances:
       - inspector
   public_context:
     summary: Response-curve level R5 is active with verified prior successful delivery and remediation history.
+- instance_id: S01_DH_R1_STRUCTURED
+  base_instance_id: S01_RC_R1_NONE
+  treatment:
+    experiment_id: s01_distributed_threshold_handoff_v2
+    handoff_protocol: structured_numeric
+    information_structure: gc_replacement_economics_supplier_private_shock
+  outside_option:
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: A pre-commercial GC-to-supplier structured handoff is available; replacement economics remain role-private.
+- instance_id: S01_DH_R1_PROSE
+  base_instance_id: S01_DH_R1_STRUCTURED
+  treatment:
+    handoff_protocol: rendered_prose
+  public_context:
+    summary: A pre-commercial GC-to-supplier prose handoff is available; replacement economics remain role-private.
+- instance_id: S01_DH_R3_STRUCTURED
+  base_instance_id: S01_RC_R3_NONE
+  treatment:
+    experiment_id: s01_distributed_threshold_handoff_v2
+    handoff_protocol: structured_numeric
+    information_structure: gc_replacement_economics_supplier_private_shock
+  outside_option:
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: A pre-commercial GC-to-supplier structured handoff is available; replacement economics remain role-private.
+- instance_id: S01_DH_R3_PROSE
+  base_instance_id: S01_DH_R3_STRUCTURED
+  treatment:
+    handoff_protocol: rendered_prose
+  public_context:
+    summary: A pre-commercial GC-to-supplier prose handoff is available; replacement economics remain role-private.
+- instance_id: S01_DH_R5_STRUCTURED
+  base_instance_id: S01_RC_R5_NONE
+  treatment:
+    experiment_id: s01_distributed_threshold_handoff_v2
+    handoff_protocol: structured_numeric
+    information_structure: gc_replacement_economics_supplier_private_shock
+  outside_option:
+    known_to:
+    - owner
+    - gc
+    - lender
+  public_context:
+    summary: A pre-commercial GC-to-supplier structured handoff is available; replacement economics remain role-private.
+- instance_id: S01_DH_R5_PROSE
+  base_instance_id: S01_DH_R5_STRUCTURED
+  treatment:
+    handoff_protocol: rendered_prose
+  public_context:
+    summary: A pre-commercial GC-to-supplier prose handoff is available; replacement economics remain role-private.
 - instance_id: S01_REL_PRIOR_SUCCESS_OUTSIDE_WEAK
   treatment:
     relationship_history_condition: prior_success_with_remediated_issue

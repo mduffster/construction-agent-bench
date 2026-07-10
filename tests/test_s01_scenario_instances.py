@@ -4,6 +4,7 @@ import json
 
 from constructbench.agents import policies_for_fixture
 from constructbench.focal import build_focal_policies
+from constructbench.handoff import handoff_instance_ids
 from constructbench.response_curve import (
     FixedReliefSupplierPolicy,
     analyze_live_summaries,
@@ -134,13 +135,19 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
     }
 
     response_curve_ids = set(response_curve_instance_ids())
+    handoff_ids = set(handoff_instance_ids())
     assert {instance["instance_id"] for instance in instances} == (
-        INSTANCE_IDS | variant_ids | response_curve_ids
+        INSTANCE_IDS | variant_ids | response_curve_ids | handoff_ids
     )
     for instance in instances:
         if instance["instance_id"] in response_curve_ids:
             assert instance["treatment"]["experiment_id"] == (
                 "s01_replaceability_response_curve_v1"
+            )
+            continue
+        if instance["instance_id"] in handoff_ids:
+            assert instance["treatment"]["experiment_id"] == (
+                "s01_distributed_threshold_handoff_v2"
             )
             continue
         economic_variant = instance["treatment"].get("economic_variant")
@@ -154,7 +161,7 @@ def test_s01_scenario_instance_catalog_has_four_treatment_cells() -> None:
             instance["treatment"]["outside_option_condition"],
         )
         for instance in instances
-        if instance["instance_id"] not in response_curve_ids
+        if instance["instance_id"] not in response_curve_ids | handoff_ids
     } == {
         ("no_prior_shared_project_history", "weak_alternative"),
         ("no_prior_shared_project_history", "credible_alternative"),

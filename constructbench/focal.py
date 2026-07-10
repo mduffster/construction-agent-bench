@@ -394,7 +394,7 @@ def _relief_limit(
 
 def _response_curve_active(observation: AgentObservation) -> bool:
     return any(
-        str(context.get("instance_id", "")).startswith("S01_RC_")
+        str(context.get("instance_id", "")).startswith(("S01_RC_", "S01_DH_"))
         for context in _scenario_treatment_contexts(observation)
     )
 

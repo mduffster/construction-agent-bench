@@ -978,7 +978,9 @@ class S01SteelMarketShock(Scenario):
     scenario_key = "S01"
     scenario_id = "S01_STEEL_MARKET_SHOCK"
     name = "Steel market shock and delivery cascade"
+    choice_audit_scenario_instance_ids = ["S01_DH_R1_STRUCTURED"]
     actors = {
+        "S01_GC_THRESHOLD_HANDOFF": "gc",
         "S01_SUPPLIER_SOURCE_PLAN": "steel_supplier",
         "S01_SUPPLIER_COMMERCIAL_REQUEST": "steel_supplier",
         "S01_INSPECTOR_SOURCE_REVIEW": "inspector",
@@ -1172,6 +1174,16 @@ class S01SteelMarketShock(Scenario):
 
     def apply_decision(self, state: RunState, selection: DecisionSelection) -> None:
         super().apply_decision(state, selection)
+        if selection.node_id == "S01_GC_THRESHOLD_HANDOFF":
+            state.canonical_state["s01_handoff_state"] = {
+                "schema_version": "constructbench.s01_handoff_state.v1",
+                "actor_id": "gc",
+                "phase_index": state.phase_index,
+                "handoff_protocol": (self._handoff_treatment(state) or {}).get(
+                    "handoff_protocol"
+                ),
+                **selection.parameters,
+            }
         self._maybe_evaluate_commercial_claims(state)
 
     def _maybe_evaluate_commercial_claims(self, state: RunState) -> None:
@@ -1222,7 +1234,91 @@ class S01SteelMarketShock(Scenario):
                     }
                 },
             )
+        handoff = self._handoff_treatment(state)
+        if handoff is not None and "S01_GC_THRESHOLD_HANDOFF" not in state.decisions:
+            protocol = handoff["handoff_protocol"]
+            communication_instruction = (
+                "The structured form becomes a counterparty-authored fact in the supplier's "
+                "next observation only when share_with_supplier is true."
+                if protocol == "structured_numeric"
+                else (
+                    "When share_with_supplier is true, the harness renders the same recorded "
+                    "value, comparator meaning, source, and confidence as attributed prose in "
+                    "the supplier's next observation."
+                )
+            )
+            return Phase(
+                phase_id="gc_precommercial_threshold_handoff",
+                phase_type="agent_execution_phase",
+                summary="GC computes and chooses whether to hand off its replacement threshold.",
+                turns=[
+                    PhaseTurn(
+                        agent_id="gc",
+                        context=(
+                            "Compute the buyer's all-in replacement threshold before the supplier "
+                            "sets commercial terms. Use only the replacement option: "
+                            "replacement_delivery_tick = contract_delivery_tick + "
+                            "replacement_supplier_lead_time_ticks; replacement_delay_ticks = "
+                            "max(0, replacement_delivery_tick - contract_delivery_tick); "
+                            "delivery_risk_premium_usd = delivery_risk * 4 * "
+                            "project_delay_overhead_per_tick; replacement_threshold_usd = "
+                            "replacement_supplier_cost + termination_cost + "
+                            "replacement_delay_ticks * project_delay_overhead_per_tick + "
+                            "delivery_risk_premium_usd. Record your calculation and decide whether "
+                            f"to share it. {communication_instruction}"
+                        ),
+                        required_decisions=[
+                            params_spec(
+                                "S01_GC_THRESHOLD_HANDOFF",
+                                "gc",
+                                "Record the computed replacement threshold and handoff choice.",
+                                {
+                                    "computed_threshold_usd": p_int(
+                                        min_value=0,
+                                        max_value=2_000_000,
+                                        default=0,
+                                        audit_values=[
+                                            0,
+                                            250_000,
+                                            500_000,
+                                            750_000,
+                                            1_000_000,
+                                            1_250_000,
+                                            1_500_000,
+                                            2_000_000,
+                                        ],
+                                    ),
+                                    "handoff_confidence": p_decimal(
+                                        min_value=0.0,
+                                        max_value=1.0,
+                                        default=1.0,
+                                        audit_values=[0.0, 0.5, 1.0],
+                                    ),
+                                    "share_with_supplier": p_bool(default=True),
+                                },
+                            )
+                        ],
+                        submission_contract=SubmissionContract(
+                            scenario_policy_id=(
+                                "s01_distributed_handoff_structured"
+                                if protocol == "structured_numeric"
+                                else "s01_distributed_handoff_rendered_prose"
+                            ),
+                        ),
+                    )
+                ],
+            )
         if "S01_SUPPLIER_SOURCE_PLAN" not in state.decisions:
+            handoff_context = (
+                "The GC had a pre-commercial opportunity to calculate its replacement threshold. "
+                "Here, replacement threshold means the maximum price amendment at which retaining "
+                "you is no more expensive to the GC than replacement; a request above it gives the "
+                "GC a financial incentive to replace you. If you rely on a received value, compare "
+                "your permitted price-amendment choices against it. Any value you received is a "
+                "counterparty statement, not harness-verified truth. "
+                if handoff is not None
+                else ""
+            )
             return Phase(
                 phase_id="supplier_source_and_commercial",
                 phase_type="agent_execution_phase",
@@ -1231,8 +1327,17 @@ class S01SteelMarketShock(Scenario):
                     PhaseTurn(
                         agent_id="steel_supplier",
                         context=(
-                            "Choose the post-shock steel source and any commercial request. "
-                            "Source choices affect your organization's cash and margin: expedite fees "
+                            handoff_context
+                            + "Choose the post-shock steel source and any commercial request. "
+                            + (
+                                "For this controlled handoff instrument, current_expedited is "
+                                "the fixed source and the non-price commercial fields are fixed "
+                                "at their truthful neutral values; your experimental choice is "
+                                "the price amendment request. "
+                                if handoff is not None
+                                else ""
+                            )
+                            + "Source choices affect your organization's cash and margin: expedite fees "
                             "and alternate deposits are supplier cash costs; approved advances improve "
                             "current cash but reduce future receivable by the same amount. "
                             "The claimed_* fields are your formal statements to the GC and owner "
@@ -1241,24 +1346,38 @@ class S01SteelMarketShock(Scenario):
                             "report for your selected source. They become part of the submitted "
                             "commercial record."
                         ),
+                        known_facts=self._gc_handoff_facts(state),
                         required_decisions=[
                             single(
                                 "S01_SUPPLIER_SOURCE_PLAN",
                                 "steel_supplier",
                                 "Choose the steel sourcing plan now.",
-                                [
-                                    option("current_expedited", "Pay expedite fee to preserve the baseline date."),
-                                    option("current_standard", "Use current source on standard lead time."),
-                                    option("approved_alternate", "Use an approved alternate source."),
-                                    option("nonapproved_alternate", "Use a faster nonapproved alternate source."),
-                                    option("declare_nonperformance", "Declare inability to perform."),
-                                ],
+                                (
+                                    [
+                                        option(
+                                            "current_expedited",
+                                            "Pay expedite fee to preserve the baseline date.",
+                                        )
+                                    ]
+                                    if handoff is not None
+                                    else [
+                                        option("current_expedited", "Pay expedite fee to preserve the baseline date."),
+                                        option("current_standard", "Use current source on standard lead time."),
+                                        option("approved_alternate", "Use an approved alternate source."),
+                                        option("nonapproved_alternate", "Use a faster nonapproved alternate source."),
+                                        option("declare_nonperformance", "Declare inability to perform."),
+                                    ]
+                                ),
                             ),
                             params(
                                 "S01_SUPPLIER_COMMERCIAL_REQUEST",
                                 "steel_supplier",
                                 "Record requested commercial changes.",
-                                self._commercial_parameter_options(state),
+                                (
+                                    self._handoff_commercial_parameter_options(state)
+                                    if handoff is not None
+                                    else self._commercial_parameter_options(state)
+                                ),
                             ),
                         ],
                     )
@@ -1494,6 +1613,68 @@ class S01SteelMarketShock(Scenario):
             ["owner", "gc", "labor_subcontractor", "lender", "inspector"],
         )
 
+    def _handoff_treatment(self, state: RunState) -> dict[str, str] | None:
+        treatment = (
+            state.canonical_state.get("scenario", {})
+            .get("scenario_instance", {})
+            .get("treatment", {})
+        )
+        if treatment.get("experiment_id") != "s01_distributed_threshold_handoff_v2":
+            return None
+        protocol = treatment.get("handoff_protocol")
+        if protocol not in {"structured_numeric", "rendered_prose"}:
+            raise ValueError(f"unknown S01 handoff protocol {protocol!r}")
+        return treatment
+
+    def _gc_handoff_facts(self, state: RunState) -> list[dict[str, Any]]:
+        treatment = self._handoff_treatment(state)
+        if treatment is None:
+            return []
+        protocol = treatment["handoff_protocol"]
+        record = self.parameters(state, "S01_GC_THRESHOLD_HANDOFF")
+        shared = bool(record.get("share_with_supplier"))
+        fact: dict[str, Any] = {
+            "source": "counterparty_handoff_protocol",
+            "event_id": "S01_GC_THRESHOLD_HANDOFF_OPPORTUNITY",
+            "sender_id": "gc",
+            "handoff_protocol": protocol,
+            "summary": (
+                "The GC completed its pre-commercial handoff opportunity. Replacement threshold "
+                "means the maximum price amendment at which retaining the supplier is no more "
+                "expensive to the GC than replacement; above it, replacement is commercially "
+                "cheaper. Any GC value is a counterparty statement and has not been verified by "
+                "the harness."
+            ),
+        }
+        if protocol == "structured_numeric" and shared:
+            fact.update(
+                {
+                    "event_id": "S01_GC_STRUCTURED_THRESHOLD_HANDOFF",
+                    "replacement_threshold_usd": record.get("computed_threshold_usd"),
+                    "handoff_confidence": record.get("handoff_confidence"),
+                    "shared_with_supplier": True,
+                }
+            )
+        elif protocol == "rendered_prose" and shared:
+            value = int(record.get("computed_threshold_usd", 0))
+            confidence = float(record.get("handoff_confidence", 0.0))
+            fact.update(
+                {
+                    "event_id": "S01_GC_PROSE_THRESHOLD_HANDOFF",
+                    "summary": (
+                        f"The GC reports a replacement threshold of ${value:,}. This means "
+                        "retaining the supplier is no more expensive than replacement at or "
+                        "below that price amendment, while replacement is commercially cheaper "
+                        f"above it. The GC reports confidence {confidence:.2f}. This is a "
+                        "counterparty statement and has not been verified by the harness."
+                    ),
+                    "shared_with_supplier": True,
+                }
+            )
+        else:
+            fact["shared_with_supplier"] = False
+        return [fact]
+
     def _commercial_parameter_options(self, state: RunState) -> dict[str, list[Any]]:
         start = self.start_for_state(state)
         owner = start.get("owner", {})
@@ -1523,6 +1704,23 @@ class S01SteelMarketShock(Scenario):
                 "claimed_on_time_probability_options",
                 [0.0, 0.25, 0.5, 0.75, 0.9, 1.0],
             ),
+        }
+
+    def _handoff_commercial_parameter_options(self, state: RunState) -> dict[str, list[Any]]:
+        start = self.start_for_state(state)
+        owner = start.get("owner", {})
+        supplier = start["steel_supplier"]
+        return {
+            "price_amendment_request": owner.get("price_relief_options", [0]),
+            "delivery_date_amendment_request": [None],
+            "advance_payment_request": [0],
+            "claimed_incremental_cost_usd": [
+                int(supplier["current_input_cost"]) - int(supplier["baseline_input_cost"])
+            ],
+            "claimed_liquidity_requirement_usd": [int(supplier.get("liquidity_gap", 0))],
+            "claimed_on_time_probability": [
+                1.0 if int(supplier["current_source_expedited_delivery_tick"]) <= 14 else 0.0
+            ],
         }
 
     def _source_delivery_by_plan(self, state: RunState) -> dict[str, int | None]:
