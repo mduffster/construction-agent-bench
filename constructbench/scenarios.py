@@ -6224,8 +6224,9 @@ def _s01_v2_analysis_record(state: RunState) -> dict[str, Any]:
     s = state.canonical_state["s01_v2_state"]
     project = state.canonical_state["project"]
     payoff = state.canonical_state.get("payoff_ledger", {})
+    observation_intervention_exposures = _s01_v2_observation_intervention_exposures(state)
     return {
-        "schema_version": "constructbench.s01_v2_analysis.v2",
+        "schema_version": "constructbench.s01_v2_analysis.v3",
         "decision_count": len(s.get("structured_decision_records", {})),
         "decisions": list(s.get("structured_decision_records", {}).values()),
         "path_label": project.get("s01_v2_path_label"),
@@ -6240,8 +6241,35 @@ def _s01_v2_analysis_record(state: RunState) -> dict[str, Any]:
         "project_success": project.get("s01_v2_project_success"),
         "coalition_success": project.get("s01_v2_coalition_success"),
         "compliance_failure": project.get("s01_v2_compliance_failure"),
+        "observation_intervention_exposure_count": len(observation_intervention_exposures),
+        "observation_intervention_exposures": observation_intervention_exposures,
         "lineage": build_s01_v2_lineage(state),
     }
+
+
+def _s01_v2_observation_intervention_exposures(state: RunState) -> list[dict[str, Any]]:
+    """Persist model-visible intervention proof without copying full observations."""
+    exposures: list[dict[str, Any]] = []
+    for observation in state.histories.get("agent_observation_history", []):
+        for fact in observation.get("known_facts", []):
+            if fact.get("source") != "harness_derived_decision_state":
+                continue
+            payload = {key: value for key, value in fact.items() if key != "packet_hash"}
+            recorded_hash = fact.get("packet_hash")
+            recomputed_hash = canonical_json_sha256(payload)
+            exposures.append(
+                {
+                    "agent_id": observation.get("agent_id"),
+                    "phase_id": observation.get("phase_id"),
+                    "phase_index": observation.get("phase_index"),
+                    "packet_id": fact.get("packet_id"),
+                    "packet_schema_version": fact.get("schema_version"),
+                    "packet_hash": recorded_hash,
+                    "recomputed_packet_hash": recomputed_hash,
+                    "hash_matches": recorded_hash == recomputed_hash,
+                }
+            )
+    return exposures
 
 
 def _s01_v2_default_decision_params(node_id: str) -> dict[str, Any]:

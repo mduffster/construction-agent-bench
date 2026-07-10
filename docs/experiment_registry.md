@@ -242,10 +242,13 @@ successful repairs. All live rungs selected the costly backup path and missed co
 cleanly separating correct data lineage from decision quality. V2 cost `$1.368483`; conservative
 all-program spend is `$8.476765` against the user's `$10` ceiling.
 
-The next gate is a six-run supplier-GC contrast at the earliest common divergence: current
-observation versus a neutral, harness-derived decision-state packet for document-supported value,
-funding thresholds, funding-source status, and operative caps. Broader live-role confirmation waits
-for that local mechanism gate.
+Next gate status: **READY / FROZEN PROTOCOL**
+
+The six-run supplier-GC contrast is frozen in
+[`s01_v2_derived_state_packet_protocol.md`](s01_v2_derived_state_packet_protocol.md). It compares
+the current observation with a neutral, harness-derived decision-state packet at the two safe
+post-R1 recovery nodes. Initial application, document routing, and all C-stage observations remain
+untreated; broader live-role confirmation waits for this descriptive local mechanism gate.
 
 ## Legacy: Feedback-Cascade Suite
 
