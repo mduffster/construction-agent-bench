@@ -19,10 +19,10 @@ from constructbench.state import (
     DecisionSelection,
 )
 
-S01_V2_LADDER_EXPERIMENT_ID = "s01_v2_live_multiplayer_ladder_v1"
-LINEAGE_LIVE_PROFILE_ID = "s01_v2_lineage_core_fields_v1"
+S01_V2_LADDER_EXPERIMENT_ID = "s01_v2_live_multiplayer_ladder_v2"
+LINEAGE_LIVE_PROFILE_ID = "s01_v2_lineage_core_fields_v2"
 EFFICIENT_BACKGROUND_FIXTURE = "efficient_phased_coalition_success"
-DEFAULT_PROGRAM_PRIOR_COST_USD = 6.495753
+DEFAULT_PROGRAM_PRIOR_COST_USD = 7.108282
 DEFAULT_NEW_MODEL_ALLOCATION_USD = 2.0
 DEFAULT_HARD_TOTAL_CAP_USD = 9.5
 DEFAULT_USER_LIMIT_USD = 10.0

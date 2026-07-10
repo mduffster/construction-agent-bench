@@ -4767,6 +4767,30 @@ def _s01_v2_decision_constraints(state: RunState, node_id: str) -> dict[str, Any
                 ),
             }
         )
+        rules.append(
+            {
+                "constraint_id": "lender_release_action_amount_coupling",
+                "rule_type": "conditional_zero_fields",
+                "selector_field": "release_action",
+                "required_zero_fields_by_selector": {
+                    "RELEASE": ["escrow_release_usd"],
+                    "PARTIAL_RELEASE": ["escrow_release_usd"],
+                    "ESCROW": ["draw_release_usd"],
+                    "HOLD": ["draw_release_usd", "escrow_release_usd"],
+                },
+                "permitted_nonzero_fields_by_selector": {
+                    "RELEASE": ["draw_release_usd"],
+                    "PARTIAL_RELEASE": ["draw_release_usd"],
+                    "ESCROW": ["escrow_release_usd"],
+                    "HOLD": [],
+                },
+                "actions_requiring_minimum_completion_reserve_and_owner_equity": [
+                    "RELEASE",
+                    "PARTIAL_RELEASE",
+                    "ESCROW",
+                ],
+            }
+        )
     if node_id == "S01_C1_SUPPLIER_STATUS_AND_RECOVERY":
         readiness = s.get("supplier_execution", {})
         lot_a_ready = readiness.get("actual_lot_a_ready_tick") is not None
@@ -4829,7 +4853,7 @@ def _s01_v2_decision_constraints(state: RunState, node_id: str) -> dict[str, Any
             }
         )
     return {
-        "schema_version": "constructbench.s01_v2.decision_constraints.v1",
+        "schema_version": "constructbench.s01_v2.decision_constraints.v2",
         "node_id": node_id,
         "rules": rules,
     }

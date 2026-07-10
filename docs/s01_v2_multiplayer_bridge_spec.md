@@ -1,10 +1,10 @@
 # S01 V2 live multiplayer lineage bridge
 
-Status: **DETERMINISTICALLY QUALIFIED; LIVE LADDER PENDING — 2026-07-10**
+Status: **V2 DETERMINISTICALLY QUALIFIED; LIVE LADDER PENDING — 2026-07-10**
 
-Experiment ID: `s01_v2_live_multiplayer_ladder_v1`
+Experiment ID: `s01_v2_live_multiplayer_ladder_v2`
 
-Live decision profile: `s01_v2_lineage_core_fields_v1`
+Live decision profile: `s01_v2_lineage_core_fields_v2`
 
 ## Research question
 
@@ -66,6 +66,11 @@ Before the ladder, S01 V2 was changed so that:
 - requested-to-realized clips are recorded explicitly in three consequence snapshots; and
 - a seven-edge lineage record is written into S01 V2 analysis.
 
+The v2 qualification also states the lender's action/amount coupling in the first observation:
+direct release actions require zero escrow, escrow requires zero direct draw, and hold requires both
+amounts to be zero. This was already enforced by validation in v1 but was not included in the
+first-turn decision constraints.
+
 The corrected audit initially exposed `64` fields that changed only the submitted record. Rather
 than relabel those fields as meaningful, the qualification pass removed `58` duplicate, advisory,
 or premature fields and made retained bridge, equity, offer-acceptance, price-adjustment, labor
@@ -104,11 +109,27 @@ tokens, and repair budget `1`. A rung stops the ladder on invalid required outpu
 lineage. Project failure alone does not stop the ladder if the chain was fully exposed and faithfully
 realized; that is a behavioral result rather than an instrumentation failure.
 
+## V1 qualification incident
+
+The first frozen live ladder spent `$0.612529` and stopped as designed at the five-live-role rung.
+The supplier/GC and supplier/GC/inspector rungs were valid, successful, lineage-complete runs with
+no repair attempts. At the next rung, the live lender twice paired a direct-release action with a
+nonzero escrow amount, including after one targeted repair. The validator correctly stopped the
+run as `INVALID_AGENT_OUTPUT`; the full-six rung was never called.
+
+This is classified as an interface-qualification failure, not a multiplayer outcome. The validator
+had enforced an action/amount rule that the initial observation had omitted. V2 changes only that
+prompt contract and its version identifiers; it does not change payoffs, consequences, role mix,
+model settings, or stop rules. All four rungs are rerun under the new frozen version so every row in
+the final comparison has the same protocol provenance. V1 remains archived and counted in the
+program cost ledger.
+
 ## Cost gate
 
-The conservative prior program ledger is `$6.495753`. The default rung reserves sum to `$1.92`,
-for a projected program total of `$8.415753`. New calls have a `$2.00` allocation, the hard program
-stop is `$9.50`, and the user ceiling is `$10.00`, leaving at least `$0.50` unspent by design.
+The conservative prior program ledger is `$7.108282`, including the stopped v1 qualification. The
+default rung reserves sum to `$1.92`, for a projected program total of `$9.028282`. New calls have a
+`$2.00` allocation, the hard program stop is `$9.50`, and the user ceiling is `$10.00`, leaving at
+least `$0.50` unspent by design.
 Known pricing, clean commit, exact four-file output, settings, resume, and post-run cost checks are
 mandatory.
 

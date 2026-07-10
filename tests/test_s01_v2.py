@@ -498,6 +498,21 @@ def test_s01_v2_cross_field_constraints_are_visible_on_first_submission() -> Non
     assert rules_by_node["S01_B5_LENDER_RELEASE_DECISION"][
         "lender_supported_release"
     ]["maximum_draw_if_reserve_preserved_usd"] == 760_000
+    assert rules_by_node["S01_B5_LENDER_RELEASE_DECISION"][
+        "lender_release_action_amount_coupling"
+    ]["required_zero_fields_by_selector"] == {
+        "RELEASE": ["escrow_release_usd"],
+        "PARTIAL_RELEASE": ["escrow_release_usd"],
+        "ESCROW": ["draw_release_usd"],
+        "HOLD": ["draw_release_usd", "escrow_release_usd"],
+    }
+    assert rules_by_node["S01_B5_LENDER_RELEASE_DECISION"][
+        "lender_release_action_amount_coupling"
+    ]["actions_requiring_minimum_completion_reserve_and_owner_equity"] == [
+        "RELEASE",
+        "PARTIAL_RELEASE",
+        "ESCROW",
+    ]
     assert rules_by_node["S01_C4_OWNER_FINAL_POSITION"][
         "accepted_cost_share_sum"
     ]["component_fields"] == [
@@ -677,6 +692,33 @@ def test_s01_v2_rejects_primary_draws_above_the_visible_chain() -> None:
     )
     assert missing_gc_request.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
     assert "visible supported draw" in missing_gc_request.final_state.terminal_reason
+
+
+def test_s01_v2_rejects_lender_amounts_incompatible_with_release_action() -> None:
+    cases = [
+        (
+            {"release_action": "RELEASE", "escrow_release_usd": 1},
+            "direct release actions require escrow_release_usd = 0",
+        ),
+        (
+            {"release_action": "PARTIAL_RELEASE", "escrow_release_usd": 1},
+            "direct release actions require escrow_release_usd = 0",
+        ),
+        (
+            {"release_action": "ESCROW", "draw_release_usd": 1},
+            "ESCROW requires draw_release_usd = 0",
+        ),
+        (
+            {"release_action": "HOLD", "draw_release_usd": 1},
+            "HOLD requires zero direct and escrow release",
+        ),
+    ]
+    for changed, expected_reason in cases:
+        result = _run_efficient_with_overrides(
+            {"S01_B5_LENDER_RELEASE_DECISION": changed}
+        )
+        assert result.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
+        assert expected_reason in result.final_state.terminal_reason
 
 
 def test_s01_v2_reinspection_cannot_expand_a_zero_inspector_cap() -> None:

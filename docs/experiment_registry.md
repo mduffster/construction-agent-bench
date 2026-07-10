@@ -201,7 +201,7 @@ chat, new scenarios, and stronger-model arms remain deferred.
 
 ## Staged Experiment: S01 V2 Multiplayer Lineage Bridge
 
-Status: **DETERMINISTICALLY QUALIFIED / LIVE LADDER PENDING**
+Status: **V2 DETERMINISTICALLY QUALIFIED / LIVE LADDER PENDING**
 
 Purpose: test whether a growing set of AI-run firms can preserve and act on business data across
 the supplier-document, GC-routing, inspector-release, lender-draw, supplier-readiness, shipment,
@@ -223,13 +223,20 @@ Implemented surface:
   separate GC late-credit term; and
 - clean-commit, exact-output, resume, pricing, and total-program cost guards.
 
+The frozen v1 live qualification spent `$0.612529`. Its first two rungs were valid and
+lineage-complete; the five-live-role rung stopped at lender B5 because the validator enforced an
+action/amount coupling that the first observation did not state. The full-six rung was not called.
+V2 makes that coupling explicit, changes the experiment/profile IDs, and reruns all four rungs from
+one clean frozen commit. Payoffs, consequences, role mix, and model settings are unchanged.
+
 Deterministic command:
 
 ```bash
 uv run python scripts/run_s01_v2_multiplayer_ladder.py --preflight-only
 ```
 
-The default reservation projects total program spend to `$8.415753`; the hard stop is `$9.50`
+The v2 prior ledger is `$7.108282`, including v1. Its default reservation projects total program
+spend to `$9.028282`; the hard stop is `$9.50`
 against the user's `$10` ceiling. The live ladder requires `--allow-live-batch` and stops at the
 first invalid or incomplete-lineage rung.
 

@@ -10,6 +10,8 @@ from constructbench.runner import run_policy
 from constructbench.s01_v2_ladder import (
     LADDER_STAGES,
     LINEAGE_LIVE_FIELDS_BY_NODE,
+    LINEAGE_LIVE_PROFILE_ID,
+    S01_V2_LADDER_EXPERIMENT_ID,
     BudgetConfig,
     LineageCorePolicy,
     StateAwareEfficientPolicy,
@@ -126,7 +128,12 @@ def test_state_aware_counterparties_follow_a_supplier_offer_rejection() -> None:
 def test_budget_defaults_leave_user_reserve_and_guard_next_stage() -> None:
     budget = BudgetConfig()
     budget.validate()
-    assert budget.program_prior_cost_usd == 6.495753
+    assert S01_V2_LADDER_EXPERIMENT_ID == "s01_v2_live_multiplayer_ladder_v2"
+    assert LINEAGE_LIVE_PROFILE_ID == "s01_v2_lineage_core_fields_v2"
+    assert budget.program_prior_cost_usd == 7.108282
+    assert budget.program_prior_cost_usd + sum(
+        budget.stage_reserve_usd(stage.live_roles) for stage in LADDER_STAGES
+    ) == pytest.approx(9.028282)
     assert budget.hard_total_cap_usd == 9.5
     assert budget.user_limit_reserve_usd == 0.5
     budget.assert_can_start(
