@@ -6,7 +6,12 @@ from copy import deepcopy
 from constructbench.agents import policies_for_fixture
 from constructbench.replay import replay_run
 from constructbench.runner import _validate_submission, run_fixture, run_policy
-from constructbench.scenarios import S01_V2_CONTRACT, SCENARIOS
+from constructbench.s01_v2_lineage import build_s01_v2_lineage
+from constructbench.scenarios import (
+    S01_V2_CONTRACT,
+    S01_V2_CROSS_ORGANIZATION_RECORDS_BY_TARGET,
+    SCENARIOS,
+)
 from constructbench.state import (
     AGENT_IDS,
     AgentObservation,
@@ -19,6 +24,16 @@ from constructbench.state import (
 
 def _scenario():
     return SCENARIOS["S01_V2"]
+
+
+def _run_efficient_with_overrides(overrides):
+    decisions = deepcopy(
+        _scenario().fixtures["efficient_phased_coalition_success"]["decisions"]
+    )
+    for node_id, changed in overrides.items():
+        option_id, parameters = decisions[node_id]
+        decisions[node_id] = (option_id, {**parameters, **changed})
+    return run_policy("S01_V2", "normal", policies_for_fixture(decisions))
 
 
 def _submission_for_request(request, parameters):
@@ -199,18 +214,6 @@ def test_s01_v2_rejects_invisible_document_reference() -> None:
 def test_s01_v2_rejects_cross_field_semantic_mismatches() -> None:
     scenario = _scenario()
 
-    c5_request = scenario._request("S01_C5_LENDER_SUPPLEMENTAL_POSITION")
-    c5_params = {
-        name: deepcopy(spec.default)
-        for name, spec in c5_request.parameter_specs.items()
-    } | {"supplemental_action": "RELEASE", "supplemental_draw_usd": 0}
-    c5_errors = _validate_submission(
-        _observation_for_node("S01_C5_LENDER_SUPPLEMENTAL_POSITION"),
-        _submission_for_request(c5_request, c5_params),
-        scenario=scenario,
-    )
-    assert any("requires supplemental_draw_usd > 0" in error for error in c5_errors)
-
     c1_request = scenario._request("S01_C1_SUPPLIER_STATUS_AND_RECOVERY")
     c1_params = {
         name: deepcopy(spec.default)
@@ -272,104 +275,29 @@ def test_s01_v2_rejects_cross_field_semantic_mismatches() -> None:
     assert any("requires a reserved or qualifying backup" in error for error in c2_errors)
     assert any("requires defined activation cost and delivery tick" in error for error in c2_errors)
 
-    c4_request = scenario._request("S01_C4_OWNER_FINAL_POSITION")
-    c4_params = {
-        name: deepcopy(spec.default)
-        for name, spec in c4_request.parameter_specs.items()
-    } | {"supplemental_funding_usd": 100_000}
-    c4_errors = _validate_submission(
-        _observation_for_node("S01_C4_OWNER_FINAL_POSITION"),
-        _submission_for_request(c4_request, c4_params),
-        scenario=scenario,
-    )
-    assert any("must reference a visible executable recovery request" in error for error in c4_errors)
-
     c6_request = scenario._request("S01_C6_ERECTOR_MOBILIZATION")
     c6_params = {
         name: deepcopy(spec.default)
         for name, spec in c6_request.parameter_specs.items()
     } | {
         "mobilization_action": "FULL",
-        "crew_capacity_fraction": 1.0,
-        "crane_capacity_fraction": 1.0,
     }
     c6_observation = _observation_for_node("S01_C6_ERECTOR_MOBILIZATION")
-    c6_observation.known_facts[0]["visible_decisions"].append(
-        {
-            "node_id": "S01_B3_ERECTOR_BINDING_COMMITMENT",
-            "actor_id": "labor_subcontractor",
-            "parameters": {
+    c6_observation.known_facts[0]["decision_constraints"] = {
+        "rules": [
+            {
+                "constraint_id": "mobilization_within_binding_capacity",
                 "capacity_commitment": "SPLIT",
                 "overtime_commitment": "NONE",
-            },
-        }
-    )
+            }
+        ]
+    }
     c6_errors = _validate_submission(
         c6_observation,
         _submission_for_request(c6_request, c6_params),
         scenario=scenario,
     )
     assert any("FULL mobilization exceeds a SPLIT" in error for error in c6_errors)
-
-
-def test_s01_v2_lender_supplemental_draw_can_reference_newly_approved_value() -> None:
-    scenario = _scenario()
-    request = scenario._request("S01_C5_LENDER_SUPPLEMENTAL_POSITION")
-    params = {
-        name: deepcopy(spec.default)
-        for name, spec in request.parameter_specs.items()
-    } | {
-        "supplemental_action": "RELEASE",
-        "supplemental_draw_usd": 200_000,
-        "condition_codes": ["FULL_SEQUENCE_RELEASED"],
-    }
-    observation = _observation_for_node("S01_C5_LENDER_SUPPLEMENTAL_POSITION")
-    observation.known_facts.append(
-        {
-            "source": "s01_v2_phase_contract",
-            "payment": {
-                "eligible_stored_value_usd": 950_000,
-                "final_certified_usd": 950_000,
-                "lender_draw_released_usd": 760_000,
-                "escrow_usd": 0,
-            },
-            "inspection": {"maximum_releasable_value_usd": 1_350_000},
-            "commitments": {
-                "provisional_offers": [
-                    {
-                        "offer_id": "LENDER_PROVISIONAL_DRAW",
-                        "maximum_draw_usd": 960_000,
-                        "advance_rate": 0.8,
-                        "escrow_cap_usd": 250_000,
-                    }
-                ]
-            },
-            "visible_decisions": [
-                {
-                    "node_id": "S01_C3_INSPECTOR_FINAL_DISPOSITION",
-                    "actor_id": "inspector",
-                    "parameters": {"approved_shipping_value_usd": 1_350_000},
-                }
-            ],
-        }
-    )
-
-    assert _validate_submission(
-        observation,
-        _submission_for_request(request, params),
-        scenario=scenario,
-    ) == []
-
-    params["supplemental_draw_usd"] = 400_000
-    errors = _validate_submission(
-        observation,
-        _submission_for_request(request, params),
-        scenario=scenario,
-    )
-
-    assert any("exceeds remaining lender headroom 200000" in error for error in errors)
-
-
 def test_s01_v2_project_controls_are_visible_without_recommending_actions() -> None:
     efficient = run_fixture("S01_V2", "efficient_phased_coalition_success")
     efficient_c2 = next(
@@ -388,7 +316,6 @@ def test_s01_v2_project_controls_are_visible_without_recommending_actions() -> N
         "schedule",
         "cost",
         "backup_option",
-        "verification",
     ]
 
     failure = run_fixture("S01_V2", "excessive_conservatism_failure")
@@ -479,6 +406,111 @@ def test_s01_v2_parallel_barriers_and_private_readiness_visibility() -> None:
     assert supplier_private["s01_v2_actual_readiness"]["actual_lot_a_ready_tick"] == 14
 
 
+def test_s01_v2_structured_records_follow_authorized_role_routes() -> None:
+    result = run_fixture("S01_V2", "efficient_phased_coalition_success")
+    observations = result.final_state.histories["agent_observation_history"]
+
+    for observation in observations:
+        target_node = observation["required_decisions"][0]["node_id"]
+        actor = observation["agent_id"]
+        visible = {
+            record["node_id"]
+            for fact in observation["known_facts"]
+            for record in fact.get("visible_decisions", [])
+        }
+        cross_role = set(
+            S01_V2_CROSS_ORGANIZATION_RECORDS_BY_TARGET.get(target_node, set())
+        )
+        own_nodes = {
+            node_id for node_id, node_actor in _scenario().actors.items() if node_actor == actor
+        }
+        assert cross_role <= visible
+        assert visible <= cross_role | own_nodes
+
+    by_target = {
+        observation["required_decisions"][0]["node_id"]: observation
+        for observation in observations
+    }
+    owner_a3 = by_target["S01_A3_OWNER_PROVISIONAL_POSITION"]
+    inspector_a3 = by_target["S01_A3_INSPECTOR_REVIEW_PLAN"]
+    supplier_b1 = by_target["S01_B1_SUPPLIER_COMMITMENT"]
+
+    owner_a2 = next(
+        record
+        for fact in owner_a3["known_facts"]
+        for record in fact.get("visible_decisions", [])
+        if record["node_id"] == "S01_A2_GC_INITIAL_REVIEW"
+    )
+    inspector_a2 = next(
+        record
+        for fact in inspector_a3["known_facts"]
+        for record in fact.get("visible_decisions", [])
+        if record["node_id"] == "S01_A2_GC_INITIAL_REVIEW"
+    )
+    assert "inspector_package_document_ids" not in owner_a2["parameters"]
+    assert "owner_lender_package_document_ids" not in inspector_a2["parameters"]
+
+    supplier_visible = {
+        record["node_id"]
+        for fact in supplier_b1["known_facts"]
+        for record in fact.get("visible_decisions", [])
+    }
+    assert not {
+        "S01_A3_OWNER_PROVISIONAL_POSITION",
+        "S01_A3_INSPECTOR_REVIEW_PLAN",
+        "S01_A3_ERECTOR_CAPACITY_OFFER",
+        "S01_A4_LENDER_PROVISIONAL_POSITION",
+    } & supplier_visible
+
+    for target_node, observation in by_target.items():
+        serialized = json.dumps(observation["known_facts"])
+        if _scenario().actors[target_node] == "gc":
+            continue
+        assert "activation_cost_usd" not in serialized
+        assert "delivery_tick_if_activated" not in serialized
+
+
+def test_s01_v2_cross_field_constraints_are_visible_on_first_submission() -> None:
+    result = run_fixture("S01_V2", "efficient_phased_coalition_success")
+    observations = result.final_state.histories["agent_observation_history"]
+    rules_by_node = {}
+    for observation in observations:
+        target_node = observation["required_decisions"][0]["node_id"]
+        contract_fact = next(
+            fact
+            for fact in observation["known_facts"]
+            if fact.get("source") == "s01_v2_phase_contract"
+        )
+        rules_by_node[target_node] = {
+            rule["constraint_id"]: rule
+            for rule in contract_fact["decision_constraints"]["rules"]
+        }
+
+    assert rules_by_node["S01_A2_GC_INITIAL_REVIEW"][
+        "route_only_submitted_documents"
+    ]["allowed_values"]
+    assert rules_by_node["S01_A3_INSPECTOR_REVIEW_PLAN"][
+        "inspection_tick_by_scope"
+    ]["allowed_values_by_selector"]["FULL_SEQUENCE"] == [13]
+    assert rules_by_node["S01_B2_GC_INTEGRATED_PACKAGE"][
+        "verified_value_and_draw_bounds"
+    ]["maximum_lender_draw_requested_usd"] == 760_000
+    assert rules_by_node["S01_B5_LENDER_RELEASE_DECISION"][
+        "lender_supported_release"
+    ]["maximum_draw_if_reserve_preserved_usd"] == 760_000
+    assert rules_by_node["S01_C4_OWNER_FINAL_POSITION"][
+        "accepted_cost_share_sum"
+    ]["component_fields"] == [
+        "owner_cost_share_usd",
+        "gc_cost_share_usd",
+        "supplier_cost_share_usd",
+    ]
+    assert rules_by_node["S01_C5_LENDER_SUPPLEMENTAL_POSITION"] == {}
+    assert rules_by_node["S01_C6_ERECTOR_MOBILIZATION"][
+        "mobilization_within_binding_capacity"
+    ]["capacity_commitment"] == "SPLIT"
+
+
 class _OmitCommunicationPolicy:
     def __init__(self, decisions):
         self.decisions = decisions
@@ -519,27 +551,25 @@ class _OmitAssessmentPolicy(_OmitCommunicationPolicy):
         return submission
 
 
-def test_s01_v2_requires_explicit_communication_and_assessment_choice() -> None:
+def test_s01_v2_communications_and_assessments_are_optional_without_evidence() -> None:
     fixture = _scenario().fixtures["efficient_phased_coalition_success"]
     no_comm = run_policy(
         "S01_V2",
         "normal",
         {agent_id: _OmitCommunicationPolicy(fixture["decisions"]) for agent_id in AGENT_IDS},
     )
-    assert no_comm.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
-    assert "explicit communication choice required" in no_comm.final_state.terminal_reason
+    assert no_comm.final_state.terminal_status == "PROJECT_SUCCESS"
 
     no_assessment = run_policy(
         "S01_V2",
         "normal",
         {agent_id: _OmitAssessmentPolicy(fixture["decisions"]) for agent_id in AGENT_IDS},
     )
-    assert no_assessment.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
-    assert "explicit assessment choice required" in no_assessment.final_state.terminal_reason
+    assert no_assessment.final_state.terminal_status == "PROJECT_SUCCESS"
 
     valid = run_fixture("S01_V2", "efficient_phased_coalition_success")
-    assert len(valid.final_state.histories["communication_abstention_history"]) == 18
-    assert len(valid.final_state.histories["assessment_review_history"]) == 18
+    assert valid.final_state.histories["communication_abstention_history"] == []
+    assert valid.final_state.histories["assessment_review_history"] == []
 
 
 def test_s01_v2_resolution_handlers_apply_cash_release_and_no_unreleased_erection() -> None:
@@ -572,8 +602,6 @@ def test_s01_v2_resolution_handlers_apply_cash_release_and_no_unreleased_erectio
         {
             **fixture["S01_C6_ERECTOR_MOBILIZATION"][1],
             "mobilization_action": "FULL",
-            "crew_capacity_fraction": 1.0,
-            "crane_capacity_fraction": 1.0,
         },
     )
     fixture["S01_B3_ERECTOR_BINDING_COMMITMENT"] = (
@@ -592,6 +620,104 @@ def test_s01_v2_resolution_handlers_apply_cash_release_and_no_unreleased_erectio
     assert project["s01_v2_compliance_failure"] is True
 
 
+def test_s01_v2_lineage_separates_traceability_from_viability() -> None:
+    efficient = run_fixture("S01_V2", "efficient_phased_coalition_success")
+    lineage = efficient.final_state.canonical_state["s01_v2_state"]["analysis"][
+        "lineage"
+    ]
+    assert lineage["expected_exposure"] == {"count": 6, "passing": 6, "rate": 1.0}
+    assert lineage["first_pass_submission_conformance"]["rate"] == 1.0
+    assert lineage["action_realization"]["rate"] == 1.0
+    assert lineage["silent_unexplained_clamp_count"] == 0
+    assert lineage["lineage_complete"] is True
+    assert lineage["viability_preserving_chain"] is True
+
+    failed = run_fixture("S01_V2", "coordination_failure")
+    failed_lineage = failed.final_state.canonical_state["s01_v2_state"]["analysis"][
+        "lineage"
+    ]
+    assert failed_lineage["lineage_complete"] is True
+    assert failed_lineage["viability_preserving_chain"] is False
+    assert (
+        failed_lineage["earliest_viability_break_edge_id"]
+        == "E2_GC_ROUTING_TO_INSPECTION_REVIEW"
+    )
+
+
+def test_s01_v2_lineage_uses_actual_observation_exposure() -> None:
+    result = run_fixture("S01_V2", "efficient_phased_coalition_success")
+    observation = next(
+        item
+        for item in result.final_state.histories["agent_observation_history"]
+        if item["required_decisions"][0]["node_id"] == "S01_A2_GC_INITIAL_REVIEW"
+    )
+    for fact in observation["known_facts"]:
+        fact["visible_decisions"] = [
+            record
+            for record in fact.get("visible_decisions", [])
+            if record.get("node_id") != "S01_A1_SUPPLIER_APPLICATION"
+        ]
+
+    lineage = build_s01_v2_lineage(result.final_state)
+
+    assert lineage["lineage_complete"] is False
+    assert lineage["earliest_failed_edge_id"] == "E1_DOCUMENTS_TO_GC_ROUTING"
+    assert lineage["expected_exposure"]["rate"] == 5 / 6
+
+
+def test_s01_v2_rejects_primary_draws_above_the_visible_chain() -> None:
+    excessive_lender = _run_efficient_with_overrides(
+        {"S01_B5_LENDER_RELEASE_DECISION": {"draw_release_usd": 1_000_000}}
+    )
+    assert excessive_lender.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
+    assert "visible supported draw" in excessive_lender.final_state.terminal_reason
+
+    missing_gc_request = _run_efficient_with_overrides(
+        {"S01_B2_GC_INTEGRATED_PACKAGE": {"lender_draw_requested_usd": 0}}
+    )
+    assert missing_gc_request.final_state.terminal_status == "INVALID_AGENT_OUTPUT"
+    assert "visible supported draw" in missing_gc_request.final_state.terminal_reason
+
+
+def test_s01_v2_reinspection_cannot_expand_a_zero_inspector_cap() -> None:
+    result = _run_efficient_with_overrides(
+        {
+            "S01_B3_INSPECTOR_DISPOSITION": {
+                "disposition": "NO_RELEASE",
+                "maximum_releasable_value_usd": 0,
+                "reinspection_tick": None,
+            },
+            "S01_B5_LENDER_RELEASE_DECISION": {
+                "release_action": "HOLD",
+                "draw_release_usd": 0,
+                "escrow_release_usd": 0,
+            },
+            "S01_C1_SUPPLIER_STATUS_AND_RECOVERY": {"ship_action": "HOLD_ALL"},
+            "S01_C3_INSPECTOR_FINAL_DISPOSITION": {
+                "lot_a_disposition": "HOLD",
+                "lot_b_disposition": "HOLD",
+                "approved_shipping_value_usd": 0,
+            },
+            "S01_C6_ERECTOR_MOBILIZATION": {
+                "mobilization_action": "RELEASE",
+            },
+        }
+    )
+    r2 = next(
+        record
+        for record in result.final_state.histories[
+            "s01_v2_lineage_transition_history"
+        ]
+        if record["phase_id"] == "S01_R2_COMMIT_AND_PRODUCE"
+    )
+    assert result.final_state.run_valid is True
+    assert r2["maximum_releasable_value_usd"] == 0
+    assert result.final_state.canonical_state["project"]["s01_v2_released_lots"] == {
+        "lot_a": False,
+        "lot_b": False,
+    }
+
+
 def test_s01_v2_outputs_and_replay_remain_contract_compatible(tmp_path) -> None:
     output_dir = tmp_path / "s01_v2"
     result = run_fixture("S01_V2", "efficient_phased_coalition_success", output_dir=output_dir)
@@ -604,6 +730,8 @@ def test_s01_v2_outputs_and_replay_remain_contract_compatible(tmp_path) -> None:
     }
     summary = json.loads((output_dir / "run_summary.json").read_text())
     assert summary["s01_v2_analysis"]["decision_count"] == 18
+    assert summary["s01_v2_analysis"]["lineage"]["lineage_complete"] is True
+    assert len(summary["s01_v2_lineage_transition_history"]) == 3
     assert summary["s01_v2_state"]["schema_version"] == "constructbench.s01_v2_state.v1"
 
     replayed = replay_run(output_dir)

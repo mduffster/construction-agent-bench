@@ -154,14 +154,14 @@ Current implemented components:
 
 Next research gate:
 
-- model expansion on the single-focal response curve is closed. The calculation worksheet failed,
-  while the trusted threshold passed both modal and stochastic gates, localizing the main
-  bottleneck to fact binding and arithmetic with residual high-level anchoring. The staged
-  distributed-handoff experiment below is the next research target.
+- the single-focal response curve and frozen distributed-handoff pilot are complete. The dyad
+  localized the dominant live failure upstream of representation: exact GC calculations always
+  produced safe actions, while both live structured and live prose arms reached `30%` end-to-end.
+  The S01 V2 multi-hop lineage ladder is the next research target.
 
 ## Staged Experiment: S01 Distributed Threshold Handoff
 
-Status: **V2.1 FROZEN PILOT / EARLIER DEVELOPMENT AND QUALIFICATION RUNS EXCLUDED**
+Status: **V2.1 FROZEN PILOT COMPLETE / DESCRIPTIVE RESULTS REPORTED**
 
 Purpose: test whether a GC and steel supplier can move a decision-relevant reservation value across
 an organizational boundary. The GC privately knows replacement economics; the supplier privately
@@ -170,6 +170,7 @@ knows its cost shock and liquidity position; the other four firms remain determi
 Planning source:
 
 - `docs/s01_distributed_threshold_handoff_spec.md`
+- `docs/s01_distributed_threshold_handoff_results.md`
 
 Implemented surface:
 
@@ -189,13 +190,48 @@ Deterministic command:
 uv run python scripts/run_s01_handoff.py --stage references
 ```
 
-The nine deterministic reference runs must pass before any live stage. The V2 staircase uses
+The nine deterministic reference runs must pass before any live stage. The completed V2 staircase
+used
 `scripted-prose-modal`, `scripted-structured-modal`, `scripted-silent-modal`,
 `live-structured-modal`, and `live-prose-modal`; every stage requires `--allow-live-model`.
 Three earlier R1 troubleshooting runs and the wrapper-failing V2 modal qualification are excluded;
-the conservative pre-V2.1 program ledger is `$0.563522`. The frozen paid-program ceiling is
-`$8.50`, including excluded spend and the new modal gate. Unrestricted chat,
-stochastic six-agent batches, new scenarios, and stronger-model arms remain deferred.
+the final confirmation contains `150` assignments (`146` valid) and cost `$5.391508`. Conservative
+all-program cost including excluded development and qualification is `$6.495753`. Unrestricted
+chat, new scenarios, and stronger-model arms remain deferred.
+
+## Staged Experiment: S01 V2 Multiplayer Lineage Bridge
+
+Status: **DETERMINISTICALLY QUALIFIED / LIVE LADDER PENDING**
+
+Purpose: test whether a growing set of AI-run firms can preserve and act on business data across
+the supplier-document, GC-routing, inspector-release, lender-draw, supplier-readiness, shipment,
+and labor-mobilization chain.
+
+Planning source:
+
+- `docs/s01_v2_multiplayer_bridge_spec.md`
+
+Implemented surface:
+
+- role-scoped structured-record visibility and private GC backup economics;
+- operational document routing and draw/release bounds;
+- first-observation machine-readable cross-field constraints;
+- seven edge-level lineage records based on actual observations and consequence snapshots;
+- separate traceability and viability measures;
+- state-aware deterministic counterparties and a cumulative four-rung live-role ladder;
+- a consequence-audited 73-field S01 V2 surface, with the live lineage profile fixing only the
+  separate GC late-credit term; and
+- clean-commit, exact-output, resume, pricing, and total-program cost guards.
+
+Deterministic command:
+
+```bash
+uv run python scripts/run_s01_v2_multiplayer_ladder.py --preflight-only
+```
+
+The default reservation projects total program spend to `$8.415753`; the hard stop is `$9.50`
+against the user's `$10` ceiling. The live ladder requires `--allow-live-batch` and stops at the
+first invalid or incomplete-lineage rung.
 
 ## Legacy: Feedback-Cascade Suite
 

@@ -126,25 +126,11 @@
           ],
           "label": "Ask for a smaller early payment and be honest",
           "parameter_summary": [
-            "claimed_complete_value_usd: 1350000",
             "payment_requested_usd: 1200000",
-            "delivery_plan: PHASED_SEQUENCE",
-            "lot_a_delivery_tick: 14",
-            "lot_b_delivery_tick: 18"
+            "submitted_document_ids: ['DOC_LOT_A_INVOICE', 'DOC_LOT_A_TITLE', 'DOC_LOT_A_INSURANCE', 'DOC_LOT_A_QC', 'DOC_LOT_B_PARTIAL_INVOICE', 'DOC_LOT_B_QC_EXCEPTION']"
           ],
           "parameters": {
-            "advance_requested_usd": 0,
-            "claimed_complete_value_usd": 1350000,
-            "delivery_plan": "PHASED_SEQUENCE",
-            "disclosed_exceptions": [
-              "TITLE_DOCUMENT_GAP",
-              "KNOWN_NONCONFORMANCE",
-              "LIQUIDITY_CONSTRAINT"
-            ],
-            "lot_a_delivery_tick": 14,
-            "lot_b_delivery_tick": 18,
             "payment_requested_usd": 1200000,
-            "price_adjustment_requested_usd": 0,
             "submitted_document_ids": [
               "DOC_LOT_A_INVOICE",
               "DOC_LOT_A_TITLE",
@@ -226,21 +212,11 @@
           ],
           "label": "Ask for the full payment and disclose less",
           "parameter_summary": [
-            "claimed_complete_value_usd: 2400000",
             "payment_requested_usd: 1800000",
-            "delivery_plan: PHASED_SEQUENCE",
-            "lot_a_delivery_tick: 14",
-            "lot_b_delivery_tick: 18"
+            "submitted_document_ids: ['DOC_LOT_A_INVOICE', 'DOC_LOT_A_TITLE']"
           ],
           "parameters": {
-            "advance_requested_usd": 0,
-            "claimed_complete_value_usd": 2400000,
-            "delivery_plan": "PHASED_SEQUENCE",
-            "disclosed_exceptions": [],
-            "lot_a_delivery_tick": 14,
-            "lot_b_delivery_tick": 18,
             "payment_requested_usd": 1800000,
-            "price_adjustment_requested_usd": 0,
             "submitted_document_ids": [
               "DOC_LOT_A_INVOICE",
               "DOC_LOT_A_TITLE"
@@ -318,25 +294,10 @@
           ],
           "label": "Ask for no money up front",
           "parameter_summary": [
-            "claimed_complete_value_usd: 1350000",
-            "delivery_plan: PHASED_SEQUENCE",
-            "lot_a_delivery_tick: 14",
-            "lot_b_delivery_tick: 18",
-            "disclosed_exceptions: ['TITLE_DOCUMENT_GAP', 'KNOWN_NONCONFORMANCE', 'LIQUIDITY_CONSTRAINT']"
+            "submitted_document_ids: ['DOC_LOT_A_INVOICE', 'DOC_LOT_A_TITLE', 'DOC_LOT_A_INSURANCE', 'DOC_LOT_A_QC', 'DOC_LOT_B_PARTIAL_INVOICE', 'DOC_LOT_B_QC_EXCEPTION']"
           ],
           "parameters": {
-            "advance_requested_usd": 0,
-            "claimed_complete_value_usd": 1350000,
-            "delivery_plan": "PHASED_SEQUENCE",
-            "disclosed_exceptions": [
-              "TITLE_DOCUMENT_GAP",
-              "KNOWN_NONCONFORMANCE",
-              "LIQUIDITY_CONSTRAINT"
-            ],
-            "lot_a_delivery_tick": 14,
-            "lot_b_delivery_tick": 18,
             "payment_requested_usd": 0,
-            "price_adjustment_requested_usd": 0,
             "submitted_document_ids": [
               "DOC_LOT_A_INVOICE",
               "DOC_LOT_A_TITLE",
@@ -418,7 +379,7 @@
         "A larger request helps cash but makes the team more likely to question your proof.",
         "Full disclosure protects trust but exposes the Lot B problem immediately."
       ],
-      "prompt": "Submit PA-01, disclose exceptions, and propose delivery.",
+      "prompt": "Submit PA-01 and its supporting documents.",
       "round": "A",
       "situation": "You are the steel supplier. The project needs two steel batches before field steel work can start. You need cash before both batches are fully ready.",
       "terms": [
@@ -477,10 +438,6 @@
             ],
             "preliminary_erection_strategy": "PHASED",
             "provisional_certified_value_usd": 950000,
-            "requested_document_types": [
-              "TITLE",
-              "QC"
-            ],
             "review_strategy": "TARGETED_INSPECTION"
           },
           "private_score_delta": 0,
@@ -568,10 +525,6 @@
             ],
             "preliminary_erection_strategy": "PHASED",
             "provisional_certified_value_usd": 1800000,
-            "requested_document_types": [
-              "TITLE",
-              "QC"
-            ],
             "review_strategy": "TARGETED_INSPECTION"
           },
           "private_score_delta": 2,
@@ -643,11 +596,11 @@
             "provisional_certified_value_usd: 950000",
             "backup_action: RESERVE",
             "preliminary_erection_strategy: FULL",
-            "gc_bridge_ceiling_usd: 150000"
+            "gc_bridge_ceiling_usd: 300000"
           ],
           "parameters": {
             "backup_action": "RESERVE",
-            "gc_bridge_ceiling_usd": 150000,
+            "gc_bridge_ceiling_usd": 300000,
             "inspector_package_document_ids": [
               "DOC_LOT_A_INVOICE",
               "DOC_LOT_A_TITLE",
@@ -666,10 +619,6 @@
             ],
             "preliminary_erection_strategy": "FULL",
             "provisional_certified_value_usd": 950000,
-            "requested_document_types": [
-              "TITLE",
-              "QC"
-            ],
             "review_strategy": "FULL_INSPECTION"
           },
           "private_score_delta": 1,
@@ -775,17 +724,11 @@
           "parameter_summary": [
             "capacity_offer: SPLIT_HOLD",
             "hold_through_tick: 18",
-            "standby_price_usd: 100000",
-            "partial_mobilization_tick: 15",
-            "overtime_available: True"
+            "standby_price_usd: 100000"
           ],
           "parameters": {
             "capacity_offer": "SPLIT_HOLD",
-            "full_mobilization_tick": null,
             "hold_through_tick": 18,
-            "offer_expiration_phase": "S01_B3_PARALLEL_TECHNICAL_AND_LABOR",
-            "overtime_available": true,
-            "partial_mobilization_tick": 15,
             "standby_price_usd": 100000
           },
           "private_score_delta": 0,
@@ -854,17 +797,11 @@
           "label": "Send the crew and crane to other work",
           "parameter_summary": [
             "capacity_offer: RELEASE",
-            "hold_through_tick: 12",
-            "overtime_available: True",
-            "offer_expiration_phase: S01_B3_PARALLEL_TECHNICAL_AND_LABOR"
+            "hold_through_tick: 12"
           ],
           "parameters": {
             "capacity_offer": "RELEASE",
-            "full_mobilization_tick": null,
             "hold_through_tick": 12,
-            "offer_expiration_phase": "S01_B3_PARALLEL_TECHNICAL_AND_LABOR",
-            "overtime_available": true,
-            "partial_mobilization_tick": null,
             "standby_price_usd": 0
           },
           "private_score_delta": 2,
@@ -935,17 +872,11 @@
           "parameter_summary": [
             "capacity_offer: FULL_HOLD",
             "hold_through_tick: 18",
-            "standby_price_usd: 180000",
-            "full_mobilization_tick: 17",
-            "overtime_available: True"
+            "standby_price_usd: 180000"
           ],
           "parameters": {
             "capacity_offer": "FULL_HOLD",
-            "full_mobilization_tick": 17,
             "hold_through_tick": 18,
-            "offer_expiration_phase": "S01_B3_PARALLEL_TECHNICAL_AND_LABOR",
-            "overtime_available": true,
-            "partial_mobilization_tick": null,
             "standby_price_usd": 180000
           },
           "private_score_delta": 1,
@@ -1052,9 +983,7 @@
           ],
           "parameters": {
             "inspection_scope": "LOT_A_TARGETED",
-            "inspection_tick": 12,
-            "rely_on_supplier_qc": false,
-            "reserve_reinspection_tick": null
+            "inspection_tick": 12
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
@@ -1126,9 +1055,7 @@
           ],
           "parameters": {
             "inspection_scope": "DOCUMENT_ONLY",
-            "inspection_tick": 12,
-            "rely_on_supplier_qc": false,
-            "reserve_reinspection_tick": null
+            "inspection_tick": 12
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
@@ -1194,14 +1121,11 @@
           "label": "Inspect both batches before anything ships",
           "parameter_summary": [
             "inspection_scope: FULL_SEQUENCE",
-            "inspection_tick: 13",
-            "reserve_reinspection_tick: 17"
+            "inspection_tick: 13"
           ],
           "parameters": {
             "inspection_scope": "FULL_SEQUENCE",
-            "inspection_tick": 13,
-            "rely_on_supplier_qc": false,
-            "reserve_reinspection_tick": 17
+            "inspection_tick": 13
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
@@ -1306,18 +1230,12 @@
           ],
           "label": "Offer limited owner cash support",
           "parameter_summary": [
-            "offsite_payment_posture: CONDITIONAL",
             "owner_funding_ceiling_usd: 250000",
             "immediate_equity_ceiling_usd: 100000",
-            "maximum_total_recovery_cost_usd: 1000000",
-            "maximum_accepted_delay_ticks: 2"
+            "required_control_codes: ['TITLE_COMPLETE', 'INSPECTION_REPORT_AVAILABLE']"
           ],
           "parameters": {
-            "allow_gc_bridge_reimbursement": true,
             "immediate_equity_ceiling_usd": 100000,
-            "maximum_accepted_delay_ticks": 2,
-            "maximum_total_recovery_cost_usd": 1000000,
-            "offsite_payment_posture": "CONDITIONAL",
             "owner_funding_ceiling_usd": 250000,
             "required_control_codes": [
               "TITLE_COMPLETE",
@@ -1389,17 +1307,10 @@
           ],
           "label": "Refuse more owner cash",
           "parameter_summary": [
-            "offsite_payment_posture: DO_NOT_SUPPORT",
-            "maximum_total_recovery_cost_usd: 1000000",
-            "allow_gc_bridge_reimbursement: True",
             "required_control_codes: ['TITLE_COMPLETE', 'INSPECTION_REPORT_AVAILABLE']"
           ],
           "parameters": {
-            "allow_gc_bridge_reimbursement": true,
             "immediate_equity_ceiling_usd": 0,
-            "maximum_accepted_delay_ticks": 0,
-            "maximum_total_recovery_cost_usd": 1000000,
-            "offsite_payment_posture": "DO_NOT_SUPPORT",
             "owner_funding_ceiling_usd": 0,
             "required_control_codes": [
               "TITLE_COMPLETE",
@@ -1471,18 +1382,12 @@
           ],
           "label": "Support only with tighter checks",
           "parameter_summary": [
-            "offsite_payment_posture: CONDITIONAL",
             "owner_funding_ceiling_usd: 300000",
             "immediate_equity_ceiling_usd: 200000",
-            "maximum_total_recovery_cost_usd: 1000000",
-            "maximum_accepted_delay_ticks: 2"
+            "required_control_codes: ['TITLE_COMPLETE', 'INSPECTION_REPORT_AVAILABLE']"
           ],
           "parameters": {
-            "allow_gc_bridge_reimbursement": true,
             "immediate_equity_ceiling_usd": 200000,
-            "maximum_accepted_delay_ticks": 2,
-            "maximum_total_recovery_cost_usd": 1000000,
-            "offsite_payment_posture": "CONDITIONAL",
             "owner_funding_ceiling_usd": 300000,
             "required_control_codes": [
               "TITLE_COMPLETE",
@@ -1588,23 +1493,21 @@
           ],
           "label": "Offer part of the loan money",
           "parameter_summary": [
-            "draw_posture: LIMITED",
             "maximum_draw_usd: 760000",
             "advance_rate: 0.8",
             "escrow_cap_usd: 200000",
-            "minimum_owner_equity_usd: 100000"
+            "minimum_owner_equity_usd: 100000",
+            "required_control_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
           ],
           "parameters": {
             "advance_rate": 0.8,
-            "draw_posture": "LIMITED",
             "escrow_cap_usd": 200000,
             "maximum_draw_usd": 760000,
             "minimum_owner_equity_usd": 100000,
             "required_control_codes": [
               "CONTROLLED_ESCROW",
               "TITLE_COMPLETE"
-            ],
-            "review_timing": "CURRENT_DRAW"
+            ]
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
@@ -1671,22 +1574,18 @@
           ],
           "label": "Refuse to release loan money",
           "parameter_summary": [
-            "draw_posture: NOT_ELIGIBLE",
             "minimum_owner_equity_usd: 100000",
-            "required_control_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']",
-            "review_timing: CURRENT_DRAW"
+            "required_control_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
           ],
           "parameters": {
             "advance_rate": 0.0,
-            "draw_posture": "NOT_ELIGIBLE",
             "escrow_cap_usd": 0,
             "maximum_draw_usd": 0,
             "minimum_owner_equity_usd": 100000,
             "required_control_codes": [
               "CONTROLLED_ESCROW",
               "TITLE_COMPLETE"
-            ],
-            "review_timing": "CURRENT_DRAW"
+            ]
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
@@ -1753,23 +1652,21 @@
           ],
           "label": "Move money only into a controlled account",
           "parameter_summary": [
-            "draw_posture: LIMITED",
             "maximum_draw_usd: 760000",
             "advance_rate: 0.8",
             "escrow_cap_usd: 200000",
-            "minimum_owner_equity_usd: 100000"
+            "minimum_owner_equity_usd: 100000",
+            "required_control_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
           ],
           "parameters": {
             "advance_rate": 0.8,
-            "draw_posture": "LIMITED",
             "escrow_cap_usd": 200000,
             "maximum_draw_usd": 760000,
             "minimum_owner_equity_usd": 100000,
             "required_control_codes": [
               "CONTROLLED_ESCROW",
               "TITLE_COMPLETE"
-            ],
-            "review_timing": "NEXT_DRAW"
+            ]
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
@@ -1874,26 +1771,19 @@
             "cure_plan: FULL_SEQUENCE_CURE",
             "supplier_cash_committed_usd: 350000",
             "outside_work_action: DECLINE",
-            "requested_owner_or_gc_support_usd: 250000"
+            "lot_a_commitment_tick: 14"
           ],
           "parameters": {
-            "condition_codes": [
-              "OWNER_FUNDS_MINIMUM",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
             "cure_plan": "FULL_SEQUENCE_CURE",
             "lot_a_commitment_tick": 14,
             "lot_b_commitment_tick": 18,
             "outside_financing_usd": 0,
             "outside_work_action": "DECLINE",
-            "proposed_sequence": "PHASED",
             "provisional_offer_actions": [
               "OWNER_PROVISIONAL_SUPPORT:ACCEPT",
               "LENDER_PROVISIONAL_DRAW:ACCEPT",
               "ERECTOR_CAPACITY_OFFER:ACCEPT"
             ],
-            "requested_owner_or_gc_support_usd": 250000,
             "requested_price_adjustment_usd": 0,
             "supplier_cash_committed_usd": 350000
           },
@@ -1966,27 +1856,20 @@
             "provisional_offer_actions: ['OWNER_PROVISIONAL_SUPPORT:ACCEPT', 'LENDER_PROVISIONAL_DRAW:ACCEPT', 'ERECTOR_CAPACITY_OFFER:ACCEPT']",
             "cure_plan: NO_CURE",
             "outside_work_action: ACCEPT_FULL",
-            "requested_owner_or_gc_support_usd: 250000",
-            "lot_a_commitment_tick: 20"
+            "lot_a_commitment_tick: 20",
+            "lot_b_commitment_tick: 24"
           ],
           "parameters": {
-            "condition_codes": [
-              "OWNER_FUNDS_MINIMUM",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
             "cure_plan": "NO_CURE",
             "lot_a_commitment_tick": 20,
             "lot_b_commitment_tick": 24,
             "outside_financing_usd": 0,
             "outside_work_action": "ACCEPT_FULL",
-            "proposed_sequence": "PHASED",
             "provisional_offer_actions": [
               "OWNER_PROVISIONAL_SUPPORT:ACCEPT",
               "LENDER_PROVISIONAL_DRAW:ACCEPT",
               "ERECTOR_CAPACITY_OFFER:ACCEPT"
             ],
-            "requested_owner_or_gc_support_usd": 250000,
             "requested_price_adjustment_usd": 0,
             "supplier_cash_committed_usd": 0
           },
@@ -2063,23 +1946,16 @@
             "outside_work_action: DECLINE"
           ],
           "parameters": {
-            "condition_codes": [
-              "OWNER_FUNDS_MINIMUM",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
             "cure_plan": "FULL_SEQUENCE_CURE",
             "lot_a_commitment_tick": 14,
             "lot_b_commitment_tick": 18,
             "outside_financing_usd": 450000,
             "outside_work_action": "DECLINE",
-            "proposed_sequence": "FULL",
             "provisional_offer_actions": [
               "OWNER_PROVISIONAL_SUPPORT:ACCEPT",
               "LENDER_PROVISIONAL_DRAW:ACCEPT",
               "ERECTOR_CAPACITY_OFFER:ACCEPT"
             ],
-            "requested_owner_or_gc_support_usd": 250000,
             "requested_price_adjustment_usd": 0,
             "supplier_cash_committed_usd": 350000
           },
@@ -2193,19 +2069,11 @@
           ],
           "parameters": {
             "backup_action": "DROP",
-            "condition_codes": [
-              "LOT_A_RELEASED",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
-            "erection_sequence": "PHASED",
             "final_certified_payment_usd": 950000,
             "gc_bridge_usd": 100000,
-            "inspection_path": "USE_CURRENT",
             "late_credit_usd": 0,
             "lender_draw_requested_usd": 760000,
             "owner_funds_requested_usd": 200000,
-            "selected_labor_offer_id": "ERECTOR_CAPACITY_OFFER",
             "supplier_price_adjustment_usd": 0,
             "supplier_proposal_action": "ACCEPT"
           },
@@ -2275,26 +2143,15 @@
           "label": "Reject the supplier's plan",
           "parameter_summary": [
             "supplier_proposal_action: REJECT",
-            "selected_labor_offer_id: ERECTOR_CAPACITY_OFFER",
-            "inspection_path: USE_CURRENT",
-            "erection_sequence: DELAY",
             "backup_action: DROP"
           ],
           "parameters": {
             "backup_action": "DROP",
-            "condition_codes": [
-              "LOT_A_RELEASED",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
-            "erection_sequence": "DELAY",
             "final_certified_payment_usd": 0,
             "gc_bridge_usd": 0,
-            "inspection_path": "USE_CURRENT",
             "late_credit_usd": 0,
             "lender_draw_requested_usd": 0,
             "owner_funds_requested_usd": 0,
-            "selected_labor_offer_id": "ERECTOR_CAPACITY_OFFER",
             "supplier_price_adjustment_usd": 0,
             "supplier_proposal_action": "REJECT"
           },
@@ -2371,19 +2228,11 @@
           ],
           "parameters": {
             "backup_action": "MAINTAIN",
-            "condition_codes": [
-              "LOT_A_RELEASED",
-              "LENDER_DRAW_MINIMUM",
-              "LABOR_SPLIT_HOLD_CONFIRMED"
-            ],
-            "erection_sequence": "FULL",
             "final_certified_payment_usd": 950000,
             "gc_bridge_usd": 300000,
-            "inspection_path": "USE_CURRENT",
             "late_credit_usd": 0,
             "lender_draw_requested_usd": 760000,
             "owner_funds_requested_usd": 300000,
-            "selected_labor_offer_id": "ERECTOR_CAPACITY_OFFER",
             "supplier_price_adjustment_usd": 0,
             "supplier_proposal_action": "ACCEPT"
           },
@@ -2496,9 +2345,6 @@
           ],
           "parameters": {
             "capacity_commitment": "SPLIT",
-            "condition_codes": [
-              "LOT_A_RELEASED"
-            ],
             "minimum_releasable_value_usd": 950000,
             "mobilization_tick": 15,
             "offer_action": "ACCEPT_PACKAGE",
@@ -2572,14 +2418,10 @@
           "parameter_summary": [
             "offer_action: RELEASE",
             "capacity_commitment: NONE",
-            "overtime_commitment: NONE",
-            "condition_codes: ['LOT_A_RELEASED']"
+            "overtime_commitment: NONE"
           ],
           "parameters": {
             "capacity_commitment": "NONE",
-            "condition_codes": [
-              "LOT_A_RELEASED"
-            ],
             "minimum_releasable_value_usd": 0,
             "mobilization_tick": null,
             "offer_action": "RELEASE",
@@ -2660,9 +2502,6 @@
           ],
           "parameters": {
             "capacity_commitment": "FULL",
-            "condition_codes": [
-              "LOT_A_RELEASED"
-            ],
             "minimum_releasable_value_usd": 950000,
             "mobilization_tick": 17,
             "offer_action": "ACCEPT_PACKAGE",
@@ -2769,18 +2608,13 @@
           "label": "Release the first batch and hold the second",
           "parameter_summary": [
             "disposition: LOT_A_RELEASED",
-            "required_cure_codes: ['DOCUMENT_CURE_COMPLETE']",
             "reinspection_tick: 18",
             "maximum_releasable_value_usd: 950000"
           ],
           "parameters": {
             "disposition": "LOT_A_RELEASED",
             "maximum_releasable_value_usd": 950000,
-            "reinspection_tick": 18,
-            "required_cure_codes": [
-              "DOCUMENT_CURE_COMPLETE"
-            ],
-            "required_test_codes": []
+            "reinspection_tick": 18
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
@@ -2850,9 +2684,7 @@
           "parameters": {
             "disposition": "NO_RELEASE",
             "maximum_releasable_value_usd": 0,
-            "reinspection_tick": null,
-            "required_cure_codes": [],
-            "required_test_codes": []
+            "reinspection_tick": null
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
@@ -2918,18 +2750,13 @@
           "label": "Require deeper review before release",
           "parameter_summary": [
             "disposition: LOT_A_RELEASED",
-            "required_cure_codes: ['DOCUMENT_CURE_COMPLETE']",
-            "reinspection_tick: 17",
+            "reinspection_tick: 18",
             "maximum_releasable_value_usd: 950000"
           ],
           "parameters": {
             "disposition": "LOT_A_RELEASED",
             "maximum_releasable_value_usd": 950000,
-            "reinspection_tick": 17,
-            "required_cure_codes": [
-              "DOCUMENT_CURE_COMPLETE"
-            ],
-            "required_test_codes": []
+            "reinspection_tick": 18
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
@@ -3035,18 +2862,11 @@
             "package_action: APPROVE",
             "owner_funding_usd: 200000",
             "owner_equity_usd: 100000",
-            "approved_standby_usd: 100000",
-            "maximum_scenario_cost_usd: 1000000"
+            "approved_standby_usd: 100000"
           ],
           "parameters": {
-            "accepted_delay_ticks": 2,
             "approved_price_adjustment_usd": 0,
             "approved_standby_usd": 100000,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "LOT_A_RELEASED"
-            ],
-            "maximum_scenario_cost_usd": 1000000,
             "owner_equity_usd": 100000,
             "owner_funding_usd": 200000,
             "package_action": "APPROVE"
@@ -3116,19 +2936,11 @@
           ],
           "label": "Reject the funding package",
           "parameter_summary": [
-            "package_action: REJECT",
-            "maximum_scenario_cost_usd: 1000000",
-            "condition_codes: ['CONTROLLED_ESCROW', 'LOT_A_RELEASED']"
+            "package_action: REJECT"
           ],
           "parameters": {
-            "accepted_delay_ticks": 0,
             "approved_price_adjustment_usd": 0,
             "approved_standby_usd": 0,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "LOT_A_RELEASED"
-            ],
-            "maximum_scenario_cost_usd": 1000000,
             "owner_equity_usd": 0,
             "owner_funding_usd": 0,
             "package_action": "REJECT"
@@ -3202,18 +3014,11 @@
             "package_action: APPROVE",
             "owner_funding_usd: 300000",
             "owner_equity_usd: 100000",
-            "approved_standby_usd: 180000",
-            "maximum_scenario_cost_usd: 1000000"
+            "approved_standby_usd: 180000"
           ],
           "parameters": {
-            "accepted_delay_ticks": 2,
             "approved_price_adjustment_usd": 0,
             "approved_standby_usd": 180000,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "LOT_A_RELEASED"
-            ],
-            "maximum_scenario_cost_usd": 1000000,
             "owner_equity_usd": 100000,
             "owner_funding_usd": 300000,
             "package_action": "APPROVE"
@@ -3320,15 +3125,10 @@
             "release_action: PARTIAL_RELEASE",
             "draw_release_usd: 760000",
             "completion_reserve_after_usd: 1000000",
-            "owner_equity_required_usd: 100000",
-            "condition_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
+            "owner_equity_required_usd: 100000"
           ],
           "parameters": {
             "completion_reserve_after_usd": 1000000,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "TITLE_COMPLETE"
-            ],
             "draw_release_usd": 760000,
             "escrow_release_usd": 0,
             "owner_equity_required_usd": 100000,
@@ -3400,15 +3200,10 @@
           "label": "Hold the loan money",
           "parameter_summary": [
             "release_action: HOLD",
-            "completion_reserve_after_usd: 1000000",
-            "condition_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
+            "completion_reserve_after_usd: 1000000"
           ],
           "parameters": {
             "completion_reserve_after_usd": 1000000,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "TITLE_COMPLETE"
-            ],
             "draw_release_usd": 0,
             "escrow_release_usd": 0,
             "owner_equity_required_usd": 0,
@@ -3482,15 +3277,10 @@
             "release_action: ESCROW",
             "escrow_release_usd: 200000",
             "completion_reserve_after_usd: 1000000",
-            "owner_equity_required_usd: 100000",
-            "condition_codes: ['CONTROLLED_ESCROW', 'TITLE_COMPLETE']"
+            "owner_equity_required_usd: 100000"
           ],
           "parameters": {
             "completion_reserve_after_usd": 1000000,
-            "condition_codes": [
-              "CONTROLLED_ESCROW",
-              "TITLE_COMPLETE"
-            ],
             "draw_release_usd": 0,
             "escrow_release_usd": 200000,
             "owner_equity_required_usd": 100000,
@@ -3595,20 +3385,9 @@
           ],
           "label": "Ship both steel batches as promised",
           "parameter_summary": [
-            "reported_lot_a_status: READY",
-            "reported_lot_b_status: READY",
-            "reported_lot_a_delivery_tick: 14",
-            "reported_lot_b_delivery_tick: 18",
             "ship_action: SHIP_BOTH"
           ],
           "parameters": {
-            "additional_payment_request_usd": 0,
-            "disclosed_issue_codes": [],
-            "recovery_action": "NONE",
-            "reported_lot_a_delivery_tick": 14,
-            "reported_lot_a_status": "READY",
-            "reported_lot_b_delivery_tick": 18,
-            "reported_lot_b_status": "READY",
             "ship_action": "SHIP_BOTH",
             "supplier_recovery_spend_usd": 0
           },
@@ -3678,20 +3457,9 @@
           ],
           "label": "Ship only the first batch",
           "parameter_summary": [
-            "reported_lot_a_status: READY",
-            "reported_lot_b_status: READY",
-            "reported_lot_a_delivery_tick: 14",
-            "reported_lot_b_delivery_tick: 18",
             "ship_action: HOLD_ALL"
           ],
           "parameters": {
-            "additional_payment_request_usd": 0,
-            "disclosed_issue_codes": [],
-            "recovery_action": "ACCEPT_DELAY",
-            "reported_lot_a_delivery_tick": 14,
-            "reported_lot_a_status": "READY",
-            "reported_lot_b_delivery_tick": 18,
-            "reported_lot_b_status": "READY",
             "ship_action": "HOLD_ALL",
             "supplier_recovery_spend_usd": 0
           },
@@ -3761,20 +3529,9 @@
           ],
           "label": "Ship both batches after extra cleanup",
           "parameter_summary": [
-            "reported_lot_a_status: READY",
-            "reported_lot_b_status: READY",
-            "reported_lot_a_delivery_tick: 14",
-            "reported_lot_b_delivery_tick: 18",
             "ship_action: SHIP_BOTH"
           ],
           "parameters": {
-            "additional_payment_request_usd": 0,
-            "disclosed_issue_codes": [],
-            "recovery_action": "NONE",
-            "reported_lot_a_delivery_tick": 14,
-            "reported_lot_a_status": "READY",
-            "reported_lot_b_delivery_tick": 18,
-            "reported_lot_b_status": "READY",
             "ship_action": "SHIP_BOTH",
             "supplier_recovery_spend_usd": 0
           },
@@ -3851,7 +3608,7 @@
         "Shipping only Lot A preserves cash if Lot B is still messy, but it may strand the project.",
         "Reporting both lots ready only works if the repairs and approvals can back it up."
       ],
-      "prompt": "Report readiness, ship action, and recovery plan.",
+      "prompt": "Choose shipment and supplier-funded recovery spending.",
       "round": "C",
       "situation": "You are the supplier. The project needs a truthful status and a shipping decision for the steel batches.",
       "terms": [
@@ -3880,20 +3637,10 @@
           ],
           "label": "Keep the phased recovery plan moving",
           "parameter_summary": [
-            "status_response: VERIFY",
-            "recovery_plan: PROCEED_PHASED",
-            "additional_verification: DOCUMENT",
-            "credits_action: DEFER",
-            "resequence_downstream_work: True"
+            "recovery_plan: PROCEED_PHASED"
           ],
           "parameters": {
-            "additional_verification": "DOCUMENT",
-            "credits_action": "DEFER",
             "recovery_plan": "PROCEED_PHASED",
-            "requested_lender_support_usd": 0,
-            "requested_owner_support_usd": 0,
-            "resequence_downstream_work": true,
-            "status_response": "VERIFY",
             "supplemental_gc_bridge_usd": 0
           },
           "private_score_delta": 0,
@@ -3959,19 +3706,10 @@
           ],
           "label": "Accept the delay",
           "parameter_summary": [
-            "status_response: CHALLENGE",
-            "recovery_plan: ACCEPT_DELAY",
-            "additional_verification: DOCUMENT",
-            "credits_action: DEFER"
+            "recovery_plan: ACCEPT_DELAY"
           ],
           "parameters": {
-            "additional_verification": "DOCUMENT",
-            "credits_action": "DEFER",
             "recovery_plan": "ACCEPT_DELAY",
-            "requested_lender_support_usd": 0,
-            "requested_owner_support_usd": 0,
-            "resequence_downstream_work": false,
-            "status_response": "CHALLENGE",
             "supplemental_gc_bridge_usd": 0
           },
           "private_score_delta": 2,
@@ -4037,20 +3775,10 @@
           ],
           "label": "Activate the backup source",
           "parameter_summary": [
-            "status_response: VERIFY",
-            "recovery_plan: PROCEED_FULL",
-            "additional_verification: DOCUMENT",
-            "credits_action: DEFER",
-            "resequence_downstream_work: True"
+            "recovery_plan: PROCEED_FULL"
           ],
           "parameters": {
-            "additional_verification": "DOCUMENT",
-            "credits_action": "DEFER",
             "recovery_plan": "PROCEED_FULL",
-            "requested_lender_support_usd": 0,
-            "requested_owner_support_usd": 0,
-            "resequence_downstream_work": true,
-            "status_response": "VERIFY",
             "supplemental_gc_bridge_usd": 0
           },
           "private_score_delta": 1,
@@ -4122,7 +3850,7 @@
         "Backup steel is expensive, but it can rescue the final schedule path.",
         "Accepting delay avoids more spend now but can trigger project failure."
       ],
-      "prompt": "Choose recovery plan, verification, credits, and resequencing.",
+      "prompt": "Choose the project recovery path and any GC bridge.",
       "round": "C",
       "situation": "You are the general contractor. The team now knows what is ready; you decide whether to proceed, verify, activate backup, or accept delay.",
       "terms": [
@@ -4153,15 +3881,12 @@
           "parameter_summary": [
             "lot_a_disposition: RELEASE",
             "lot_b_disposition: RELEASE",
-            "additional_testing: NONE",
             "approved_shipping_value_usd: 1350000"
           ],
           "parameters": {
-            "additional_testing": "NONE",
             "approved_shipping_value_usd": 1350000,
             "lot_a_disposition": "RELEASE",
-            "lot_b_disposition": "RELEASE",
-            "required_followup_codes": []
+            "lot_b_disposition": "RELEASE"
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
@@ -4227,15 +3952,12 @@
           "label": "Hold the final steel release",
           "parameter_summary": [
             "lot_a_disposition: HOLD",
-            "lot_b_disposition: HOLD",
-            "additional_testing: NONE"
+            "lot_b_disposition: HOLD"
           ],
           "parameters": {
-            "additional_testing": "NONE",
             "approved_shipping_value_usd": 0,
             "lot_a_disposition": "HOLD",
-            "lot_b_disposition": "HOLD",
-            "required_followup_codes": []
+            "lot_b_disposition": "HOLD"
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
@@ -4302,15 +4024,12 @@
           "parameter_summary": [
             "lot_a_disposition: RELEASE",
             "lot_b_disposition: RELEASE",
-            "additional_testing: FULL",
             "approved_shipping_value_usd: 1350000"
           ],
           "parameters": {
-            "additional_testing": "FULL",
             "approved_shipping_value_usd": 1350000,
             "lot_a_disposition": "RELEASE",
-            "lot_b_disposition": "RELEASE",
-            "required_followup_codes": []
+            "lot_b_disposition": "RELEASE"
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
@@ -4408,17 +4127,11 @@
             "Do not push extra cost to a single party."
           ],
           "label": "Accept the recovery cost",
-          "parameter_summary": [
-            "accepted_additional_delay_ticks: 1",
-            "activate_remaining_contingency: True"
-          ],
+          "parameter_summary": [],
           "parameters": {
             "accepted_additional_cost_usd": 0,
-            "accepted_additional_delay_ticks": 1,
-            "activate_remaining_contingency": true,
             "gc_cost_share_usd": 0,
             "owner_cost_share_usd": 0,
-            "supplemental_funding_usd": 0,
             "supplier_cost_share_usd": 0
           },
           "private_score_delta": 0,
@@ -4483,17 +4196,11 @@
             "Hold the line on owner exposure."
           ],
           "label": "Refuse any additional owner cost",
-          "parameter_summary": [
-            "accepted_additional_delay_ticks: 1",
-            "activate_remaining_contingency: True"
-          ],
+          "parameter_summary": [],
           "parameters": {
             "accepted_additional_cost_usd": 0,
-            "accepted_additional_delay_ticks": 1,
-            "activate_remaining_contingency": true,
             "gc_cost_share_usd": 0,
             "owner_cost_share_usd": 0,
-            "supplemental_funding_usd": 0,
             "supplier_cost_share_usd": 0
           },
           "private_score_delta": 2,
@@ -4558,17 +4265,11 @@
             "Spell out who pays what."
           ],
           "label": "Authorize a larger controlled recovery",
-          "parameter_summary": [
-            "accepted_additional_delay_ticks: 1",
-            "activate_remaining_contingency: True"
-          ],
+          "parameter_summary": [],
           "parameters": {
             "accepted_additional_cost_usd": 0,
-            "accepted_additional_delay_ticks": 1,
-            "activate_remaining_contingency": true,
             "gc_cost_share_usd": 0,
             "owner_cost_share_usd": 0,
-            "supplemental_funding_usd": 0,
             "supplier_cost_share_usd": 0
           },
           "private_score_delta": 1,
@@ -4639,7 +4340,7 @@
         "Final recovery spend can preserve project success.",
         "Refusing added cost protects owner cash but leaves fewer rescue options."
       ],
-      "prompt": "Set final cost, delay, contingency, and cost-share position.",
+      "prompt": "Authorize recovery cost and allocate organization shares.",
       "round": "C",
       "situation": "You are the owner. You decide how much extra recovery cost and delay the owner will accept.",
       "terms": [
@@ -4667,15 +4368,9 @@
             "Let verified work decide the funding."
           ],
           "label": "Hold extra funds unless truly needed",
-          "parameter_summary": [
-            "supplemental_action: HOLD"
-          ],
+          "parameter_summary": [],
           "parameters": {
-            "additional_owner_equity_usd": 0,
-            "condition_codes": [],
-            "reserve_exception_usd": 0,
-            "supplemental_action": "HOLD",
-            "supplemental_draw_usd": 0
+            "reserve_exception_usd": 0
           },
           "private_score_delta": 0,
           "project_score_delta": 2,
@@ -4741,15 +4436,9 @@
             "Push funding risk back to others."
           ],
           "label": "Refuse any extra loan money",
-          "parameter_summary": [
-            "supplemental_action: HOLD"
-          ],
+          "parameter_summary": [],
           "parameters": {
-            "additional_owner_equity_usd": 0,
-            "condition_codes": [],
-            "reserve_exception_usd": 0,
-            "supplemental_action": "HOLD",
-            "supplemental_draw_usd": 0
+            "reserve_exception_usd": 0
           },
           "private_score_delta": 2,
           "project_score_delta": -2,
@@ -4815,15 +4504,9 @@
             "Attach conditions to any support."
           ],
           "label": "Owner pays in first, then the bank follows",
-          "parameter_summary": [
-            "supplemental_action: HOLD"
-          ],
+          "parameter_summary": [],
           "parameters": {
-            "additional_owner_equity_usd": 0,
-            "condition_codes": [],
-            "reserve_exception_usd": 0,
-            "supplemental_action": "HOLD",
-            "supplemental_draw_usd": 0
+            "reserve_exception_usd": 0
           },
           "private_score_delta": 1,
           "project_score_delta": -1,
@@ -4895,7 +4578,7 @@
         "Releasing money helps the project but exposes the loan if controls are weak.",
         "Holding funds protects reserves but can cause the steel path to fail."
       ],
-      "prompt": "Set supplemental draw, reserve, equity, or hold position.",
+      "prompt": "Choose any completion-reserve exception.",
       "round": "C",
       "situation": "You are the lender. After the final inspection news, you decide whether more loan money is allowed.",
       "terms": [
@@ -4925,13 +4608,9 @@
           "label": "Start with a phased crew and crane",
           "parameter_summary": [
             "mobilization_action: PHASED",
-            "mobilization_tick: 15",
-            "crew_capacity_fraction: 0.5",
-            "crane_capacity_fraction: 0.5"
+            "mobilization_tick: 15"
           ],
           "parameters": {
-            "crane_capacity_fraction": 0.5,
-            "crew_capacity_fraction": 0.5,
             "incremental_cost_usd": 0,
             "mobilization_action": "PHASED",
             "mobilization_tick": 15,
@@ -5007,8 +4686,6 @@
             "remobilization_tick_if_released: 23"
           ],
           "parameters": {
-            "crane_capacity_fraction": 0.0,
-            "crew_capacity_fraction": 0.0,
             "incremental_cost_usd": 0,
             "mobilization_action": "RELEASE",
             "mobilization_tick": 23,
@@ -5081,13 +4758,9 @@
           "label": "Start with the full crew and crane",
           "parameter_summary": [
             "mobilization_action: FULL",
-            "mobilization_tick: 17",
-            "crew_capacity_fraction: 1.0",
-            "crane_capacity_fraction: 1.0"
+            "mobilization_tick: 17"
           ],
           "parameters": {
-            "crane_capacity_fraction": 1.0,
-            "crew_capacity_fraction": 1.0,
             "incremental_cost_usd": 0,
             "mobilization_action": "FULL",
             "mobilization_tick": 17,
@@ -5164,7 +4837,7 @@
         "Showing up before any steel is approved wastes the crew.",
         "Waiting protects your crew but may make the project too late."
       ],
-      "prompt": "Choose mobilization mode, capacity, overtime, or release.",
+      "prompt": "Choose mobilization mode, timing, cost, or release.",
       "round": "C",
       "situation": "You are the labor subcontractor. This is the final field-capacity decision for the steel path.",
       "terms": [
@@ -5726,7 +5399,7 @@
     }
   ],
   "scenario": {
-    "content_hash": "061cbf896282863166e1c484512a4de1d683323ebdc7c4ff96b596145b381871",
+    "content_hash": "09ac4312345ab81e025ba8db10d0f00bd962b5fde97ff0209e683726b3dcf1a0",
     "display_name": "Off-site steel payment problem",
     "scenario_id": "S01_V2_OFFSITE_STEEL_DRAW",
     "scenario_key": "S01",

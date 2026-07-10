@@ -4,23 +4,26 @@ ConstructSim is a stateful testbed for autonomous firms coordinating on one cons
 under asymmetric information, separate commercial incentives, distributed authority, and costly
 partner replacement.
 
-The research program is deliberately staged. The completed S01 replaceability response curve
-measures one LLM steel supplier against five deterministic counterparties. The next experiment is
-a controlled bridge to multi-agent interaction: a GC and supplier must move a decision-relevant
-replacement threshold across an organizational boundary while four other firms remain scripted.
+The research program is deliberately staged. A single-agent replaceability curve is followed by a
+completed two-agent threshold-handoff pilot and then a controlled S01 V2 multiplayer lineage
+ladder. The ladder adds live organizations cumulatively while tracing where a business datum is
+exposed, interpreted, acted on, and realized.
 
-## Current preliminary result
+## Current preliminary results
 
-Across 50 temperature-1 Haiku runs, 46 were valid. The supplier requested `$800,000` in 39 valid
-runs and `$600,000` in seven while the deterministic safe frontier moved from `$200,000` to
-`$1,200,000`. It was replaced in 52% of valid runs and averaged about `$595,000` in attainable
-regret. A formula worksheet did not repair the behavior, but supplying the computed threshold as an
-attributed fact cut regret sharply and eliminated unnecessary replacement in the confirmation arm.
+The response curve localized a large single-agent gap: supplying a computed threshold as an
+attributed fact sharply reduced regret and unnecessary replacement. The frozen two-agent follow-up
+then assigned 150 runs across structured, prose, and silent handoffs. Exact scripted senders reached
+`100%` end-to-end success with structured data and `93.3%` with equivalent prose; both live-sender
+arms reached `30%`. All `18/18` exact live GC calculations produced safe actions, while most errors
+occurred before transmission when the GC bound the wrong business values into its calculation.
 
 Read the generated [response-curve evidence package](docs/evidence/response_curve/evidence_package.md)
 and the frozen [experiment specification](docs/s01_replaceability_response_curve_spec.md).
-The next-stage design is frozen in the
-[distributed threshold handoff specification](docs/s01_distributed_threshold_handoff_spec.md).
+The completed dyad has a frozen
+[protocol](docs/s01_distributed_threshold_handoff_spec.md) and
+[results report](docs/s01_distributed_threshold_handoff_results.md). The next-stage design is the
+[S01 V2 multiplayer lineage bridge](docs/s01_v2_multiplayer_bridge_spec.md).
 
 ## Reproduce
 
@@ -29,6 +32,7 @@ Deterministic references and validation do not call a model:
 ```bash
 uv run python scripts/run_s01_response_curve.py --stage references
 uv run python scripts/run_s01_handoff.py --stage references
+uv run python scripts/run_s01_v2_multiplayer_ladder.py --preflight-only
 uv run pytest -q
 uv run ruff check .
 uv run python scripts/audit_choice_consequences.py --output outputs/choice_consequence_audit.json
@@ -45,6 +49,10 @@ The handoff runner also exposes guarded modal stages for scripted structured/pro
 control, and handoff-only live GC structured/prose records. They are not run by the deterministic
 command above and require `--allow-live-model`. The frozen V2.1 protocol and `$8.50` program ceiling
 are documented in `docs/s01_distributed_threshold_handoff_spec.md`.
+
+The multiplayer ladder uses a state-aware scripted background, adds live roles cumulatively, and
+stops on invalid output, a broken lineage, or its cost guard. Paid execution requires
+`--allow-live-batch`; see `docs/s01_v2_multiplayer_bridge_spec.md`.
 
 Rebuild the frozen evidence packet from named outputs:
 

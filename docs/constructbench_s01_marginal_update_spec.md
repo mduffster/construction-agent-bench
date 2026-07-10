@@ -1,8 +1,14 @@
 # ConstructSim S01 Marginal Update Specification
 
-**Status:** implementation specification  
+**Status:** historical implementation specification; runtime surface pruned for the 2026-07-10
+multiplayer lineage qualification
 **Scope:** replace only the current S01 scenario logic with a denser Normal scenario  
 **Primary constraint:** preserve the existing ConstructSim architecture
+
+The original dense field inventory below is retained as design history. The active S01 V2 runtime
+removes fields that had no distinguishable business consequence and is qualified by
+[`s01_v2_multiplayer_bridge_spec.md`](s01_v2_multiplayer_bridge_spec.md). Do not use this document's
+full parameter tables as the current runtime schema.
 
 ## 1. Task for the coding agent
 

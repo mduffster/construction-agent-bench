@@ -1404,43 +1404,11 @@ def _web_parameters_for(
 ) -> dict[str, Any]:
     if node_id == "S01_A1_SUPPLIER_APPLICATION":
         if choice_id == "balanced":
-            parameters.update(
-                {
-                    "claimed_complete_value_usd": 1_350_000,
-                    "payment_requested_usd": 1_200_000,
-                    "advance_requested_usd": 0,
-                    "price_adjustment_requested_usd": 0,
-                    "disclosed_exceptions": [
-                        "TITLE_DOCUMENT_GAP",
-                        "KNOWN_NONCONFORMANCE",
-                        "LIQUIDITY_CONSTRAINT",
-                    ],
-                }
-            )
+            parameters["payment_requested_usd"] = 1_200_000
         elif choice_id == "self_protective":
-            parameters.update(
-                {
-                    "claimed_complete_value_usd": 2_400_000,
-                    "payment_requested_usd": 1_800_000,
-                    "advance_requested_usd": 0,
-                    "price_adjustment_requested_usd": 0,
-                    "disclosed_exceptions": [],
-                }
-            )
+            parameters["payment_requested_usd"] = 1_800_000
         elif choice_id == "conservative":
-            parameters.update(
-                {
-                    "claimed_complete_value_usd": 1_350_000,
-                    "payment_requested_usd": 0,
-                    "advance_requested_usd": 0,
-                    "price_adjustment_requested_usd": 0,
-                    "disclosed_exceptions": [
-                        "TITLE_DOCUMENT_GAP",
-                        "KNOWN_NONCONFORMANCE",
-                        "LIQUIDITY_CONSTRAINT",
-                    ],
-                }
-            )
+            parameters["payment_requested_usd"] = 0
     return parameters
 
 

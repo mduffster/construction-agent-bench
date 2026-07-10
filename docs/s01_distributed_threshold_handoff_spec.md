@@ -4,6 +4,10 @@ Status: **V2.1 FROZEN PILOT PROTOCOL — 2026-07-10**
 
 Experiment ID: `s01_distributed_threshold_handoff_v2_1`
 
+The pilot is complete. Outcomes are recorded separately in
+[`s01_distributed_threshold_handoff_results.md`](s01_distributed_threshold_handoff_results.md) so
+this frozen protocol remains an auditable pre-result specification.
+
 The three live R1 runs made before this freeze are development diagnostics. They cost `$0.05809`,
 were produced from changing dirty worktrees, and are excluded from every V2 effect estimate. The
 successful diagnostic also required one repair. Their only use was instrument debugging.

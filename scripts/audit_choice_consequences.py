@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,16 @@ from typing import Any
 from constructbench.runner import _apply_event_phase
 from constructbench.scenarios import SCENARIOS, Scenario
 from constructbench.state import DecisionRequest, DecisionSelection, Phase, RunState
+
+
+@dataclass
+class AuditContext:
+    state: RunState
+    phase: Phase
+    request: DecisionRequest
+    fixture_name: str | None = None
+    baseline_selection: DecisionSelection | None = None
+    continuation_by_node: dict[str, DecisionSelection] | None = None
 
 
 def main() -> None:
@@ -60,7 +71,7 @@ def main() -> None:
                     rows.append({**failure, "passed": False, "contexts": 0, "steps": steps})
                     failures.append(failure)
                     continue
-                request = contexts[0][2]
+                request = contexts[0].request
                 result_by_atom = audit_request(
                     scenario,
                     contexts,
@@ -119,8 +130,8 @@ def audit_limits(
     return {
         "contexts_per_node": contexts_per_node or (1 if bounded_scenario else 20),
         "branch_limit": branch_limit or (6 if bounded_scenario else 1_000_000),
-        "max_parameters": max_parameters or (4 if bounded_scenario else 1_000_000),
-        "max_values": max_values or (3 if bounded_scenario else 1_000_000),
+        "max_parameters": max_parameters or 1_000_000,
+        "max_values": max_values or 1_000_000,
     }
 
 
@@ -132,10 +143,17 @@ def collect_contexts(
     contexts_per_node: int,
     branch_limit: int,
     max_steps: int,
-) -> tuple[dict[str, list[tuple[RunState, Phase, DecisionRequest]]], int]:
-    contexts_by_node: dict[str, list[tuple[RunState, Phase, DecisionRequest]]] = {
+) -> tuple[dict[str, list[AuditContext]], int]:
+    contexts_by_node: dict[str, list[AuditContext]] = {
         node_id: [] for node_id in scenario.actors
     }
+    fixture_steps = collect_fixture_prefix_contexts(
+        scenario,
+        scenario_key,
+        variant,
+        contexts_by_node,
+        max_steps=max_steps,
+    )
     roots = [
         scenario.create_state(
             run_id=f"audit_{scenario_key}_{variant}",
@@ -152,7 +170,7 @@ def collect_contexts(
         )
     queue = roots
     seen: set[str] = set()
-    steps = 0
+    steps = fixture_steps
     while queue and steps < max_steps:
         steps += 1
         state = queue.pop(0)
@@ -180,7 +198,13 @@ def collect_contexts(
         for request in requests:
             contexts = contexts_by_node.setdefault(request.node_id, [])
             if len(contexts) < contexts_per_node:
-                contexts.append((state.model_copy(deep=True), phase, request))
+                contexts.append(
+                    AuditContext(
+                        state=state.model_copy(deep=True),
+                        phase=phase,
+                        request=request,
+                    )
+                )
         if all(len(contexts) >= contexts_per_node for contexts in contexts_by_node.values()):
             break
         children = []
@@ -195,6 +219,75 @@ def collect_contexts(
             children.append(child)
         queue = children + queue
     return contexts_by_node, steps
+
+
+def collect_fixture_prefix_contexts(
+    scenario: Scenario,
+    scenario_key: str,
+    variant: str,
+    contexts_by_node: dict[str, list[AuditContext]],
+    *,
+    max_steps: int,
+) -> int:
+    steps = 0
+    for fixture_name in scenario.choice_audit_fixture_names:
+        if fixture_name not in scenario.fixtures:
+            raise ValueError(
+                f"{scenario.scenario_id} declares unknown choice-audit fixture {fixture_name!r}"
+            )
+        fixture = scenario.fixtures[fixture_name]
+        if fixture["variant"] != variant:
+            continue
+        continuation_by_node = fixture_decision_selections(fixture["decisions"])
+        state = scenario.create_state(
+            run_id=f"audit_{scenario_key}_{variant}_{fixture_name}",
+            variant=variant,  # type: ignore[arg-type]
+            model_settings={"choice_audit_fixture": fixture_name},
+        )
+        while steps < max_steps:
+            steps += 1
+            phase = next_agent_phase(scenario, state)
+            if phase is None:
+                break
+            requests = [request for turn in phase.turns for request in turn.required_decisions]
+            for request in requests:
+                baseline_selection = continuation_by_node.get(request.node_id) or default_selection(
+                    request
+                )
+                contexts_by_node.setdefault(request.node_id, []).append(
+                    AuditContext(
+                        state=state.model_copy(deep=True),
+                        phase=phase,
+                        request=request,
+                        fixture_name=fixture_name,
+                        baseline_selection=baseline_selection,
+                        continuation_by_node=continuation_by_node,
+                    )
+                )
+            apply_phase(
+                scenario,
+                state,
+                phase,
+                {
+                    request.node_id: continuation_by_node[request.node_id]
+                    for request in requests
+                    if request.node_id in continuation_by_node
+                },
+            )
+    return steps
+
+
+def fixture_decision_selections(
+    decisions_by_node: dict[str, tuple[str, dict[str, Any]]],
+) -> dict[str, DecisionSelection]:
+    return {
+        node_id: DecisionSelection(
+            node_id=node_id,
+            option_id=None if option_id == "__parameters__" else option_id,
+            parameters=dict(parameters),
+        )
+        for node_id, (option_id, parameters) in decisions_by_node.items()
+    }
 
 
 def representative_phase_selections(
@@ -281,7 +374,7 @@ def representative_request_selections(request: DecisionRequest) -> list[Decision
 
 def audit_request(
     scenario: Scenario,
-    contexts: list[tuple[RunState, Phase, DecisionRequest]],
+    contexts: list[AuditContext],
     request: DecisionRequest,
     *,
     max_parameters: int,
@@ -290,15 +383,15 @@ def audit_request(
     if request.selection_mode == "single":
         option_ids = [option.option_id for option in request.options]
         passed = {f"option:{option_id}": False for option_id in option_ids}
-        for base_state, phase, _ in contexts:
-            for supporting_overrides in same_phase_supporting_overrides(phase, request.node_id):
+        for context in contexts:
+            for supporting_overrides in supporting_overrides_for_context(context):
                 signatures = {
                     option_id: complete_with_defaults(
                         scenario,
                         apply_and_copy(
                             scenario,
-                            base_state,
-                            phase,
+                            context.state,
+                            context.phase,
                             DecisionSelection(
                                 node_id=request.node_id,
                                 option_id=option_id,
@@ -306,6 +399,7 @@ def audit_request(
                             ),
                             supporting_overrides,
                         ),
+                        context.continuation_by_node,
                     )
                     for option_id in option_ids
                 }
@@ -330,25 +424,30 @@ def audit_request(
     for parameter, values in list(parameter_values.items())[:max_parameters]:
         values = values[:max_values]
         passed = {repr(value): False for value in values}
-        for base_state, phase, _ in contexts:
-            for supporting_overrides in same_phase_supporting_overrides(phase, request.node_id):
+        for context in contexts:
+            for supporting_overrides in supporting_overrides_for_context(context):
                 signatures = {}
                 for value in values:
-                    parameters = default_parameters(request)
-                    parameters[parameter] = value
+                    parameters = parameters_with_varied_field(
+                        request,
+                        context.baseline_selection,
+                        parameter,
+                        value,
+                    )
                     signatures[repr(value)] = complete_with_defaults(
                         scenario,
                         apply_and_copy(
                             scenario,
-                            base_state,
-                            phase,
+                            context.state,
+                            context.phase,
                             DecisionSelection(
                                 node_id=request.node_id,
-                                option_id="__parameters__",
+                                option_id=None,
                                 parameters=parameters,
                             ),
                             supporting_overrides,
                         ),
+                        context.continuation_by_node,
                     )
                 for value_repr, signature in signatures.items():
                     if any(
@@ -361,6 +460,37 @@ def audit_request(
             {f"param:{parameter}={value_repr}": value_passed for value_repr, value_passed in passed.items()}
         )
     return results
+
+
+def parameters_with_varied_field(
+    request: DecisionRequest,
+    baseline_selection: DecisionSelection | None,
+    parameter: str,
+    value: Any,
+) -> dict[str, Any]:
+    parameters = (
+        dict(baseline_selection.parameters)
+        if baseline_selection is not None
+        else default_parameters(request)
+    )
+    parameters[parameter] = value
+    return parameters
+
+
+def supporting_overrides_for_context(
+    context: AuditContext,
+) -> list[dict[str, DecisionSelection]]:
+    if context.continuation_by_node is None:
+        return same_phase_supporting_overrides(context.phase, context.request.node_id)
+    return [
+        {
+            request.node_id: context.continuation_by_node[request.node_id]
+            for turn in context.phase.turns
+            for request in turn.required_decisions
+            if request.node_id != context.request.node_id
+            and request.node_id in context.continuation_by_node
+        }
+    ]
 
 
 def same_phase_supporting_overrides(
@@ -475,6 +605,8 @@ def representative_parameter_values(spec) -> list[Any]:
     default = default_parameter_value(spec)
     if default not in values:
         values.insert(0, default)
+    if spec.nullable and None not in values:
+        values.append(None)
     if spec.value_type in {"integer", "decimal"}:
         if spec.min_value is not None and spec.min_value not in values:
             values.append(spec.min_value)
@@ -530,7 +662,12 @@ def next_agent_phase(scenario: Scenario, state: RunState) -> Phase | None:
             return phase
 
 
-def complete_with_defaults(scenario: Scenario, state: RunState) -> str:
+def complete_with_defaults(
+    scenario: Scenario,
+    state: RunState,
+    selections_by_node: dict[str, DecisionSelection] | None = None,
+) -> str:
+    selections_by_node = selections_by_node or {}
     for _ in range(60):
         phase = scenario.next_phase(state)
         if phase is None:
@@ -544,18 +681,37 @@ def complete_with_defaults(scenario: Scenario, state: RunState) -> str:
             scenario.apply_consequence_phase(state, phase)
             mark_phase_done(state, phase)
         else:
-            apply_phase(scenario, state, phase)
+            apply_phase(
+                scenario,
+                state,
+                phase,
+                {
+                    request.node_id: selections_by_node[request.node_id]
+                    for turn in phase.turns
+                    for request in turn.required_decisions
+                    if request.node_id in selections_by_node
+                },
+            )
     if state.terminal_status == "IN_PROGRESS":
         scenario.finalize(state)
     return json.dumps(_consequence_signature(state), sort_keys=True, default=str)
 
 
 def _consequence_signature(state: RunState) -> dict[str, Any]:
-    scenario_state = {
-        key: value
-        for key, value in state.canonical_state.items()
-        if key.endswith("_state")
-    }
+    scenario_state: dict[str, Any] = {}
+    for key, value in state.canonical_state.items():
+        if not key.endswith("_state"):
+            continue
+        if key == "s01_v2_state" and isinstance(value, dict):
+            # These fields summarize the submitted choices themselves. Including
+            # them would let any S01 V2 parameter pass the consequence audit even
+            # when it never changes canonical business state or terminal results.
+            value = {
+                field: field_value
+                for field, field_value in value.items()
+                if field not in {"structured_decision_records", "analysis"}
+            }
+        scenario_state[key] = value
     return {
         "terminal_status": state.terminal_status,
         "terminal_reason": state.terminal_reason,
