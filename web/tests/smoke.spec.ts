@@ -29,25 +29,26 @@ test("research page publishes the staged research evidence", async ({ page }) =>
   await expect(
     page.getByRole("heading", { name: /from one decision to six firms/i })
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: /single-agent response curve/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /can one supplier adjust its price/i })).toBeVisible();
   await expect(page.getByText(/46\/50 runs/i)).toBeVisible();
-  await expect(page.getByText("Mean attainable regret", { exact: true })).toBeVisible();
+  await expect(page.getByText("Average avoidable loss", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("img", { name: /response curve comparing/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /response curve values/i })).toBeVisible();
-  await expect(page.getByText(/staged findings from one construction scenario family/i)).toBeVisible();
+  await expect(page.getByText(/results come from one simulated construction problem/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /what explains the supplier failure/i })).toBeVisible();
-  await expect(page.getByText(/trusted computed threshold/i)).toBeVisible();
-  await expect(page.getByText(/88% less attainable regret/i)).toBeVisible();
-  await expect(page.getByRole("heading", { name: /two-agent threshold handoff/i })).toBeVisible();
+  await expect(page.getByText(/highest safe request provided/i)).toBeVisible();
+  await expect(page.getByText(/88% less avoidable loss/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /pass a useful number to another/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /two-agent handoff results/i })).toBeVisible();
   await expect(page.getByText(/18\/18/i).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: /controlled multiplayer ladder/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /more companies use AI/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
-  await expect(page.getByText(/complete lineage did not guarantee a good strategy/i)).toBeVisible();
-  await expect(page.getByRole("heading", { name: /derived decision-state packet/i })).toBeVisible();
-  await expect(page.getByRole("table", { name: /derived decision-state packet results/i })).toBeVisible();
-  await expect(page.getByText(/0\/3 control versus 3\/3 treatment/i)).toBeVisible();
-  await expect(page.getByText(/zero-call replay/i)).toBeVisible();
+  await expect(page.getByText(/information arrived, but the strategy was still expensive/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /short decision summary help/i })).toBeVisible();
+  await expect(page.getByRole("table", { name: /decision summary results/i })).toBeVisible();
+  await expect(page.getByText(/0\/3 normal runs and 3\/3 summary runs/i)).toBeVisible();
+  await expect(page.getByText(/without calling the model again/i)).toBeVisible();
+  await expect(page.getByText(/private cash limits.*stayed private/i)).toBeVisible();
 });
 
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {
@@ -119,7 +120,7 @@ test.describe("mobile layout", () => {
     await expect(page.getByRole("heading", { name: /from one decision to six firms/i })).toBeVisible();
     await expect(page.getByRole("table", { name: /two-agent handoff results/i })).toBeVisible();
     await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
-    await expect(page.getByRole("table", { name: /derived decision-state packet results/i })).toBeVisible();
+    await expect(page.getByRole("table", { name: /decision summary results/i })).toBeVisible();
     const dimensions = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,
       scrollWidth: document.documentElement.scrollWidth,
