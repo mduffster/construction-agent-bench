@@ -46,8 +46,8 @@ test("research page publishes the staged research evidence", async ({ page }) =>
   await expect(page.getByText(/information arrived, but the strategy was still expensive/i)).toBeVisible();
   await expect(page.getByRole("heading", { name: /short decision summary help/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /decision summary results/i })).toBeVisible();
-  await expect(page.getByText(/0\/3 normal runs and 3\/3 summary runs/i)).toBeVisible();
-  await expect(page.getByText(/without calling the model again/i)).toBeVisible();
+  await expect(page.getByText(/small test: three runs per version/i)).toBeVisible();
+  await expect(page.getByText(/accounting bug/i)).toHaveCount(0);
   await expect(page.getByText(/private cash limits.*stayed private/i)).toBeVisible();
 });
 

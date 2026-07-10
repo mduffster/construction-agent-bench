@@ -832,11 +832,7 @@ function DecisionPacketResearchSection() {
         </p>
       </div>
       <p className="mechanism-caveat">
-        We found an accounting bug that charged one supplier expense twice. We corrected
-        that line and recalculated the saved runs without calling the model again. Every
-        decision, project cost, finish date, and information record stayed the same. After
-        correction, all firms met their goals in 0/3 normal runs and 3/3 summary runs.
-        This is still a small test: three runs per version, with supplier and contractor
+        This is a small test: three runs per version, with supplier and contractor
         summaries tested together. It does not show how often this would work elsewhere
         or whether the contractor's summary was necessary.
       </p>
