@@ -88,4 +88,5 @@ questions are added one high-value scenario at a time.
 ## Contact
 
 ConstructSim is built by Matt Duffy. Find the code and get in touch through
-[GitHub](https://github.com/mduffster).
+[GitHub](https://github.com/mduffster), [X](https://x.com/iammattduff), or
+[Seeking Signal on Substack](https://seekingsignal.substack.com).

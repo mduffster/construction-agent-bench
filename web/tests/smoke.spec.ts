@@ -6,6 +6,14 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("ConstructSim");
   await expect(page.getByRole("heading", { name: "ConstructSim" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "X", exact: true })).toHaveAttribute(
+    "href",
+    "https://x.com/iammattduff"
+  );
+  await expect(page.getByRole("link", { name: "Substack", exact: true })).toHaveAttribute(
+    "href",
+    "https://seekingsignal.substack.com"
+  );
   await expect(page.getByRole("heading", { name: /what the project tests/i })).toBeVisible();
   await page.getByRole("link", { name: /see example runs/i }).click();
   await expect(page.getByRole("heading", { name: /how to read these numbers/i })).toBeVisible();

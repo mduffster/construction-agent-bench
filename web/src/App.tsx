@@ -185,8 +185,19 @@ function HomePage() {
             one step at a time so failures can be traced instead of guessed at.
           </p>
           <p>
-            Built by Matt Duffy. I'm open to collaboration; the code and contact
-            route are on <a href="https://github.com/mduffster" rel="noreferrer" target="_blank">GitHub</a>.
+            Built by Matt Duffy. I'm open to collaboration. Find me on{" "}
+            <a href="https://github.com/mduffster" rel="noreferrer" target="_blank">
+              GitHub
+            </a>
+            ,{" "}
+            <a href="https://x.com/iammattduff" rel="noreferrer" target="_blank">
+              X
+            </a>
+            , or{" "}
+            <a href="https://seekingsignal.substack.com" rel="noreferrer" target="_blank">
+              Substack
+            </a>
+            .
           </p>
           <div className="hero-actions">
             <NavButton href="/play" icon={<Play size={18} />}>
