@@ -14,7 +14,8 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
     "href",
     "https://seekingsignal.substack.com"
   );
-  await expect(page.getByRole("heading", { name: /what the project tests/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /what we're testing/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^try it$/i })).toHaveAttribute("href", "/play");
   await page.getByRole("link", { name: /see example runs/i }).click();
   await expect(page.getByRole("heading", { name: /how to read these numbers/i })).toBeVisible();
   await expect(page.getByText(/success limits/i)).toBeVisible();

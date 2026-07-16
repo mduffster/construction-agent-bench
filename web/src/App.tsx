@@ -173,16 +173,16 @@ function HomePage() {
           <p className="eyebrow">About</p>
           <h1>ConstructSim</h1>
           <p className="lede">
-            An AI-run company can receive the right information and still make
-            the wrong business decision. ConstructSim follows that failure from
+            We test whether an AI-run company can receive information in an uncertain environment and
+            generate optimal business decisions. ConstructSim tracks agentic business decision-making from
             one company into a shared, multi-company project.
           </p>
           <p>
-            Construction is the test environment: six firms share a deadline,
-            but each has different information, authority, costs, and private
-            goals. Partners are expensive to replace. The harness can let every
-            firm make its own decisions; the controlled studies add that freedom
-            one step at a time so failures can be traced instead of guessed at.
+            Construction is the initial test environment: six firms share a deadline and a desire to build
+            a cost-effective project. Each firm has different information, authority, costs, and private
+            goals. It's expensive to replace coalition members. The multi-agent harness allows every
+            firm to make its own decisions. We also use controlled studies to add decision-making freedom
+            one step at a time to identify where information flow drives poor business decisions.
           </p>
           <p>
             Built by Matt Duffy. I'm open to collaboration. Find me on{" "}
@@ -222,13 +222,13 @@ function HomePage() {
       <section className="overview-section">
         <div className="section-title">
           <ClipboardCheck size={20} />
-          <h2>What the project tests</h2>
+          <h2>What we're testing</h2>
         </div>
         <p>
-          The practical question is whether AI agents can select the right facts,
-          calculate a useful decision, pass it to the right partner, and act on it
-          while protecting their own organization. Construction makes those steps
-          concrete, but the pattern applies anywhere several firms must complete a
+          We test whether AI agents can select useful facts,
+          generate a reasonable decision, communicate information to the right partner, and act on that information
+          while protecting their own organization. Construction projects are a useful testing ground,
+          but the harness and decision structure apply whenever several firms must complete a
           transaction without sharing all of their information or incentives.
         </p>
       </section>
@@ -238,17 +238,21 @@ function HomePage() {
       <section className="overview-section">
         <div className="section-title">
           <Play size={20} />
-          <h2>Try It</h2>
+          <h2>
+            <a className="text-link" href="/play">
+              Try It
+            </a>
+          </h2>
         </div>
         <p>
           Play one scenario in the six-firm simulated construction ecosystem.
-          In the current public game, you choose one of four firms while the
-          lender and inspector remain active system participants. You will have
+          In the game, you choose one of four firms while the
+          lender and inspector are always automated roles. You will have
           public project information, private role information, and decisions
           that can benefit you privately or benefit the broader project. The
           game is a simplified version of the full simulation: you face the
           same kind of information problem the AI agents face, but the agents
-          work through much larger structured decision spaces than the choices
+          work through larger structured decision spaces than the choices
           shown here.
         </p>
       </section>
