@@ -191,7 +191,7 @@ function HomePage() {
             </a>
             ,{" "}
             <a href="https://x.com/iammattduff" rel="noreferrer" target="_blank">
-              X
+              Twitter
             </a>
             , or{" "}
             <a href="https://seekingsignal.substack.com" rel="noreferrer" target="_blank">

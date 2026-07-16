@@ -6,7 +6,7 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("ConstructSim");
   await expect(page.getByRole("heading", { name: "ConstructSim" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "X", exact: true })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "Twitter", exact: true })).toHaveAttribute(
     "href",
     "https://x.com/iammattduff"
   );
