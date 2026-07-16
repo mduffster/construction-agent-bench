@@ -31,6 +31,7 @@ test("research page publishes the staged research evidence", async ({ page }) =>
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /can one supplier adjust its price/i })).toBeVisible();
   await expect(page.getByText(/46\/50 runs/i)).toBeVisible();
+  await expect(page.getByText(/15-run Sonnet confirmation/i)).toBeVisible();
   await expect(page.getByText("Average avoidable loss", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("img", { name: /response curve comparing/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /response curve values/i })).toBeVisible();
@@ -44,11 +45,12 @@ test("research page publishes the staged research evidence", async ({ page }) =>
   await expect(page.getByRole("heading", { name: /more companies use AI/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /controlled multiplayer ladder results/i })).toBeVisible();
   await expect(page.getByText(/information arrived, but the strategy was still expensive/i)).toBeVisible();
-  await expect(page.getByRole("heading", { name: /short decision summary help/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /which company needs the decision summary/i })).toBeVisible();
   await expect(page.getByRole("table", { name: /decision summary results/i })).toBeVisible();
-  await expect(page.getByText(/small test: three runs per version/i)).toBeVisible();
+  await expect(page.getByText(/supplier summary was sufficient/i)).toBeVisible();
+  await expect(page.getByText(/40\/40/i)).toBeVisible();
   await expect(page.getByText(/accounting bug/i)).toHaveCount(0);
-  await expect(page.getByText(/private cash limits.*stayed private/i)).toBeVisible();
+  await expect(page.getByText(/private cash limits never appeared in the contractor/i)).toBeVisible();
 });
 
 test("end screen shows the crowd comparison when playthrough stats exist", async ({ page }) => {

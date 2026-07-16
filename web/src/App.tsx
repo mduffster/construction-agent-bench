@@ -276,8 +276,8 @@ function ResearchTeaser() {
           <p>
             The research follows that same decision through a contractor handoff and
             into a six-firm project. The information usually arrived. The harder problem
-            was turning it into the right business choice. A later, small pilot suggests
-            a short decision summary may help, but that result still needs replication.
+            was turning it into the right business choice. A 40-run follow-up now
+            isolates the useful intervention: a private decision summary for the supplier.
           </p>
           <div className="research-mini-metrics" aria-label="Study highlights">
             <span>
@@ -318,7 +318,7 @@ function ResearchTeaser() {
 
 function ResearchPage() {
   const haiku = responseCurveData.haiku_confirmation;
-  const sonnet = responseCurveData.sonnet_modal;
+  const sonnet = responseCurveData.sonnet_confirmation;
   return (
     <Shell>
       <section className="page-head research-head">
@@ -385,12 +385,13 @@ function ResearchPage() {
           the highest safe request moved by $1M.
         </p>
         <div className="research-program-takeaway research-program-takeaway--plain">
-          <strong>The small Sonnet check did not remove the failure.</strong>
+          <strong>The 15-run Sonnet confirmation did not remove the failure.</strong>
           <p>
-            In five cases—one at each replacement price—Sonnet was replaced in{" "}
+            Across three runs at each replacement price, Sonnet was replaced in{" "}
             {Math.round(sonnet.replacement_rate * 100)}% and left about{" "}
             {formatRoundedResearchMoney(sonnet.mean_attainable_regret_usd)} in avoidable
-            loss on average. Five runs are a diagnostic, not a model-wide conclusion.
+            loss on average. It handled the highest-leverage cases, but the curve still
+            reversed once. This is a scenario result, not a model-wide ranking.
           </p>
         </div>
       </section>
@@ -435,12 +436,12 @@ function ResearchPage() {
         </p>
         <figure className="research-figure">
           <img
-            alt="Response curve comparing the highest safe request with Haiku requests and one Sonnet run"
+            alt="Response curve comparing the highest safe request with Haiku requests and the earlier Sonnet diagnostic"
             src="/images/s01-response-curve.png"
           />
           <figcaption>
-            Haiku values are averages over valid runs. Sonnet has one run at each
-            price level.
+            The chart shows the earlier one-run Sonnet diagnostic. The table below uses
+            the new three-run-per-price Sonnet confirmation.
           </figcaption>
         </figure>
         <div className="research-table" role="table" aria-label="Response curve values">
@@ -449,7 +450,7 @@ function ResearchPage() {
             <span>Safe request</span>
             <span>Haiku, no history</span>
             <span>Haiku, verified history</span>
-            <span>Single Sonnet run</span>
+            <span>Sonnet confirmation</span>
           </div>
           {responseCurveData.levels.map((level) => (
             <div className="research-table__row" role="row" key={level.response_curve_level}>
@@ -460,13 +461,13 @@ function ResearchPage() {
                 {formatMoney(level.maximum_safe_relief_usd)}
               </span>
               <span data-label="Haiku, no history">
-                {formatMoney(level.haiku_no_history_mean_request_usd)}
+                {formatRoundedResearchMoney(level.haiku_no_history_mean_request_usd)}
               </span>
               <span data-label="Haiku, verified history">
-                {formatMoney(level.haiku_history_mean_request_usd)}
+                {formatRoundedResearchMoney(level.haiku_history_mean_request_usd)}
               </span>
-              <span data-label="Single Sonnet run">
-                {formatMoney(level.sonnet_no_history_mean_request_usd)}
+              <span data-label="Sonnet confirmation">
+                {formatRoundedResearchMoney(level.sonnet_confirmation_mean_request_usd)}
               </span>
             </div>
           ))}
@@ -524,6 +525,10 @@ function ResearchPage() {
             label="Response-curve evidence"
           />
           <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_response_curve_sonnet_confirmation_results.md"
+            label="Sonnet confirmation results"
+          />
+          <ResearchSourceLink
             href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_distributed_threshold_handoff_results.md"
             label="Two-agent handoff results"
           />
@@ -533,7 +538,11 @@ function ResearchPage() {
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_derived_state_packet_results.md"
-            label="Decision-summary results"
+            label="Decision-summary pilot"
+          />
+          <ResearchSourceLink
+            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_decision_summary_factorial_results.md"
+            label="Decision-summary confirmation"
           />
         </div>
       </section>
@@ -544,7 +553,7 @@ function ResearchPage() {
 function ResearchProgramOverview() {
   const handoff = researchProgramData.handoff;
   const multiplayer = researchProgramData.multiplayer;
-  const packet = researchProgramData.decision_packet;
+  const factorial = researchProgramData.decision_summary_factorial;
   const trustedThreshold = responseCurveData.mechanism_test.trusted_threshold_effect;
   return (
     <section className="overview-section research-program-overview">
@@ -584,13 +593,12 @@ function ResearchProgramOverview() {
           <a href="#multiplayer">See the ladder</a>
         </article>
         <article>
-          <span className="research-stage-chip">2 firms, 2 versions</span>
-          <strong>A short decision summary</strong>
+          <span className="research-stage-chip">2 firms, 4 versions</span>
+          <strong>Who needs the decision summary?</strong>
           <p>
-            Preparing both lots rose from {packet.control.full_sequence_cure_count}/3
-            runs to {packet.treatment.full_sequence_cure_count}/3. Using backup steel
-            fell from {packet.control.backup_activation_count}/3 to{" "}
-            {packet.treatment.backup_activation_count}/3.
+            All 20 runs with a supplier summary reached the all-firm, no-backup path.
+            None of the 20 runs without a supplier summary did. The contractor summary
+            did not change the result.
           </p>
           <a href="#decision-packet">See the summary test</a>
         </article>
@@ -600,7 +608,8 @@ function ResearchProgramOverview() {
         <p>
           Getting information to the right company was not enough. A short summary
           helped the supplier connect the inspected value, available funding, and its
-          own private limits. It then chose to prepare both lots in all three runs.
+          own private limits. The effect held across {factorial.assigned_run_count} runs,
+          without exposing those private limits to the contractor.
         </p>
       </div>
     </section>
@@ -789,99 +798,131 @@ function MultiplayerResearchSection() {
 }
 
 function DecisionPacketResearchSection() {
-  const packet = researchProgramData.decision_packet;
-  const control = packet.control;
-  const treatment = packet.treatment;
+  const factorial = researchProgramData.decision_summary_factorial;
+  const withSupplier = factorial.arms.filter((arm) =>
+    ["supplier_only", "both_summaries"].includes(arm.condition_id)
+  );
+  const withoutSupplier = factorial.arms.filter((arm) =>
+    ["no_summary", "contractor_only"].includes(arm.condition_id)
+  );
+  const withSupplierJoint = withSupplier.reduce(
+    (total, arm) => total + arm.joint_outcome_count,
+    0
+  );
+  const withoutSupplierJoint = withoutSupplier.reduce(
+    (total, arm) => total + arm.joint_outcome_count,
+    0
+  );
   return (
     <section className="overview-section" id="decision-packet">
       <div className="section-title">
         <ClipboardCheck size={20} />
-        <h2>Stage 4 — does a short decision summary help?</h2>
+        <h2>Stage 4 — which company needs the decision summary?</h2>
       </div>
       <p>
         The supplier and contractor were run by AI while the other four companies
-        followed fixed rules. We compared the normal project information with a short
-        summary of what each company was already allowed to see. The supplier's summary
-        included its own private cash limits. Those limits stayed private and were not
-        shown to the contractor.
+        followed fixed rules. After a six-run pilot, we tested four versions: no summary,
+        supplier only, contractor only, and both. Each summary reorganized only facts that
+        recipient was already allowed to see. The supplier's private cash limits never
+        appeared in the contractor's summary.
       </p>
       <div className="metric-grid research-metric-grid">
         <Metric
           icon={<CheckCircle2 size={20} />}
           label="Valid runs with complete records"
-          value={`${packet.valid_run_count}/${packet.assigned_run_count}`}
+          value={`${factorial.valid_run_count}/${factorial.assigned_run_count}`}
         />
         <Metric
           icon={<ClipboardCheck size={20} />}
-          label="Prepared both steel lots"
-          value={`${control.full_sequence_cure_count}/3 → ${treatment.full_sequence_cure_count}/3`}
+          label="All firms won, no backup"
+          value={`${withoutSupplierJoint}/20 → ${withSupplierJoint}/20`}
         />
         <Metric
           icon={<ShieldCheck size={20} />}
-          label="Backup activated"
-          value={`${control.backup_activation_count}/3 → ${treatment.backup_activation_count}/3`}
+          label="Supplier-summary effect"
+          value={`+${Math.round(factorial.supplier_summary_risk_difference * 100)} points`}
         />
         <Metric
-          icon={<DollarSign size={20} />}
-          label="Average project cost"
-          value={`${formatMoney(control.mean_final_project_cost)} → ${formatMoney(treatment.mean_final_project_cost)}`}
+          icon={<MessageSquare size={20} />}
+          label="Contractor-summary effect"
+          value={`${Math.round(factorial.contractor_summary_risk_difference * 100)} points`}
         />
       </div>
       <div className="program-table" role="table" aria-label="Decision summary results">
         <div className="program-row program-row--packet program-row--head" role="row">
           <span>Version</span>
-          <span>Both lots prepared</span>
-          <span>Lot B ready</span>
+          <span>All firms won, no backup</span>
+          <span>95% exact interval</span>
+          <span>Full cure</span>
           <span>Backup</span>
-          <span>All firms met goals</span>
           <span>Finished</span>
           <span>Mean cost</span>
         </div>
-        <PacketResultRow label="Normal information" arm={control} />
-        <PacketResultRow label="Short summaries" arm={treatment} treatment />
+        {factorial.arms.map((arm) => (
+          <FactorialResultRow arm={arm} key={arm.condition_id} />
+        ))}
       </div>
       <div className="research-program-takeaway">
-        <strong>The supplier made a different choice first.</strong>
+        <strong>The supplier summary was sufficient.</strong>
         <p>
-          With normal information, the supplier prepared only Lot A in all three runs.
-          With the summaries, it prepared both lots in all three runs, made Lot B ready
-          by week 18, shipped both lots, and avoided backup steel. Those projects
-          finished {packet.mean_completion_tick_difference} weeks earlier and cost about{" "}
-          {formatMoney(packet.mean_project_cost_difference_usd)} less on average.
+          Both arms with a supplier summary prepared the full steel sequence in every run,
+          made Lot B ready, and avoided backup. Neither arm without that summary reached
+          the same joint outcome. Giving the contractor a summary did not change either path.
         </p>
       </div>
       <p className="mechanism-caveat">
-        This is a small test: three runs per version, with supplier and contractor
-        summaries tested together. It does not show how often this would work elsewhere
-        or whether the contractor's summary was necessary.
+        There are ten repeated temperature-zero calls per version in one simulated problem.
+        The exact intervals describe this frozen API setting, not real firms or projects.
+        The test identifies the useful recipient, not which field inside the summary mattered.
       </p>
     </section>
   );
 }
 
-function PacketResultRow({
+function FactorialResultRow({
   arm,
-  label,
-  treatment = false,
 }: {
-  arm: ResearchProgramData["decision_packet"]["control"];
-  label: string;
-  treatment?: boolean;
+  arm: ResearchProgramData["decision_summary_factorial"]["arms"][number];
 }) {
   return (
     <div
-      className={`program-row program-row--packet${treatment ? " program-row--packet-treatment" : ""}`}
+      className={`program-row program-row--packet${
+        arm.condition_id.includes("supplier") || arm.condition_id === "both_summaries"
+          ? " program-row--packet-treatment"
+          : ""
+      }`}
       role="row"
     >
-      <span data-label="Version">{label}</span>
-      <span data-label="Both lots prepared">{arm.full_sequence_cure_count}/3</span>
-      <span data-label="Lot B ready">{arm.lot_b_ready_count}/3</span>
-      <span data-label="Backup">{arm.backup_activation_count}/3</span>
-      <span data-label="All firms met goals">{arm.coalition_success_count}/3</span>
+      <span data-label="Version">{factorialConditionLabel(arm.condition_id)}</span>
+      <span data-label="All firms won, no backup">
+        {arm.joint_outcome_count}/{arm.assigned_run_count}
+      </span>
+      <span data-label="95% exact interval">
+        {formatPercentInterval(arm.joint_outcome_exact_95_ci)}
+      </span>
+      <span data-label="Full cure">
+        {arm.full_sequence_cure_count}/{arm.assigned_run_count}
+      </span>
+      <span data-label="Backup">
+        {arm.backup_activation_count}/{arm.assigned_run_count}
+      </span>
       <span data-label="Finished">Week {arm.mean_completion_tick}</span>
       <span data-label="Mean cost">{formatMoney(arm.mean_final_project_cost)}</span>
     </div>
   );
+}
+
+function factorialConditionLabel(value: string) {
+  return {
+    no_summary: "No summary",
+    supplier_only: "Supplier only",
+    contractor_only: "Contractor only",
+    both_summaries: "Both companies",
+  }[value] ?? value;
+}
+
+function formatPercentInterval(interval: [number, number]) {
+  return `${Math.round(interval[0] * 100)}%–${Math.round(interval[1] * 100)}%`;
 }
 
 function ladderStageLabel(row: ResearchProgramLadderRow) {
@@ -1795,7 +1836,7 @@ function ResultsPage() {
           <strong>Looking for the latest controlled findings?</strong>
           <span>
             The Research page follows one decision from the supplier response curve,
-            through a contractor handoff, and into a small decision-summary pilot.
+            through a contractor handoff, and into a 40-run decision-summary confirmation.
           </span>
         </div>
         <a href="/research#decision-packet">

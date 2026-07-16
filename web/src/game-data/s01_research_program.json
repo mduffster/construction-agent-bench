@@ -1,5 +1,5 @@
 {
-  "content_sha256": "94c75dd76d9c213db24661f3db120220b2144438d05e3379d8811d8e19ef486a",
+  "content_sha256": "4877e6264aeccc44b4c115085f9e62430f544d70324d44906b5c1636fce99914",
   "decision_packet": {
     "accounting_replay": {
       "all_decisions_identical": true,
@@ -53,6 +53,99 @@
       "valid_run_count": 3
     },
     "valid_run_count": 6
+  },
+  "decision_summary_factorial": {
+    "all_exposure_audits_passed": true,
+    "arms": [
+      {
+        "assigned_run_count": 10,
+        "backup_activation_count": 8,
+        "coalition_success_count": 0,
+        "condition_id": "no_summary",
+        "full_sequence_cure_count": 0,
+        "joint_outcome_count": 0,
+        "joint_outcome_exact_95_ci": [
+          0.0,
+          0.308497
+        ],
+        "joint_outcome_rate": 0.0,
+        "lineage_complete_count": 10,
+        "lot_b_ready_count": 0,
+        "mean_completion_tick": 45.8,
+        "mean_final_project_cost": 99825450,
+        "repair_attempt_count": 0,
+        "valid_run_count": 10
+      },
+      {
+        "assigned_run_count": 10,
+        "backup_activation_count": 0,
+        "coalition_success_count": 10,
+        "condition_id": "supplier_only",
+        "full_sequence_cure_count": 10,
+        "joint_outcome_count": 10,
+        "joint_outcome_exact_95_ci": [
+          0.691503,
+          1.0
+        ],
+        "joint_outcome_rate": 1.0,
+        "lineage_complete_count": 10,
+        "lot_b_ready_count": 10,
+        "mean_completion_tick": 41.0,
+        "mean_final_project_cost": 96035850,
+        "repair_attempt_count": 0,
+        "valid_run_count": 10
+      },
+      {
+        "assigned_run_count": 10,
+        "backup_activation_count": 8,
+        "coalition_success_count": 0,
+        "condition_id": "contractor_only",
+        "full_sequence_cure_count": 0,
+        "joint_outcome_count": 0,
+        "joint_outcome_exact_95_ci": [
+          0.0,
+          0.308497
+        ],
+        "joint_outcome_rate": 0.0,
+        "lineage_complete_count": 10,
+        "lot_b_ready_count": 0,
+        "mean_completion_tick": 45.8,
+        "mean_final_project_cost": 99818450,
+        "repair_attempt_count": 0,
+        "valid_run_count": 10
+      },
+      {
+        "assigned_run_count": 10,
+        "backup_activation_count": 0,
+        "coalition_success_count": 10,
+        "condition_id": "both_summaries",
+        "full_sequence_cure_count": 10,
+        "joint_outcome_count": 10,
+        "joint_outcome_exact_95_ci": [
+          0.691503,
+          1.0
+        ],
+        "joint_outcome_rate": 1.0,
+        "lineage_complete_count": 10,
+        "lot_b_ready_count": 10,
+        "mean_completion_tick": 41.0,
+        "mean_final_project_cost": 96063950,
+        "repair_attempt_count": 0,
+        "valid_run_count": 10
+      }
+    ],
+    "assigned_run_count": 40,
+    "contractor_summary_risk_difference": 0.0,
+    "experiment_id": "s01_v2_decision_summary_factorial_v1",
+    "interaction_risk_difference": 0.0,
+    "interpretation": "The supplier summary was sufficient in this frozen setting. Both arms with a supplier summary reached the all-firm/no-backup path in every run; neither arm without it did. Adding a contractor summary did not change the result.",
+    "limitations": [
+      "There are ten repeated temperature-zero calls per arm in one scenario.",
+      "Exact intervals describe this frozen API setting, not a population of firms.",
+      "The supplier summary bundles several derived fields, so the operative field is not identified."
+    ],
+    "supplier_summary_risk_difference": 1.0,
+    "valid_run_count": 40
   },
   "handoff": {
     "arms": [
@@ -271,8 +364,11 @@
     "stop_reason": null
   },
   "question": "Can AI organizations receive the right business facts, carry them across organizational boundaries, and turn them into good commercial decisions?",
-  "schema_version": "constructsim.web_research_program.v2",
+  "schema_version": "constructsim.web_research_program.v3",
   "source": {
+    "factorial_report_path": "docs/s01_v2_decision_summary_factorial_results.md",
+    "factorial_report_sha256": "94b89c3a95a8ed5414d8d08fb8b4ec1c72ea28150c9ff9f9ed48e6460b45ff51",
+    "factorial_study_sha256": "25af6bc880193658722b1bf12a1809c9db7cd736ec20dcd9406d221d0921b1f9",
     "handoff_report_path": "docs/s01_distributed_threshold_handoff_results.md",
     "handoff_report_sha256": "e193030f8dbbfc7ba6ee970a4952dade5086eb67fc3cba0fb55c68d80c3fa566",
     "handoff_study_sha256": "1fe42d41595dd8d185cc2e13078f20d1e2dd1fd1d1103b3df8ceddc1e29a8a91",

@@ -268,6 +268,10 @@ export interface ResponseCurveLevel {
   sonnet_no_history_mean_request_usd: number;
   sonnet_no_history_replacement_rate: number;
   sonnet_no_history_mean_attainable_regret_usd: number;
+  sonnet_confirmation_valid_n: number;
+  sonnet_confirmation_mean_request_usd: number;
+  sonnet_confirmation_replacement_rate: number;
+  sonnet_confirmation_mean_attainable_regret_usd: number;
 }
 
 export interface ResponseCurveMechanismCondition {
@@ -307,6 +311,7 @@ export interface ResponseCurveData {
   };
   haiku_confirmation: ResponseCurveSample;
   sonnet_modal: ResponseCurveSample;
+  sonnet_confirmation: ResponseCurveSample;
   mechanism_test: {
     question: string;
     conditions: ResponseCurveMechanismCondition[];
@@ -329,6 +334,10 @@ export interface ResponseCurveData {
     response_table_sha256: string;
     chart_sha256: string;
     intervention_summary_sha256: string;
+    sonnet_confirmation_report_path: string;
+    sonnet_confirmation_report_sha256: string;
+    sonnet_confirmation_analysis_sha256: string;
+    sonnet_confirmation_rows_sha256: string;
   };
   content_sha256: string;
 }
@@ -387,6 +396,23 @@ export interface ResearchProgramPacketArm {
   joint_outcome_count: number;
   mean_completion_tick: number;
   mean_final_project_cost: number;
+}
+
+export interface ResearchProgramFactorialArm {
+  condition_id: "no_summary" | "supplier_only" | "contractor_only" | "both_summaries";
+  assigned_run_count: number;
+  valid_run_count: number;
+  joint_outcome_count: number;
+  joint_outcome_rate: number;
+  joint_outcome_exact_95_ci: [number, number];
+  coalition_success_count: number;
+  backup_activation_count: number;
+  full_sequence_cure_count: number;
+  lot_b_ready_count: number;
+  lineage_complete_count: number;
+  repair_attempt_count: number;
+  mean_final_project_cost: number;
+  mean_completion_tick: number;
 }
 
 export interface ResearchProgramData {
@@ -457,6 +483,18 @@ export interface ResearchProgramData {
     interpretation: string;
     limitations: string[];
   };
+  decision_summary_factorial: {
+    experiment_id: string;
+    assigned_run_count: number;
+    valid_run_count: number;
+    all_exposure_audits_passed: boolean;
+    supplier_summary_risk_difference: number;
+    contractor_summary_risk_difference: number;
+    interaction_risk_difference: number;
+    arms: ResearchProgramFactorialArm[];
+    interpretation: string;
+    limitations: string[];
+  };
   source: {
     handoff_report_path: string;
     handoff_report_sha256: string;
@@ -468,6 +506,9 @@ export interface ResearchProgramData {
     packet_report_sha256: string;
     packet_study_sha256: string;
     packet_accounting_replay_sha256: string;
+    factorial_report_path: string;
+    factorial_report_sha256: string;
+    factorial_study_sha256: string;
   };
   content_sha256: string;
 }

@@ -13,8 +13,9 @@ outcome can be traced to fact selection, calculation, communication, or action.
 
 The first study varied the cost of replacing one AI-run steel supplier. The highest safe request
 moved by $1M, but Claude Haiku asked for about $800K in 39 of 46 valid runs and $600K in the other
-seven. Average avoidable loss was about $595K. A five-case Claude Sonnet diagnostic was not better,
-but five runs are too few for a general model claim.
+seven. Average avoidable loss was about $595K. A 15-run Claude Sonnet 5 confirmation also failed
+to map the curve reliably: 60% of suppliers were replaced and average avoidable loss was about
+$689K. This is a scenario comparison, not a general model ranking.
 
 The two-company follow-up assigned 150 runs to test whether a contractor could calculate and pass
 the useful number to the supplier. Whenever the live contractor calculated the number exactly, the
@@ -27,10 +28,11 @@ were valid and project-successful, and every expected information handoff arrive
 version narrowed the recovery to one steel lot and activated an expensive backup path. Information
 arrival was not the same as a good decision.
 
-A final six-run pilot tested short, private decision summaries. The summary used only information
-each company was already allowed to see; supplier-only facts stayed private. The result was large
-but preliminary because supplier and contractor summaries were bundled and each version had only
-three runs. A preregistered four-way replication is the next test.
+A six-run pilot tested short, private decision summaries, followed by a preregistered 40-run
+factorial confirmation: no summary, supplier only, contractor only, and both. All 20 runs with the
+supplier summary reached the all-firm/no-backup path; none of the 20 runs without it did. The
+contractor summary added no measurable benefit. The summary used only information each company was
+already allowed to see, so supplier-only facts stayed private.
 
 ## Project success is not enough
 
@@ -53,7 +55,10 @@ the [two-company protocol](docs/s01_distributed_threshold_handoff_spec.md) and
 [multiplayer protocol](docs/s01_v2_multiplayer_bridge_spec.md) and
 [results](docs/s01_v2_multiplayer_bridge_results.md), and the
 [decision-summary protocol](docs/s01_v2_derived_state_packet_protocol.md) and
-[results](docs/s01_v2_derived_state_packet_results.md).
+[pilot results](docs/s01_v2_derived_state_packet_results.md), the
+[factorial protocol](docs/s01_v2_decision_summary_factorial_protocol.md) and
+[factorial results](docs/s01_v2_decision_summary_factorial_results.md), and the
+[Sonnet confirmation results](docs/s01_response_curve_sonnet_confirmation_results.md).
 
 ## Reproduce without model calls
 

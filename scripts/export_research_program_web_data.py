@@ -9,9 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 HANDOFF_ROOT = ROOT / "outputs" / "s01_handoff_v2_1_confirmation_20260710"
 LADDER_ROOT = ROOT / "outputs" / "s01_v2_multiplayer_ladder_v2_20260710"
 PACKET_ROOT = ROOT / "outputs" / "s01_v2_derived_state_packet_v1_20260710"
+FACTORIAL_ROOT = ROOT / "outputs" / "s01_v2_decision_summary_factorial_v1_20260715"
 HANDOFF_REPORT = ROOT / "docs" / "s01_distributed_threshold_handoff_results.md"
 MULTIPLAYER_REPORT = ROOT / "docs" / "s01_v2_multiplayer_bridge_results.md"
 PACKET_REPORT = ROOT / "docs" / "s01_v2_derived_state_packet_results.md"
+FACTORIAL_REPORT = ROOT / "docs" / "s01_v2_decision_summary_factorial_results.md"
 WEB_DATA_PATH = ROOT / "web" / "src" / "game-data" / "s01_research_program.json"
 
 ARM_ORDER = [
@@ -41,11 +43,13 @@ def main() -> None:
         / "posthoc_supplier_payoff_accounting_replay"
         / "accounting_replay_analysis.json"
     )
+    factorial_study_path = FACTORIAL_ROOT / "study_analysis.json"
     handoff_study = _read_json(handoff_study_path)
     handoff_rows = _read_jsonl(handoff_rows_path)
     ladder_summary = _read_json(ladder_summary_path)
     packet_study = _read_json(packet_study_path)
     packet_replay = _read_json(packet_replay_path)
+    factorial_study = _read_json(factorial_study_path)
 
     reference = _read_json(LADDER_ROOT / "reference_run" / "run_summary.json")
     live_summaries = [
@@ -123,7 +127,7 @@ def main() -> None:
     packet_control = packet_aggregate["by_condition"]["current_observation"]
     packet_treatment = packet_aggregate["by_condition"]["derived_state_packet"]
     payload = {
-        "schema_version": "constructsim.web_research_program.v2",
+        "schema_version": "constructsim.web_research_program.v3",
         "title": "From one decision to six firms",
         "question": (
             "Can AI organizations receive the right business facts, carry them across "
@@ -249,6 +253,47 @@ def main() -> None:
                 "A pre-existing duplicate supplier-payoff deduction was corrected with a zero-call replay of identical archived submissions.",
             ],
         },
+        "decision_summary_factorial": {
+            "experiment_id": factorial_study["experiment_id"],
+            "assigned_run_count": factorial_study["completed_run_count"],
+            "valid_run_count": factorial_study["aggregate"]["valid_count"],
+            "all_exposure_audits_passed": factorial_study["aggregate"][
+                "all_exposure_audits_passed"
+            ],
+            "supplier_summary_risk_difference": factorial_study["aggregate"][
+                "supplier_summary_main_effect"
+            ]["risk_difference"],
+            "contractor_summary_risk_difference": factorial_study["aggregate"][
+                "contractor_summary_main_effect"
+            ]["risk_difference"],
+            "interaction_risk_difference": factorial_study["aggregate"][
+                "interaction_risk_difference"
+            ],
+            "arms": [
+                {
+                    "condition_id": condition,
+                    **_factorial_arm_summary(
+                        factorial_study["aggregate"]["by_condition"][condition]
+                    ),
+                }
+                for condition in (
+                    "no_summary",
+                    "supplier_only",
+                    "contractor_only",
+                    "both_summaries",
+                )
+            ],
+            "interpretation": (
+                "The supplier summary was sufficient in this frozen setting. Both arms with "
+                "a supplier summary reached the all-firm/no-backup path in every run; neither "
+                "arm without it did. Adding a contractor summary did not change the result."
+            ),
+            "limitations": [
+                "There are ten repeated temperature-zero calls per arm in one scenario.",
+                "Exact intervals describe this frozen API setting, not a population of firms.",
+                "The supplier summary bundles several derived fields, so the operative field is not identified.",
+            ],
+        },
         "source": {
             "handoff_report_path": "docs/s01_distributed_threshold_handoff_results.md",
             "handoff_report_sha256": _sha256(HANDOFF_REPORT),
@@ -260,6 +305,9 @@ def main() -> None:
             "packet_report_sha256": _sha256(PACKET_REPORT),
             "packet_study_sha256": _sha256(packet_study_path),
             "packet_accounting_replay_sha256": _sha256(packet_replay_path),
+            "factorial_report_path": "docs/s01_v2_decision_summary_factorial_results.md",
+            "factorial_report_sha256": _sha256(FACTORIAL_REPORT),
+            "factorial_study_sha256": _sha256(factorial_study_path),
         },
     }
     payload["content_sha256"] = _content_hash(payload)
@@ -282,6 +330,24 @@ def _packet_arm_summary(summary: dict[str, Any]) -> dict[str, Any]:
         "joint_outcome_count": summary["joint_efficient_outcome_count"],
         "mean_completion_tick": summary["mean_completion_tick"],
         "mean_final_project_cost": round(summary["mean_final_project_cost"]),
+    }
+
+
+def _factorial_arm_summary(summary: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "assigned_run_count": summary["assigned_count"],
+        "valid_run_count": summary["valid_count"],
+        "joint_outcome_count": summary["joint_efficient_outcome_count"],
+        "joint_outcome_rate": summary["joint_efficient_outcome_rate"],
+        "joint_outcome_exact_95_ci": summary["joint_efficient_outcome_exact_95_ci"],
+        "coalition_success_count": summary["coalition_success_count"],
+        "backup_activation_count": summary["backup_activation_count"],
+        "full_sequence_cure_count": summary["full_sequence_cure_count"],
+        "lot_b_ready_count": summary["lot_b_ready_count"],
+        "lineage_complete_count": summary["lineage_complete_count"],
+        "repair_attempt_count": summary["repair_attempt_count"],
+        "mean_final_project_cost": round(summary["mean_final_project_cost"]),
+        "mean_completion_tick": summary["mean_completion_tick"],
     }
 
 

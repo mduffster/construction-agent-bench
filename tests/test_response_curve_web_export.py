@@ -5,6 +5,8 @@ import hashlib
 import json
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "response_curve"
 WEB_DATA = ROOT / "web" / "src" / "game-data" / "s01_response_curve.json"
@@ -22,7 +24,7 @@ def test_response_curve_web_export_matches_evidence_package() -> None:
         table = list(csv.DictReader(handle))
 
     assert payload["experiment_id"] == manifest["experiment_id"]
-    assert payload["schema_version"] == "constructsim.web_response_curve.v1"
+    assert payload["schema_version"] == "constructsim.web_response_curve.v2"
     assert payload["source"]["evidence_manifest_sha256"] == _sha256(manifest_path)
     assert payload["source"]["response_table_sha256"] == _sha256(table_path)
     assert payload["source"]["chart_sha256"] == _sha256(chart_path)
@@ -36,6 +38,15 @@ def test_response_curve_web_export_matches_evidence_package() -> None:
     assert "recorded_total_model_cost_usd" not in payload
     assert "model_cost_usd" not in payload["haiku_confirmation"]
     assert "model_cost_usd" not in payload["sonnet_modal"]
+    assert "model_cost_usd" not in payload["sonnet_confirmation"]
+    assert "max_cost_usd" not in payload["sonnet_confirmation"]
+    assert payload["sonnet_confirmation"]["run_count"] == 15
+    assert payload["sonnet_confirmation"]["valid_run_count"] == 15
+    assert payload["sonnet_confirmation"]["replacement_rate"] == 0.6
+    assert payload["sonnet_confirmation"]["mean_attainable_regret_usd"] == pytest.approx(
+        688_666.6667
+    )
+    assert all(level["sonnet_confirmation_valid_n"] == 3 for level in payload["levels"])
     conditions = {
         condition["condition_id"]: condition
         for condition in payload["mechanism_test"]["conditions"]

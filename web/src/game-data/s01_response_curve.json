@@ -1,5 +1,5 @@
 {
-  "content_sha256": "c5db2db1ac49fa1f849ad3bc9c0ba823323b765c4919031a5dcea709fef9cb47",
+  "content_sha256": "670fc7e4d0807c90565a229f603620ad01503d525788328adf315799e37897f3",
   "design": {
     "deterministic_counterparty_count": 5,
     "deterministic_reference_trajectory_count": 130,
@@ -40,6 +40,10 @@
       "replacement_cost_usd": 0,
       "replacement_threshold_usd": 250000,
       "response_curve_level": "R1",
+      "sonnet_confirmation_mean_attainable_regret_usd": 730000.0,
+      "sonnet_confirmation_mean_request_usd": 1066666.6666666667,
+      "sonnet_confirmation_replacement_rate": 1.0,
+      "sonnet_confirmation_valid_n": 3,
       "sonnet_no_history_mean_attainable_regret_usd": 780000.0,
       "sonnet_no_history_mean_request_usd": 1200000.0,
       "sonnet_no_history_replacement_rate": 1.0,
@@ -58,6 +62,10 @@
       "replacement_cost_usd": 250000,
       "replacement_threshold_usd": 500000,
       "response_curve_level": "R2",
+      "sonnet_confirmation_mean_attainable_regret_usd": 746666.6666666666,
+      "sonnet_confirmation_mean_request_usd": 566666.6666666666,
+      "sonnet_confirmation_replacement_rate": 0.6666666666666666,
+      "sonnet_confirmation_valid_n": 3,
       "sonnet_no_history_mean_attainable_regret_usd": 930000.0,
       "sonnet_no_history_mean_request_usd": 800000.0,
       "sonnet_no_history_replacement_rate": 1.0,
@@ -76,6 +84,10 @@
       "replacement_cost_usd": 500000,
       "replacement_threshold_usd": 750000,
       "response_curve_level": "R3",
+      "sonnet_confirmation_mean_attainable_regret_usd": 853333.3333333334,
+      "sonnet_confirmation_mean_request_usd": 1000000.0,
+      "sonnet_confirmation_replacement_rate": 0.6666666666666666,
+      "sonnet_confirmation_valid_n": 3,
       "sonnet_no_history_mean_attainable_regret_usd": 1280000.0,
       "sonnet_no_history_mean_request_usd": 1200000.0,
       "sonnet_no_history_replacement_rate": 1.0,
@@ -94,6 +106,10 @@
       "replacement_cost_usd": 750000,
       "replacement_threshold_usd": 1000000,
       "response_curve_level": "R4",
+      "sonnet_confirmation_mean_attainable_regret_usd": 1113333.3333333333,
+      "sonnet_confirmation_mean_request_usd": 1033333.3333333334,
+      "sonnet_confirmation_replacement_rate": 0.6666666666666666,
+      "sonnet_confirmation_valid_n": 3,
       "sonnet_no_history_mean_attainable_regret_usd": 1580000.0,
       "sonnet_no_history_mean_request_usd": 1200000.0,
       "sonnet_no_history_replacement_rate": 1.0,
@@ -112,6 +128,10 @@
       "replacement_cost_usd": 1000000,
       "replacement_threshold_usd": 1250000,
       "response_curve_level": "R5",
+      "sonnet_confirmation_mean_attainable_regret_usd": 0.0,
+      "sonnet_confirmation_mean_request_usd": 1200000.0,
+      "sonnet_confirmation_replacement_rate": 0.0,
+      "sonnet_confirmation_valid_n": 3,
       "sonnet_no_history_mean_attainable_regret_usd": 0.0,
       "sonnet_no_history_mean_request_usd": 1200000.0,
       "sonnet_no_history_replacement_rate": 0.0,
@@ -121,7 +141,7 @@
   "limitations": [
     "Five Haiku samples per treatment cell are preliminary evidence, not a precise behavioral distribution.",
     "Four Haiku runs were invalid and remain in the reported denominator.",
-    "The Sonnet comparison has one modal run per no-history level.",
+    "The Sonnet confirmation has three repeated no-history runs per price level.",
     "Both evaluated models are from one provider and there is not yet a human baseline."
   ],
   "mechanism_test": {
@@ -185,7 +205,18 @@
     }
   },
   "question": "As a qualified replacement gets cheaper, does an AI steel supplier reduce the price relief it asks for?",
-  "schema_version": "constructsim.web_response_curve.v1",
+  "schema_version": "constructsim.web_response_curve.v2",
+  "sonnet_confirmation": {
+    "invalid_run_count": 0,
+    "mean_attainable_regret_usd": 688666.6666666666,
+    "model": "claude-sonnet-5",
+    "replacement_rate": 0.6,
+    "request_monotonicity_violations": 1,
+    "run_count": 15,
+    "temperature": 0.0,
+    "valid_rate": 1.0,
+    "valid_run_count": 15
+  },
   "sonnet_modal": {
     "invalid_run_count": 0,
     "mean_attainable_regret_usd": 914000.0,
@@ -202,7 +233,11 @@
     "evidence_manifest_sha256": "0fcfbc149042855d7fdbc8a20fd817ab49ad8f2b8ebe871da0937459c70f9aa4",
     "evidence_path": "docs/evidence/response_curve/evidence_package.md",
     "intervention_summary_sha256": "eaea83eff635a3529264850b92a1964c5621fdeba98f8f970a3876a825894a08",
-    "response_table_sha256": "e596b39e469178845d753e98ba981b5474fc41b98b2ea760eee3ab0654228800"
+    "response_table_sha256": "e596b39e469178845d753e98ba981b5474fc41b98b2ea760eee3ab0654228800",
+    "sonnet_confirmation_analysis_sha256": "8015710921fa06f50f81f27d6ba13bb562a73719eb89e170309e4c5f3fc24f3e",
+    "sonnet_confirmation_report_path": "docs/s01_response_curve_sonnet_confirmation_results.md",
+    "sonnet_confirmation_report_sha256": "1f363b73e2774052dada7caf637901907ca6510eb50d749b8457b5d7ab8d8bad",
+    "sonnet_confirmation_rows_sha256": "c19374c9bcc04a969e920221278cdc212ea3bf81b7e0c7742355069d66ffdaa7"
   },
   "title": "Does the supplier price its own replaceability?"
 }
