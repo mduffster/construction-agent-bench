@@ -23,18 +23,22 @@ const ROLE_ORDER: AgentId[] = [
   "lender",
 ];
 
+const ROLE_LABELS: Record<AgentId, string> = {
+  steel_supplier: "steel supplier",
+  gc: "general contractor",
+  owner: "owner",
+  inspector: "inspector",
+  labor_subcontractor: "labor subcontractor",
+  lender: "lender",
+};
+
 export function createInitialGameState(data: GameData, selectedRole: AgentId): GameState {
   assertPlayableRole(data, selectedRole);
   return {
     selectedRole,
     roundIndex: 0,
     decisions: {},
-    trustRatings: Object.fromEntries(
-      ROLE_ORDER.filter((agentId) => agentId !== selectedRole).map((agentId) => [
-        agentId,
-        3,
-      ])
-    ) as Record<AgentId, number>,
+    trustRatings: {},
   };
 }
 
@@ -240,52 +244,21 @@ export function visibleRoundId(data: GameData, state: GameState): RoundId | "DON
   return data.rounds[state.roundIndex]?.round_id ?? "DONE";
 }
 
-// Story flags that mean the project package carried real, unresolved risk when
-// a counterparty acted — most of them are downstream of the player's own
-// defensive or thin choices. A counterparty going conservative or
-// self-protective in their presence is reacting to that risk, not singling the
-// player out.
-const RISK_FLAGS = [
-  "supplier_thin_disclosure",
-  "supplier_high_request",
-  "supplier_no_upfront_request",
-  "supplier_outside_work",
-  "supplier_shipped_only_lot_a",
-  "owner_no_support",
-  "owner_package_rejected",
-  "gc_rejected_supplier_path",
-  "gc_overcertified_no_backup",
-  "loan_unavailable",
-  "labor_released",
-  "inspection_deeper_review",
-  "inspection_no_release_path",
-  "lot_b_late",
-];
-
-export type TrustDriver = "cooperative" | "reaction_to_risk" | "independent_caution";
-
-export interface TrustCalibrationEntry {
+export interface TrustReflectionEntry {
   actorId: AgentId;
-  finalChoiceId: ChoiceId;
-  driver: TrustDriver;
-  driverLabel: string;
-  playerRating: number;
+  playerRating: number | null;
+  ratingLabel: string;
   read: string;
-  wellCalibrated: boolean;
 }
 
-export interface TrustCalibration {
-  entries: TrustCalibrationEntry[];
-  wellCalibratedCount: number;
+export interface TrustReflection {
+  entries: TrustReflectionEntry[];
+  ratedCount: number;
   total: number;
 }
 
-export function trustCalibration(data: GameData, state: GameState): TrustCalibration {
+export function trustReflection(data: GameData, state: GameState): TrustReflection {
   const trace = buildGameTrace(data, state);
-  const finalFlags = new Set(
-    (trace.at(-1)?.stateAfter ?? data.initial_game_state).story_flags
-  );
-  const riskPresent = RISK_FLAGS.some((flag) => finalFlags.has(flag));
 
   const finalMoveByActor = new Map<AgentId, AppliedMove>();
   for (const round of trace) {
@@ -296,80 +269,50 @@ export function trustCalibration(data: GameData, state: GameState): TrustCalibra
     }
   }
 
-  const entries: TrustCalibrationEntry[] = [];
-  for (const [actorId, move] of finalMoveByActor) {
-    const rating = state.trustRatings[actorId] ?? 3;
-    const driver = classifyDriver(move.choiceId, riskPresent);
+  const entries: TrustReflectionEntry[] = [];
+  for (const actorId of finalMoveByActor.keys()) {
+    const rating = state.trustRatings[actorId] ?? null;
     entries.push({
       actorId,
-      finalChoiceId: move.choiceId,
-      driver,
-      driverLabel: driverLabel(driver),
       playerRating: rating,
-      read: calibrationRead(driver, rating),
-      wellCalibrated: isWellCalibrated(driver, rating),
+      ratingLabel: trustRatingLabel(rating),
+      read: trustRatingRead(actorId, rating),
     });
   }
   entries.sort((left, right) => ROLE_ORDER.indexOf(left.actorId) - ROLE_ORDER.indexOf(right.actorId));
 
   return {
     entries,
-    wellCalibratedCount: entries.filter((entry) => entry.wellCalibrated).length,
+    ratedCount: entries.filter((entry) => entry.playerRating !== null).length,
     total: entries.length,
   };
 }
 
-function classifyDriver(choiceId: ChoiceId, riskPresent: boolean): TrustDriver {
-  if (choiceId === "balanced") {
-    return "cooperative";
+function trustRatingLabel(rating: number | null): string {
+  if (rating === null) {
+    return "Not rated";
   }
-  return riskPresent ? "reaction_to_risk" : "independent_caution";
-}
-
-function driverLabel(driver: TrustDriver): string {
   return {
-    cooperative: "Moved the project forward",
-    reaction_to_risk: "Reacting to risk in the package",
-    independent_caution: "Cautious by default",
-  }[driver];
+    1: "Very low trust",
+    2: "Low trust",
+    3: "Neutral",
+    4: "High trust",
+    5: "Very high trust",
+  }[rating] ?? "Not rated";
 }
 
-function calibrationRead(driver: TrustDriver, rating: number): string {
-  if (driver === "cooperative") {
-    if (rating >= 4) {
-      return "Well read — they cooperated to move the project forward, and you trusted them.";
-    }
-    if (rating <= 2) {
-      return "Underrated — they cooperated to move the project forward, but you marked them down.";
-    }
-    return "Fair, though a neutral rating slightly undersells a cooperative partner.";
-  }
-  if (driver === "reaction_to_risk") {
-    if (rating <= 2) {
-      return "Misread — you rated them low, but their caution was a response to unresolved risk in the package, not opposition to you.";
-    }
-    if (rating >= 4) {
-      return "Generous — they were guarding against real risk in the package; high trust is optimistic but not unfounded.";
-    }
-    return "Reasonable — they were cautious about real risk, and you stayed neutral.";
+function trustRatingRead(actorId: AgentId, rating: number | null): string {
+  const actor = ROLE_LABELS[actorId];
+  if (rating === null) {
+    return `You did not record a view of the ${actor}.`;
   }
   if (rating <= 2) {
-    return "Harsh — they were cautious by disposition, not reacting to you; a low rating overreads it.";
+    return `Your rating suggests you doubted the ${actor} would protect your interests or help the project.`;
   }
-  if (rating >= 4) {
-    return "Trusting — they played it safe regardless of your moves; high trust is a judgment call.";
+  if (rating === 3) {
+    return `Your rating suggests you were unsure what to expect from the ${actor}.`;
   }
-  return "Neutral — matches their steady, cautious posture.";
-}
-
-function isWellCalibrated(driver: TrustDriver, rating: number): boolean {
-  if (driver === "cooperative") {
-    return rating >= 4;
-  }
-  if (driver === "reaction_to_risk") {
-    return rating >= 3;
-  }
-  return rating <= 3;
+  return `Your rating suggests you expected the ${actor} to act reliably toward you or the project.`;
 }
 
 export function counterpartyTimeline(data: GameData, state: GameState) {

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Collection, Mapping
 from dataclasses import dataclass
 from math import floor
 from typing import Any, Literal
@@ -127,6 +127,20 @@ def build_study_policies(
     factory: Callable[[str], AgentPolicy] | None = None,
 ) -> dict[str, AgentPolicy]:
     _validate_condition(condition)
+    packet_agents = PACKET_NODES_BY_AGENT if condition == TREATMENT_CONDITION else ()
+    return build_packet_assignment_policies(packet_agents, factory)
+
+
+def build_packet_assignment_policies(
+    packet_agents: Collection[str],
+    factory: Callable[[str], AgentPolicy] | None = None,
+) -> dict[str, AgentPolicy]:
+    """Build the supplier-GC study with packets assigned to declared recipients."""
+
+    selected = set(packet_agents)
+    unknown = selected - set(PACKET_NODES_BY_AGENT)
+    if unknown:
+        raise ValueError(f"unknown packet recipients: {sorted(unknown)}")
     live_factory = factory or default_live_policy_factory()
     policies: dict[str, AgentPolicy] = {}
     for agent_id in AGENT_IDS:
@@ -134,15 +148,19 @@ def build_study_policies(
             policies[agent_id] = efficient_background_policy()
             continue
         live: AgentPolicy = LineageCorePolicy(live_factory(agent_id))
-        policies[agent_id] = (
-            DerivedStatePacketPolicy(live) if condition == TREATMENT_CONDITION else live
-        )
+        policies[agent_id] = DerivedStatePacketPolicy(live) if agent_id in selected else live
     return policies
 
 
-def packetized_deterministic_policies() -> dict[str, AgentPolicy]:
+def packetized_deterministic_policies(
+    packet_agents: Collection[str] = PACKET_NODES_BY_AGENT,
+) -> dict[str, AgentPolicy]:
+    selected = set(packet_agents)
+    unknown = selected - set(PACKET_NODES_BY_AGENT)
+    if unknown:
+        raise ValueError(f"unknown packet recipients: {sorted(unknown)}")
     policies = deterministic_background_policies()
-    for agent_id in PACKET_NODES_BY_AGENT:
+    for agent_id in selected:
         policies[agent_id] = DerivedStatePacketPolicy(policies[agent_id])
     return policies
 
@@ -153,8 +171,18 @@ def study_run_row(
     replicate_index: int,
     sequence_index: int,
     summary: Mapping[str, Any],
+    exposure_agents: Collection[str] | None = None,
 ) -> dict[str, Any]:
-    _validate_condition(condition)
+    if exposure_agents is None:
+        _validate_condition(condition)
+        selected_exposure_agents = (
+            set(PACKET_NODES_BY_AGENT) if condition == TREATMENT_CONDITION else set()
+        )
+    else:
+        selected_exposure_agents = set(exposure_agents)
+        unknown = selected_exposure_agents - set(PACKET_NODES_BY_AGENT)
+        if unknown:
+            raise ValueError(f"unknown packet recipients: {sorted(unknown)}")
     decisions = {
         str(record.get("node_id")): dict(record.get("parameters", {}))
         for record in summary.get("decision_history", [])
@@ -181,10 +209,10 @@ def study_run_row(
     )
     coalition_success = analysis.get("coalition_success") is True
     exposures = list(analysis.get("observation_intervention_exposures", []) or [])
-    expected_exposure_count = 2 if condition == TREATMENT_CONDITION else 0
+    expected_exposure_count = len(selected_exposure_agents)
     expected_exposure_sites = {
-        ("steel_supplier", B1_NODE_ID),
-        ("gc", B2_NODE_ID),
+        (agent_id, PACKET_NODES_BY_AGENT[agent_id])
+        for agent_id in selected_exposure_agents
     }
     actual_exposure_sites = {
         (str(record.get("agent_id")), str(record.get("phase_id"))) for record in exposures
@@ -193,7 +221,7 @@ def study_run_row(
         len(exposures) == expected_exposure_count
         and (
             actual_exposure_sites == expected_exposure_sites
-            if condition == TREATMENT_CONDITION
+            if selected_exposure_agents
             else not actual_exposure_sites
         )
         and all(record.get("hash_matches") is True for record in exposures)

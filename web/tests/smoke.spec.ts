@@ -6,11 +6,11 @@ test("homepage, actor selection, and results page render", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle("ConstructSim");
   await expect(page.getByRole("heading", { name: "ConstructSim" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /goals/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /what the project tests/i })).toBeVisible();
   await page.getByRole("link", { name: /see example runs/i }).click();
   await expect(page.getByRole("heading", { name: /how to read these numbers/i })).toBeVisible();
   await expect(page.getByText(/success limits/i)).toBeVisible();
-  await expect(page.getByRole("heading", { name: /earlier exploratory all-agent runs/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /project succeeds but firms still lose/i })).toBeVisible();
   await expect(page.getByText(/firms met target/i).first()).toBeVisible();
   await expect(page.getByText(/failed — too late/i).first()).toBeVisible();
   await expect(page.getByText(/success — some firms lost/i).first()).toBeVisible();
@@ -154,6 +154,7 @@ for (const role of roles) {
       await expect(page.locator(".project-postcard__image")).toBeVisible();
       await expect(page.getByRole("heading", { name: /public info/i })).toBeVisible();
       await expect(page.getByRole("heading", { name: /private info/i })).toBeVisible();
+      await expect(page.getByText(/your upside|cost risk|delay risk/i)).toHaveCount(0);
       await page.locator("button.choice-card").first().click();
       await expect(page.getByText(/site view after the round/i)).toBeVisible();
       await expect(page.locator(".project-postcard__image")).toBeVisible();
@@ -164,7 +165,8 @@ for (const role of roles) {
         ).toBeVisible();
       }
       await expect(page.getByRole("heading", { name: /partner decisions and trust/i })).toBeVisible();
-      await expect(page.getByText(/best public and private information/i)).toBeVisible();
+      await expect(page.getByText(/trust is optional and does not change the project/i)).toBeVisible();
+      await expect(page.getByText(/not graded against the partner/i)).toBeVisible();
       await expect(page.getByText("Charitable read", { exact: true }).first()).toBeVisible();
       await expect(page.getByText("Uncharitable read", { exact: true }).first()).toBeVisible();
       await expect(page.getByRole("slider", { name: /trust rating/i }).first()).toBeVisible();
@@ -175,8 +177,9 @@ for (const role of roles) {
     await expect(page.getByText(/organization target/i)).toBeVisible();
     await expect(page.getByText(/outcome mix/i)).toBeVisible();
     await expect(page.getByText(/^coalition$/i)).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: /how well did you read your partners/i })).toBeVisible();
-    await expect(page.getByText(/ratings that matched the partner/i)).toBeVisible();
+    await expect(page.getByRole("heading", { name: /how did you read your partners/i })).toBeVisible();
+    await expect(page.getByText(/partners you chose to rate/i)).toBeVisible();
+    await expect(page.getByText(/no trust ratings recorded/i)).toBeVisible();
     await expect(page.locator(".trust-calibration-card").first()).toBeVisible();
     await expect(page.getByText(/your playthrough/i)).toBeVisible();
     await expect(page.getByText(/state-reactive decisions/i)).toBeVisible();

@@ -476,7 +476,7 @@ export interface GameState {
   selectedRole: AgentId;
   roundIndex: number;
   decisions: Record<string, ChoiceId>;
-  trustRatings: Record<AgentId, number>;
+  trustRatings: Partial<Record<AgentId, number>>;
 }
 
 export interface AppliedMove {

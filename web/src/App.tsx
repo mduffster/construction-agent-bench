@@ -33,7 +33,7 @@ import {
   recordTrust,
   roleNodes,
   selectChoice,
-  trustCalibration,
+  trustReflection,
 } from "./lib/gameEngine";
 import type {
   AgentId,
@@ -50,7 +50,6 @@ import type {
   ResearchProgramData,
   ResearchProgramLadderRow,
   ResponseCurveData,
-  RiskLevel,
 } from "./lib/types";
 
 const gameData = rawGameData as GameData;
@@ -174,20 +173,21 @@ function HomePage() {
           <p className="eyebrow">About</p>
           <h1>ConstructSim</h1>
           <p className="lede">
-            ConstructSim starts in the world of construction but the idea is to
-            test on many multi-firm coordination tasks. These are simulations of
-            normal but complex multi-firm coordination and transaction
-            structures with AI agents.
+            An AI-run company can receive the right information and still make
+            the wrong business decision. ConstructSim follows that failure from
+            one company into a shared, multi-company project.
           </p>
           <p>
-            I'm focused on understanding how AI agents manage coordination on a
-            shared goal while managing private and public constraints. In these
-            scenarios, switching costs are high, and acting overly cooperative
-            or overly competitive will cause projects to fail, or generate
-            massive private losses. In these scenarios, project completion,
-            private incentives, and realistic tradeoffs matter.
+            Construction is the test environment: six firms share a deadline,
+            but each has different information, authority, costs, and private
+            goals. Partners are expensive to replace. The harness can let every
+            firm make its own decisions; the controlled studies add that freedom
+            one step at a time so failures can be traced instead of guessed at.
           </p>
-          <p>I'm open to collaboration on this project.</p>
+          <p>
+            Built by Matt Duffy. I'm open to collaboration; the code and contact
+            route are on <a href="https://github.com/mduffster" rel="noreferrer" target="_blank">GitHub</a>.
+          </p>
           <div className="hero-actions">
             <NavButton href="/play" icon={<Play size={18} />}>
               Play the scenario
@@ -211,15 +211,14 @@ function HomePage() {
       <section className="overview-section">
         <div className="section-title">
           <ClipboardCheck size={20} />
-          <h2>Goals</h2>
+          <h2>What the project tests</h2>
         </div>
         <p>
-          Ideally this project expands to many other complex transactions, where
-          agents depend on each other to be successful, but have private
-          interests. I hope to converge on design decisions that facilitate
-          mutually beneficial AI transactional management, which will benefit
-          deployments within firms, and potentially future deployments where AI
-          manages many transactions as the primary actor.
+          The practical question is whether AI agents can select the right facts,
+          calculate a useful decision, pass it to the right partner, and act on it
+          while protecting their own organization. Construction makes those steps
+          concrete, but the pattern applies anywhere several firms must complete a
+          transaction without sharing all of their information or incentives.
         </p>
       </section>
 
@@ -263,7 +262,7 @@ function HomePage() {
 
 function ResearchTeaser() {
   const handoff = researchProgramData.handoff;
-  const packet = researchProgramData.decision_packet;
+  const multiplayer = researchProgramData.multiplayer;
   return (
     <section className="overview-section research-teaser">
       <div className="section-title">
@@ -273,28 +272,29 @@ function ResearchTeaser() {
       <div className="research-teaser__layout">
         <div>
           <p className="research-kicker">From one decision to six firms</p>
-          <h3>A short, private summary changed what the supplier did.</h3>
+          <h3>The supplier kept asking for about $800K while its leverage moved by $1M.</h3>
           <p>
-            We started with one AI-run supplier, then added more companies. The project
-            information reached the right places, but the teams still chose an expensive
-            backup plan. In the latest test, each company received a short summary of
-            information it was already allowed to see. The supplier prepared both steel
-            lots for delivery in all three runs that included the summary.
+            The research follows that same decision through a contractor handoff and
+            into a six-firm project. The information usually arrived. The harder problem
+            was turning it into the right business choice. A later, small pilot suggests
+            a short decision summary may help, but that result still needs replication.
           </p>
           <div className="research-mini-metrics" aria-label="Study highlights">
             <span>
               <strong>
+                {handoff.assigned_run_count}
+              </strong>
+              two-company assignments
+            </span>
+            <span>
+              <strong>
                 {handoff.safe_action_given_exact_count}/{handoff.exact_live_calculation_count}
               </strong>
-              safe decisions after correct math
+              safe choices after correct math
             </span>
             <span>
-              <strong>{packet.treatment.full_sequence_cure_count}/3</strong>
-              summary runs prepared both lots
-            </span>
-            <span>
-              <strong>{3 - packet.treatment.backup_activation_count}/3</strong>
-              summary runs avoided backup
+              <strong>{multiplayer.completed_stage_count}/4</strong>
+              valid multiplayer steps
             </span>
           </div>
           <NavButton href="/research" icon={<ArrowRight size={18} />}>
@@ -339,6 +339,19 @@ function ResearchPage() {
 
       <ResearchProgramOverview />
 
+      <section className="overview-section research-methods-callout" aria-label="Research checks">
+        <div className="section-title">
+          <ShieldCheck size={20} />
+          <h2>How the work is checked</h2>
+        </div>
+        <p>
+          Protocols are written before paid runs. The response-curve code checked{" "}
+          {responseCurveData.design.deterministic_reference_trajectory_count} reference
+          outcomes first. Saved evidence records the model inputs, decisions, validation
+          repairs, and cost stops, and the website reads its numbers from those frozen results.
+        </p>
+      </section>
+
       <section className="overview-section" id="response-curve">
         <div className="section-title">
           <Gauge size={20} />
@@ -364,16 +377,22 @@ function ResearchPage() {
           <Metric
             icon={<DollarSign size={20} />}
             label="Average avoidable loss"
-            value={formatMoney(Math.round(haiku.mean_attainable_regret_usd))}
+            value={formatRoundedResearchMoney(haiku.mean_attainable_regret_usd)}
           />
         </div>
         <p className="body-copy">
-          Haiku requested $800,000 in 39 valid runs and $600,000 in seven while
-          the highest safe request moved by $1 million. A five-case Sonnet
-          diagnostic was not better: it was replaced in{" "}
-          {Math.round(sonnet.replacement_rate * 100)}% of runs and averaged{" "}
-          {formatMoney(sonnet.mean_attainable_regret_usd)} in avoidable loss.
+          Haiku requested about $800K in 39 valid runs and $600K in seven while
+          the highest safe request moved by $1M.
         </p>
+        <div className="research-program-takeaway research-program-takeaway--plain">
+          <strong>The small Sonnet check did not remove the failure.</strong>
+          <p>
+            In five cases—one at each replacement price—Sonnet was replaced in{" "}
+            {Math.round(sonnet.replacement_rate * 100)}% and left about{" "}
+            {formatRoundedResearchMoney(sonnet.mean_attainable_regret_usd)} in avoidable
+            loss on average. Five runs are a diagnostic, not a model-wide conclusion.
+          </p>
+        </div>
       </section>
 
       <section className="overview-section">
@@ -1026,11 +1045,6 @@ function GamePage({ role }: { role: AgentId }) {
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
-                  <div className="choice-risk-meter" aria-label="Risk levels">
-                    <RiskBadge label="Your upside" level={choice.risk_levels.private_benefit} tone="benefit" />
-                    <RiskBadge label="Cost risk" level={choice.risk_levels.cost} tone="risk" />
-                    <RiskBadge label="Delay risk" level={choice.risk_levels.delay} tone="risk" />
-                  </div>
                 </button>
               ))}
             </section>
@@ -1052,23 +1066,6 @@ function GamePage({ role }: { role: AgentId }) {
         </main>
       </section>
     </Shell>
-  );
-}
-
-function RiskBadge({
-  label,
-  level,
-  tone,
-}: {
-  label: string;
-  level: RiskLevel;
-  tone: "benefit" | "risk";
-}) {
-  return (
-    <div className={`risk-badge risk-badge--${tone} risk-badge--${level}`}>
-      <span>{label}</span>
-      <strong>{titleCase(level)}</strong>
-    </div>
   );
 }
 
@@ -1370,9 +1367,10 @@ function PartnerDecisionReview({
         <h2>Partner decisions and trust</h2>
       </div>
       <p className="trust-update-prompt">
-        This is the best public and private information you have about the actions
-        your business partners have taken. Do you want to adjust how much you trust
-        each partner?
+        Trust is optional and does not change the project. Each slider starts at 3,
+        meaning neutral. Move it only if you want to record a view. At the end, we
+        describe what your ratings suggest you believed about each partner; they are
+        not graded against the partner&apos;s scripted behavior.
       </p>
       <div className="partner-review-list">
         {partnerMoves.map((move) => {
@@ -1401,14 +1399,14 @@ function PartnerDecisionReview({
                   max={5}
                   min={1}
                   type="range"
-                  value={state.trustRatings[move.actorId]}
+                  value={state.trustRatings[move.actorId] ?? 3}
                   onChange={(event) =>
                     setState((current) =>
                       recordTrust(gameData, current, move.actorId, Number(event.target.value))
                     )
                   }
                 />
-                <strong>{state.trustRatings[move.actorId]}</strong>
+                <strong>{state.trustRatings[move.actorId] ?? 3}</strong>
               </label>
             </article>
           );
@@ -1424,7 +1422,9 @@ function EndScreen({ state }: { state: GameState }) {
   const counterparties = counterpartyTimeline(gameData, state);
   const trustRatings = Object.values(state.trustRatings);
   const averageTrust =
-    trustRatings.reduce((total, rating) => total + rating, 0) / trustRatings.length;
+    trustRatings.length > 0
+      ? trustRatings.reduce((total, rating) => total + rating, 0) / trustRatings.length
+      : null;
   const scheduleDelta =
     evaluation.state.completion_week - evaluation.state.baseline_completion_week;
   return (
@@ -1475,7 +1475,7 @@ function EndScreen({ state }: { state: GameState }) {
         </div>
       </section>
 
-      <TrustCalibrationPanel state={state} averageTrust={averageTrust} />
+      <TrustReflectionPanel state={state} averageTrust={averageTrust} />
 
       <div className="hero-actions">
         <NavButton href="/play" icon={<RotateCcw size={18} />}>
@@ -1626,36 +1626,40 @@ function CrowdComparisonPanel({
   );
 }
 
-function TrustCalibrationPanel({
+function TrustReflectionPanel({
   state,
   averageTrust,
 }: {
   state: GameState;
-  averageTrust: number;
+  averageTrust: number | null;
 }) {
-  const calibration = trustCalibration(gameData, state);
+  const reflection = trustReflection(gameData, state);
   return (
-    <section className="trust-summary" aria-label="Trust calibration">
+    <section className="trust-summary" aria-label="Trust reflection">
       <div className="section-title">
         <MessageSquare size={20} />
-        <h2>How well did you read your partners?</h2>
+        <h2>How did you read your partners?</h2>
       </div>
       <p className="trust-calibration-lead">
-        You rated each partner without seeing their private information. Here is what
-        each one was actually responding to — and whether your rating matched.
+        These ratings describe what you expected from each partner. There is no right
+        answer here, and the game does not treat any scripted partner as good or bad.
       </p>
       <div className="trust-summary-card">
-        <span>Ratings that matched the partner's real driver</span>
+        <span>Partners you chose to rate</span>
         <strong>
-          {calibration.wellCalibratedCount}/{calibration.total}
+          {reflection.ratedCount}/{reflection.total}
         </strong>
-        <em>Average trust you gave: {averageTrust.toFixed(1)}/5</em>
+        <em>
+          {averageTrust === null
+            ? "No trust ratings recorded"
+            : `Average trust you gave: ${averageTrust.toFixed(1)}/5`}
+        </em>
         <div className="trust-meter" aria-hidden="true">
           <span
             style={{
               width: `${
-                calibration.total
-                  ? (calibration.wellCalibratedCount / calibration.total) * 100
+                reflection.total
+                  ? (reflection.ratedCount / reflection.total) * 100
                   : 0
               }%`,
             }}
@@ -1663,18 +1667,15 @@ function TrustCalibrationPanel({
         </div>
       </div>
       <div className="trust-calibration-list">
-        {calibration.entries.map((entry) => (
-          <article
-            className={`trust-calibration-card trust-calibration-card--${entry.driver}${
-              entry.wellCalibrated ? "" : " trust-calibration-card--miss"
-            }`}
-            key={entry.actorId}
-          >
+        {reflection.entries.map((entry) => (
+          <article className="trust-calibration-card" key={entry.actorId}>
             <header>
               <strong>{roleLabel(entry.actorId)}</strong>
-              <span className="trust-calibration-rating">You rated {entry.playerRating}/5</span>
+              <span className="trust-calibration-rating">
+                {entry.playerRating === null ? "Not rated" : `You rated ${entry.playerRating}/5`}
+              </span>
             </header>
-            <p className="trust-calibration-driver">{entry.driverLabel}</p>
+            <p className="trust-calibration-driver">{entry.ratingLabel}</p>
             <p className="trust-calibration-read">{entry.read}</p>
           </article>
         ))}
@@ -1793,8 +1794,8 @@ function ResultsPage() {
         <div>
           <strong>Looking for the latest controlled findings?</strong>
           <span>
-            The Research page now covers the paired decision-state packet test:
-            full-sequence cure moved from 0/3 controls to 3/3 treatments.
+            The Research page follows one decision from the supplier response curve,
+            through a contractor handoff, and into a small decision-summary pilot.
           </span>
         </div>
         <a href="/research#decision-packet">
@@ -1871,7 +1872,7 @@ function ResponseCurveMechanismSection() {
               {condition.valid_run_count}/{condition.run_count}
             </span>
             <span data-label="Average avoidable loss">
-              {formatMoney(Math.round(condition.mean_attainable_regret_usd))}
+              {formatRoundedResearchMoney(condition.mean_attainable_regret_usd)}
             </span>
             <span data-label="Replaced">{Math.round(condition.replacement_rate * 100)}%</span>
             <span data-label="Price pattern breaks">{condition.request_monotonicity_violations}</span>
@@ -1885,7 +1886,7 @@ function ResponseCurveMechanismSection() {
           When the model received the highest safe request, it was never replaced and
           its requests moved in the right direction as market conditions changed. This
           points to trouble selecting the right facts and doing the math. It still left{" "}
-          {formatMoney(
+          {formatRoundedResearchMoney(
             mechanism.trusted_threshold_effect.residual_high_level_anchor_usd
           )} on the table in the highest-price case.
         </p>
@@ -1935,19 +1936,39 @@ function PopulationSection() {
   const modelLabel = Array.isArray(population.model)
     ? population.model.join(", ")
     : population.model;
+  const successfulRuns = validRuns.filter((run) => run.project_success);
+  const allFirmSuccesses = successfulRuns.filter((run) => run.coalition_success).length;
   return (
     <section className="overview-section">
       <div className="section-title">
         <Users size={20} />
-        <h2>Earlier exploratory all-agent runs</h2>
+        <h2>When the project succeeds but firms still lose</h2>
+      </div>
+      <div className="metric-grid research-metric-grid">
+        <Metric
+          icon={<CheckCircle2 size={20} />}
+          label="Project successes"
+          value={`${successfulRuns.length}/${validRuns.length}`}
+        />
+        <Metric
+          icon={<Users size={20} />}
+          label="Successful projects where every firm met its goal"
+          value={`${allFirmSuccesses}/${successfulRuns.length}`}
+        />
       </div>
       <p>
-        These runs predate the controlled role-expansion ladder and combine
+        A project can finish under its public cost and schedule limits while one or
+        more firms miss their own private target. In these runs, the model made every
+        decision for all six firms. {successfulRuns.length} of {validRuns.length} valid
+        runs completed the project, but only {allFirmSuccesses} of those successful
+        projects also met every firm's private goal.
+      </p>
+      <p>
+        This is exploratory evidence, not a controlled estimate. The runs predate the
+        role-expansion ladder and combine
         temperature-zero and temperature-one batches with different repair budgets.
         Each row is one complete run with <strong>{modelLabel}</strong> playing
-        all six firms. Every decision is made by the model. {population.project_success_count} of{" "}
-        {population.valid_run_count} valid runs finished as project successes;
-        final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
+        all six firms. Final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
         {formatMoney(population.cost_max ?? 0)}. "Firms met target" counts how
         many of the six organizations also hit their private profit goals. Anything below
         6 is a cost of coordination that project-level numbers don't capture.
@@ -2404,6 +2425,15 @@ function formatMoney(value: number) {
     return `${sign}$${(amount / 1_000_000).toFixed(2)}M`;
   }
   return `${sign}$${amount.toLocaleString()}`;
+}
+
+function formatRoundedResearchMoney(value: number) {
+  const rounded = Math.round(value / 1_000) * 1_000;
+  if (Math.abs(rounded) >= 1_000_000) {
+    return formatMoney(rounded);
+  }
+  const sign = rounded < 0 ? "-" : "";
+  return `${sign}$${Math.abs(rounded / 1_000).toLocaleString()}K`;
 }
 
 function formatDelta(value: number, unit: string) {

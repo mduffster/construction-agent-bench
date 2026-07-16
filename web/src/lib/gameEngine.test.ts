@@ -10,7 +10,7 @@ import {
   recordTrust,
   roleNodes,
   selectChoice,
-  trustCalibration,
+  trustReflection,
 } from "./gameEngine";
 import type { AgentId, ChoiceId, GameData, GameState } from "./types";
 
@@ -153,47 +153,45 @@ describe("S01 V2 public human game engine", () => {
     expect(evaluation.modelOutcome?.final_project_cost).toBeGreaterThanOrEqual(95_000_000);
   });
 
-  it("rates every counterparty in the trust calibration", () => {
+  it("leaves trust unrated until the player moves a slider", () => {
     const state = playChoices("steel_supplier", ["balanced", "balanced", "balanced"]);
-    const calibration = trustCalibration(data, state);
+    const reflection = trustReflection(data, state);
 
-    expect(calibration.entries).toHaveLength(5);
-    expect(calibration.total).toBe(5);
-    for (const entry of calibration.entries) {
+    expect(reflection.entries).toHaveLength(5);
+    expect(reflection.total).toBe(5);
+    expect(reflection.ratedCount).toBe(0);
+    for (const entry of reflection.entries) {
       expect(entry.actorId).not.toBe("steel_supplier");
-      expect(["cooperative", "reaction_to_risk", "independent_caution"]).toContain(entry.driver);
+      expect(entry.playerRating).toBeNull();
+      expect(entry.ratingLabel).toBe("Not rated");
       expect(entry.read.length).toBeGreaterThan(0);
     }
   });
 
-  it("reads a low rating of a risk-reacting partner as a misread", () => {
-    // Thin disclosure creates package risk; counterparties turn defensive in
-    // response, so a low trust rating of one is a calibration miss.
+  it("describes a low trust rating without grading it", () => {
     let state = playChoices("steel_supplier", [
       "self_protective",
       "self_protective",
       "self_protective",
     ]);
     state = recordTrust(data, state, "lender", 1);
-    const calibration = trustCalibration(data, state);
-    const lender = calibration.entries.find((entry) => entry.actorId === "lender");
+    const reflection = trustReflection(data, state);
+    const lender = reflection.entries.find((entry) => entry.actorId === "lender");
 
-    expect(lender?.driver).toBe("reaction_to_risk");
-    expect(lender?.wellCalibrated).toBe(false);
-    expect(lender?.read).toMatch(/misread/i);
+    expect(reflection.ratedCount).toBe(1);
+    expect(lender?.ratingLabel).toBe("Very low trust");
+    expect(lender?.read).toMatch(/you doubted the lender/i);
+    expect(lender?.read).not.toMatch(/misread|correct|calibrated/i);
   });
 
-  it("counts high trust in cooperative partners as well calibrated", () => {
+  it("describes high trust as an expectation, not a judgment", () => {
     let state = playChoices("steel_supplier", ["balanced", "balanced", "balanced"]);
-    for (const actorId of ["gc", "owner", "inspector", "labor_subcontractor", "lender"] as AgentId[]) {
-      state = recordTrust(data, state, actorId, 5);
-    }
-    const calibration = trustCalibration(data, state);
-    const cooperative = calibration.entries.filter((entry) => entry.driver === "cooperative");
+    state = recordTrust(data, state, "gc", 5);
+    const reflection = trustReflection(data, state);
+    const gc = reflection.entries.find((entry) => entry.actorId === "gc");
 
-    expect(cooperative.length).toBeGreaterThan(0);
-    for (const entry of cooperative) {
-      expect(entry.wellCalibrated).toBe(true);
-    }
+    expect(gc?.ratingLabel).toBe("Very high trust");
+    expect(gc?.read).toMatch(/you expected the general contractor/i);
+    expect(gc?.read).not.toMatch(/correct|well calibrated/i);
   });
 });

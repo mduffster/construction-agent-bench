@@ -1,40 +1,61 @@
 # ConstructSim
 
-ConstructSim is a stateful testbed for autonomous firms coordinating on one consequential project
-under asymmetric information, separate commercial incentives, distributed authority, and costly
-partner replacement.
+An AI-run company can receive the right information and still make the wrong business decision.
+ConstructSim is a stateful research environment for following that failure from one company into a
+shared, multi-company project.
 
-The research program is deliberately staged. A single-agent replaceability curve is followed by a
-completed two-agent threshold-handoff pilot and then a controlled S01 V2 multiplayer lineage
-ladder. The ladder adds live organizations cumulatively while tracing where a business datum is
-exposed, interpreted, acted on, and realized.
+Construction is the test environment. Six firms share a deadline, but each has different facts,
+authority, costs, and private goals. Partners are expensive to replace. The harness can let every
+firm make its own decisions; the controlled studies add that freedom one step at a time so a bad
+outcome can be traced to fact selection, calculation, communication, or action.
 
-## Current preliminary results
+## What the studies show so far
 
-The response curve localized a large single-agent gap: supplying a computed threshold as an
-attributed fact sharply reduced regret and unnecessary replacement. The frozen two-agent follow-up
-then assigned 150 runs across structured, prose, and silent handoffs. Exact scripted senders reached
-`100%` end-to-end success with structured data and `93.3%` with equivalent prose; both live-sender
-arms reached `30%`. All `18/18` exact live GC calculations produced safe actions, while most errors
-occurred before transmission when the GC bound the wrong business values into its calculation.
+The first study varied the cost of replacing one AI-run steel supplier. The highest safe request
+moved by $1M, but Claude Haiku asked for about $800K in 39 of 46 valid runs and $600K in the other
+seven. Average avoidable loss was about $595K. A five-case Claude Sonnet diagnostic was not better,
+but five runs are too few for a general model claim.
 
-The controlled multiplayer ladder then added live organizations cumulatively through all six
-firms. All four rungs were valid and project-successful, with `6/6` expected information exposures,
-`7/7` operative links realized, and no clipping. But every live rung narrowed the path to Lot A,
-activated expensive backup steel, and missed coalition success. The result separates successful
-data lineage from decision quality and localizes the next experiment at the supplier-GC boundary.
+The two-company follow-up assigned 150 runs to test whether a contractor could calculate and pass
+the useful number to the supplier. Whenever the live contractor calculated the number exactly, the
+supplier made a safe choice (18/18). Written messages and structured records performed equally well
+after a correct calculation; most failures occurred earlier, when the contractor selected or bound
+the wrong facts.
 
-Read the generated [response-curve evidence package](docs/evidence/response_curve/evidence_package.md)
-and the frozen [experiment specification](docs/s01_replaceability_response_curve_spec.md).
-The completed dyad has a frozen
-[protocol](docs/s01_distributed_threshold_handoff_spec.md) and
-[results report](docs/s01_distributed_threshold_handoff_results.md). The completed multiplayer
-lineage bridge also has a frozen [protocol](docs/s01_v2_multiplayer_bridge_spec.md) and
-[results report](docs/s01_v2_multiplayer_bridge_results.md).
+A controlled multiplayer ladder then added AI-run companies until all six were live. All four steps
+were valid and project-successful, and every expected information handoff arrived. Yet every AI-run
+version narrowed the recovery to one steel lot and activated an expensive backup path. Information
+arrival was not the same as a good decision.
 
-## Reproduce
+A final six-run pilot tested short, private decision summaries. The summary used only information
+each company was already allowed to see; supplier-only facts stayed private. The result was large
+but preliminary because supplier and contractor summaries were bundled and each version had only
+three runs. A preregistered four-way replication is the next test.
 
-Deterministic references and validation do not call a model:
+## Project success is not enough
+
+ConstructSim scores both the public project and each firm's private target. In an earlier set of
+open-decision, all-agent runs, 10 of 12 valid runs completed the project, but only 5 of those 10
+successful projects also met every firm's private goal. Those runs mix settings and repair budgets,
+so they are exploratory evidence rather than a controlled estimate. They show why project-level
+success alone can hide a costly coordination failure.
+
+## Research checks
+
+Protocols are frozen before paid runs. The response-curve code checked 130 deterministic reference
+outcomes before model calls. Saved evidence includes model inputs, decisions, validation repairs,
+and cost stops. The public website imports generated study summaries rather than hand-maintaining
+sample sizes or outcomes.
+
+Read the generated [response-curve evidence package](docs/evidence/response_curve/evidence_package.md),
+the [two-company protocol](docs/s01_distributed_threshold_handoff_spec.md) and
+[results](docs/s01_distributed_threshold_handoff_results.md), the
+[multiplayer protocol](docs/s01_v2_multiplayer_bridge_spec.md) and
+[results](docs/s01_v2_multiplayer_bridge_results.md), and the
+[decision-summary protocol](docs/s01_v2_derived_state_packet_protocol.md) and
+[results](docs/s01_v2_derived_state_packet_results.md).
+
+## Reproduce without model calls
 
 ```bash
 uv run python scripts/run_s01_response_curve.py --stage references
@@ -45,29 +66,21 @@ uv run ruff check .
 uv run python scripts/audit_choice_consequences.py --output outputs/choice_consequence_audit.json
 ```
 
-Live stages require an Anthropic API key and explicit opt-in:
-
-```bash
-uv run python scripts/run_s01_response_curve.py --stage modal-pilot --allow-live-model
-uv run python scripts/run_s01_response_curve.py --stage haiku-confirmation --allow-live-model
-```
-
-The handoff runner also exposes guarded modal stages for scripted structured/prose records, a silent
-control, and handoff-only live GC structured/prose records. They are not run by the deterministic
-command above and require `--allow-live-model`. The frozen V2.1 protocol and `$8.50` program ceiling
-are documented in `docs/s01_distributed_threshold_handoff_spec.md`.
-
-The multiplayer ladder uses a state-aware scripted background, adds live roles cumulatively, and
-stops on invalid output, a broken lineage, or its cost guard. Paid execution requires
-`--allow-live-batch`; see `docs/s01_v2_multiplayer_bridge_spec.md`.
-
-Rebuild the frozen evidence packet from named outputs:
+Rebuild the frozen public evidence:
 
 ```bash
 uv run python scripts/build_response_curve_evidence.py
+uv run python scripts/export_response_curve_web_data.py
 uv run python scripts/export_research_program_web_data.py
 ```
 
-The wider S00-S05 suite remains useful for deterministic runtime regression, but it is not the
-active research agenda. New research scenarios are added one at a time only after the current
-experiment is complete.
+Live Anthropic stages require an API key and an explicit opt-in. Each study runner has a hard cost
+guard; see its frozen protocol before making paid calls.
+
+The wider S00-S05 suite remains useful for deterministic runtime regression, but new research
+questions are added one high-value scenario at a time.
+
+## Contact
+
+ConstructSim is built by Matt Duffy. Find the code and get in touch through
+[GitHub](https://github.com/mduffster).

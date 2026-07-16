@@ -44,6 +44,12 @@ def main() -> None:
     parser.add_argument("--repair-budget", type=int, default=1)
     parser.add_argument("--max-cost-usd", type=float, default=None)
     parser.add_argument(
+        "--per-run-reserve-usd",
+        type=float,
+        default=0.0,
+        help="Optional pre-dispatch reserve used to keep the final call inside the hard cap.",
+    )
+    parser.add_argument(
         "--instance-ids",
         help="Optional comma-separated response-curve instance IDs for a diagnostic subset.",
     )
@@ -65,6 +71,8 @@ def main() -> None:
         help="Optional baseline response_curve_analysis.json for a paired arm comparison.",
     )
     args = parser.parse_args()
+    if args.per_run_reserve_usd < 0:
+        raise ValueError("per-run reserve cannot be negative")
 
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     intervention_suffix = "" if args.intervention == "none" else f"_{args.intervention}"
@@ -116,10 +124,11 @@ def main() -> None:
             if summary_path.exists():
                 total_cost += _summary_cost(json.loads(summary_path.read_text()))
                 continue
-            if total_cost >= max_cost_usd:
+            if total_cost + args.per_run_reserve_usd > max_cost_usd:
                 raise RuntimeError(
                     f"hard cost stop reached before {instance_id}: "
-                    f"${total_cost:.4f} >= ${max_cost_usd:.4f}"
+                    f"${total_cost:.4f} spent + ${args.per_run_reserve_usd:.4f} reserve "
+                    f"> ${max_cost_usd:.4f}"
                 )
             focal_policy = LLMPolicy(
                 AnthropicModelAdapter(model=model, temperature=temperature),
@@ -190,6 +199,7 @@ def main() -> None:
     analysis["replicates_per_cell"] = replicates
     analysis["repair_budget"] = args.repair_budget
     analysis["max_cost_usd"] = max_cost_usd
+    analysis["per_run_reserve_usd"] = args.per_run_reserve_usd
     analysis["instance_ids"] = instance_ids
     analysis["intervention_id"] = args.intervention
     analysis["modal_gate"] = _modal_gate(analysis) if args.stage == "modal-pilot" else None
