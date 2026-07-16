@@ -536,27 +536,27 @@ function ResearchPage() {
         </p>
         <div className="research-source-links">
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/evidence/response_curve/evidence_package.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/evidence/response_curve/evidence_package.md"
             label="Response-curve evidence"
           />
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_response_curve_sonnet_confirmation_results.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/s01_response_curve_sonnet_confirmation_results.md"
             label="Sonnet confirmation results"
           />
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_distributed_threshold_handoff_results.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/s01_distributed_threshold_handoff_results.md"
             label="Two-agent handoff results"
           />
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_multiplayer_bridge_results.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_multiplayer_bridge_results.md"
             label="Multiplayer ladder results"
           />
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_derived_state_packet_results.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_derived_state_packet_results.md"
             label="Decision-summary pilot"
           />
           <ResearchSourceLink
-            href="https://github.com/mduffster/construction-agent-bench/blob/main/docs/s01_v2_decision_summary_factorial_results.md"
+            href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_decision_summary_factorial_results.md"
             label="Decision-summary confirmation"
           />
         </div>
