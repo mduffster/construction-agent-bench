@@ -152,6 +152,36 @@ test.describe("mobile layout", () => {
   });
 });
 
+test("gameplay keeps its arcade palette and distinct choice colors", async ({ page }) => {
+  await page.goto("/play/s01?role=steel_supplier");
+  await page.getByRole("button", { name: /start first decision/i }).click();
+
+  const theme = await page.evaluate(() => {
+    const shell = document.querySelector<HTMLElement>(".site-shell--game");
+    const banner = document.querySelector<HTMLElement>(".round-banner");
+    const cards = Array.from(document.querySelectorAll<HTMLElement>(".choice-card"));
+    return {
+      background: shell ? getComputedStyle(shell).backgroundColor : null,
+      bannerBorder: banner ? getComputedStyle(banner).borderTopColor : null,
+      cardClasses: cards.map((card) => card.className),
+      cardShadows: cards.map((card) => getComputedStyle(card).boxShadow),
+    };
+  });
+
+  expect(theme.background).toBe("rgb(27, 18, 68)");
+  expect(theme.bannerBorder).toBe("rgb(255, 245, 55)");
+  expect(theme.cardClasses).toEqual([
+    "choice-card choice-card--balanced",
+    "choice-card choice-card--self_protective",
+    "choice-card choice-card--conservative",
+  ]);
+  expect(theme.cardShadows).toEqual([
+    "rgb(255, 47, 179) 6px 6px 0px 0px",
+    "rgb(255, 138, 0) 6px 6px 0px 0px",
+    "rgb(0, 245, 255) 6px 6px 0px 0px",
+  ]);
+});
+
 for (const role of roles) {
   test(`${role} can complete a three-round S01 playthrough`, async ({ page }) => {
     await page.goto("/play");

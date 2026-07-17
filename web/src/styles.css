@@ -2097,6 +2097,345 @@ h2 {
   margin: 0;
 }
 
+/* The playable simulation deliberately uses a louder arcade palette than the
+   research pages. Keep these overrides scoped to the game shell so publishing
+   copy changes cannot flatten the game back into the main site's visual tone. */
+.site-shell--game {
+  --game-cyan: #00f5ff;
+  --game-ink: #120820;
+  --game-magenta: #ff2fb3;
+  --game-orange: #ff8a00;
+  --game-panel: #fefcff;
+  --game-purple: #2b0f54;
+  --game-yellow: #fff537;
+  background:
+    linear-gradient(90deg, rgba(255, 0, 170, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(0, 245, 255, 0.08) 1px, transparent 1px),
+    #1b1244;
+  background-size: 18px 18px;
+}
+
+.site-shell--game .topbar {
+  background: var(--game-ink);
+  border-bottom-color: var(--game-cyan);
+  color: var(--game-yellow);
+}
+
+.site-shell--game .brand-mark {
+  background: var(--game-magenta);
+  border-color: var(--game-cyan);
+  box-shadow: 5px 5px 0 var(--game-yellow);
+}
+
+.site-shell--game .topbar nav a {
+  color: var(--game-cyan);
+}
+
+.site-shell--game .page-head,
+.site-shell--game .page-head .lede {
+  color: var(--game-panel);
+}
+
+.site-shell--game .page-head .eyebrow {
+  color: var(--game-yellow);
+}
+
+.site-shell--game .role-card {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 6px 6px 0 var(--game-magenta);
+  color: var(--game-ink);
+}
+
+.site-shell--game .role-card__icon {
+  background: var(--game-yellow);
+  border-color: var(--game-ink);
+  color: var(--game-ink);
+}
+
+.site-shell--game .role-card p {
+  color: var(--game-purple);
+}
+
+.site-shell--game .role-card span,
+.site-shell--game .system-note strong {
+  color: var(--game-cyan);
+}
+
+.site-shell--game .system-note {
+  background: var(--game-ink);
+  border-color: var(--game-cyan);
+  box-shadow: 6px 6px 0 var(--game-magenta);
+  color: var(--game-panel);
+}
+
+.site-shell--game .scenario-card,
+.site-shell--game .decision-brief {
+  background: var(--game-purple);
+  border-color: var(--game-cyan);
+  box-shadow: 7px 7px 0 var(--game-magenta);
+  color: var(--game-yellow);
+}
+
+.site-shell--game .scenario-card .eyebrow,
+.site-shell--game .project-scene .eyebrow {
+  color: var(--game-magenta);
+}
+
+.site-shell--game .scenario-story p {
+  color: var(--game-panel);
+}
+
+.site-shell--game .role-summary,
+.site-shell--game .project-strip {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  color: var(--game-ink);
+}
+
+.site-shell--game .role-summary p,
+.site-shell--game .role-summary li,
+.site-shell--game .project-strip dd {
+  color: var(--game-purple);
+}
+
+.site-shell--game .role-summary ul,
+.site-shell--game .project-strip dt {
+  border-color: var(--game-ink);
+  color: var(--game-ink);
+}
+
+.site-shell--game .primary-button--game {
+  background: var(--game-magenta);
+  box-shadow: 5px 5px 0 var(--game-cyan);
+  color: var(--game-ink);
+}
+
+.site-shell--game .round-banner {
+  background: var(--game-ink);
+  border-color: var(--game-yellow);
+  box-shadow: 7px 7px 0 var(--game-cyan);
+  color: var(--game-panel);
+}
+
+.site-shell--game .round-banner span {
+  color: var(--game-orange);
+}
+
+.site-shell--game .project-scene {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 7px 7px 0 var(--game-yellow);
+  color: var(--game-ink);
+}
+
+.site-shell--game .project-scene--watch {
+  box-shadow: 7px 7px 0 var(--game-orange);
+}
+
+.site-shell--game .project-scene--blocked {
+  box-shadow: 7px 7px 0 var(--game-magenta);
+}
+
+.site-shell--game .project-postcard,
+.site-shell--game .scene-bar,
+.site-shell--game .scene-bar div {
+  border-color: var(--game-ink);
+}
+
+.site-shell--game .scene-bar {
+  background: var(--game-panel);
+}
+
+.site-shell--game .scene-bar span {
+  color: var(--game-purple);
+}
+
+.site-shell--game .scene-bar span strong {
+  color: var(--game-ink);
+}
+
+.site-shell--game .scene-bar i {
+  background: var(--game-magenta);
+}
+
+.site-shell--game .scene-bar--release i {
+  background: var(--game-cyan);
+}
+
+.site-shell--game .scene-bar--risk i {
+  background: var(--game-orange);
+}
+
+.site-shell--game .choice-card {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 6px 6px 0 var(--game-magenta);
+  color: var(--game-ink);
+}
+
+.site-shell--game .choice-card--self_protective {
+  box-shadow: 6px 6px 0 var(--game-orange);
+}
+
+.site-shell--game .choice-card--conservative {
+  box-shadow: 6px 6px 0 var(--game-cyan);
+}
+
+.site-shell--game .choice-card p {
+  color: var(--game-purple);
+}
+
+.site-shell--game .choice-card ul {
+  color: var(--game-ink);
+}
+
+.site-shell--game .choice-card:focus-visible,
+.site-shell--game .primary-button:focus-visible,
+.site-shell--game .role-card:focus-visible {
+  outline: 4px solid var(--game-yellow);
+  outline-offset: 4px;
+}
+
+.site-shell--game .panel,
+.site-shell--game .result-panel,
+.site-shell--game .response-panel,
+.site-shell--game .partner-review-panel,
+.site-shell--game .timeline,
+.site-shell--game .trust-screen {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 7px 7px 0 var(--game-cyan);
+}
+
+.site-shell--game .term-list div {
+  border-left-color: var(--game-magenta);
+}
+
+.site-shell--game .term-list strong,
+.site-shell--game .info-panel,
+.site-shell--game .info-panel .section-title,
+.site-shell--game .info-panel--public .section-title,
+.site-shell--game .info-panel--private .section-title {
+  color: var(--game-ink);
+}
+
+.site-shell--game .term-list span,
+.site-shell--game .info-panel p {
+  color: var(--game-purple);
+}
+
+.site-shell--game .info-panel {
+  background: var(--game-panel);
+  border-color: var(--game-panel);
+}
+
+.site-shell--game .info-panel--public {
+  border-left-color: var(--game-cyan);
+}
+
+.site-shell--game .info-panel--private {
+  border-left-color: var(--game-magenta);
+}
+
+.site-shell--game .result-choice,
+.site-shell--game .trust-update-prompt,
+.site-shell--game .response-row--you,
+.site-shell--game .partner-review-card header em {
+  background: var(--game-yellow);
+  border-color: var(--game-ink);
+  color: var(--game-ink) !important;
+}
+
+.site-shell--game .trust-update-prompt {
+  box-shadow: 5px 5px 0 var(--game-orange);
+}
+
+.site-shell--game .partner-review-card,
+.site-shell--game .partner-trust-row,
+.site-shell--game .response-row {
+  border-color: var(--game-ink);
+}
+
+.site-shell--game .partner-review-card header strong,
+.site-shell--game .partner-review-card > p,
+.site-shell--game .response-row strong,
+.site-shell--game .response-row small {
+  color: var(--game-purple);
+}
+
+.site-shell--game .decision-read-grid div {
+  background: var(--game-panel);
+  border-left-color: var(--game-cyan);
+}
+
+.site-shell--game .decision-read-grid div:nth-child(2) {
+  border-left-color: var(--game-orange);
+}
+
+.site-shell--game .decision-read-grid p,
+.site-shell--game .response-row span {
+  color: var(--game-ink);
+}
+
+.site-shell--game .disclosure-panel {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  border-left-color: var(--game-cyan);
+  box-shadow: 6px 6px 0 var(--game-magenta);
+}
+
+.site-shell--game .disclosure-panel--withheld {
+  border-left-color: var(--game-orange);
+}
+
+.site-shell--game .disclosure-cell {
+  background: var(--game-panel);
+}
+
+.site-shell--game .disclosure-cell--claimed {
+  border-left-color: var(--game-cyan);
+}
+
+.site-shell--game .disclosure-cell--private {
+  border-left-color: var(--game-magenta);
+}
+
+.site-shell--game .disclosure-cell p,
+.site-shell--game .partner-trust-row strong {
+  color: var(--game-ink);
+}
+
+.site-shell--game input[type="range"] {
+  accent-color: var(--game-magenta);
+}
+
+.site-shell--game .outcome-explanation {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 7px 7px 0 var(--game-orange);
+  color: var(--game-ink);
+}
+
+.site-shell--game .trust-summary,
+.site-shell--game .crowd-panel {
+  background: var(--game-panel);
+  border-color: var(--game-ink);
+  box-shadow: 8px 8px 0 var(--game-cyan);
+}
+
+.site-shell--game .crowd-bar-segment--balanced {
+  background: var(--game-cyan);
+}
+
+.site-shell--game .crowd-bar-segment--self_protective {
+  background: var(--game-orange);
+}
+
+.site-shell--game .crowd-bar-segment--conservative {
+  background: var(--game-magenta);
+}
+
 .site-shell--game .choice-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }

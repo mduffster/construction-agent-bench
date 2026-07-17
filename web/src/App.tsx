@@ -1086,7 +1086,7 @@ function GamePage({ role }: { role: AgentId }) {
             <section className="choice-grid" aria-label="Decision choices">
               {node.choices.map((choice) => (
                 <button
-                  className="choice-card"
+                  className={`choice-card choice-card--${choice.choice_id}`}
                   key={choice.choice_id}
                   onClick={() => {
                     setState((current) =>
