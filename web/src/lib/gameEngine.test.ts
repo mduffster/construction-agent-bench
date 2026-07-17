@@ -126,7 +126,7 @@ describe("S01 V2 public human game engine", () => {
 
     expect(new Set(supplierStakeText).size).toBe(3);
     expect(supplierStakeText[0]).toMatch(/request|disclosure/i);
-    expect(supplierStakeText[1]).toMatch(/outside work|margin/i);
+    expect(supplierStakeText[1]).toMatch(/other shop work|profit/i);
     expect(supplierStakeText[2]).toMatch(/shipping|reporting/i);
   });
 

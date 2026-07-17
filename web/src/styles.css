@@ -385,7 +385,7 @@ input {
 }
 
 .program-row--ladder {
-  grid-template-columns: 0.8fr 0.7fr 0.7fr 1fr 0.8fr 0.55fr;
+  grid-template-columns: 0.9fr 0.7fr 0.8fr 1fr 0.8fr;
 }
 
 .program-row--packet {
@@ -1234,6 +1234,10 @@ h2 {
   display: block;
 }
 
+.term-list strong {
+  color: #10201e;
+}
+
 .term-list span {
   color: #45524f;
   font-size: 0.9rem;
@@ -1812,7 +1816,7 @@ h2 {
   display: grid;
   font-weight: 800;
   gap: 10px;
-  grid-template-columns: 1.1fr 1.6fr 1fr 0.9fr 1fr 0.6fr;
+  grid-template-columns: 1.1fr 1.6fr 1fr 0.9fr 1fr;
   padding: 10px 16px;
 }
 
@@ -1830,13 +1834,6 @@ h2 {
 
 .population-row--failed {
   background: #fdeee9;
-}
-
-.population-footnote {
-  color: #59645f;
-  font-size: 0.88rem;
-  font-weight: 800;
-  margin-top: 12px;
 }
 
 .trust-calibration-lead {
@@ -2152,7 +2149,7 @@ h2 {
   .population-row {
     font-size: 0.82rem;
     gap: 6px;
-    grid-template-columns: 0.9fr 1.5fr 1fr 0.8fr 0.8fr 0.5fr;
+    grid-template-columns: 0.9fr 1.5fr 1fr 0.8fr 0.8fr;
     padding: 8px 10px;
   }
 

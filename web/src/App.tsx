@@ -74,37 +74,37 @@ const projectPhaseImages: Record<
     alt: "Empty graded construction lot waiting for steel delivery",
     src: "/images/s01-phase-empty-lot.png",
     summary:
-      "The project is waiting for cash, inspection, and release controls before steel can move.",
+      "The project is waiting for money, approval, and permission to move the steel.",
   },
   paperwork_dispute: {
     alt: "Construction paperwork and payment documents with held steel behind the site fence",
     src: "/images/s01-phase-paperwork-dispute.png",
     summary:
-      "The action is still in the payment, documentation, and release-review lane.",
+      "The team is still sorting out payment, proof that the steel is ready, and permission to ship it.",
   },
   steel_delivery: {
     alt: "Flatbed truck delivering steel beams to a construction site",
     src: "/images/s01-phase-steel-delivery.png",
     summary:
-      "Steel is moving toward the site, but the full sequence still depends on release and coordination.",
+      "Steel is heading to the site, but later deliveries still depend on payment, approval, and scheduling.",
   },
   delivery_blocked: {
     alt: "Steel delivery truck stopped at a blocked construction gate with paperwork in view",
     src: "/images/s01-phase-delivery-blocked.png",
     summary:
-      "The steel path is blocked by a gate, paperwork, funding, labor, or release problem.",
+      "Steel cannot reach the site because money, paperwork, approval, or workers are missing.",
   },
   erection_progress: {
     alt: "Crane lifting steel beams into a partially erected structure",
     src: "/images/s01-phase-erection-progress.png",
     summary:
-      "Released steel and field capacity have turned into active erection work.",
+      "Approved steel has arrived, and the crew is putting it up.",
   },
   erected_structure: {
     alt: "Completed steel frame standing on the construction site",
     src: "/images/s01-phase-erected-structure.png",
     summary:
-      "The steel sequence is substantially erected and the project has a viable path forward.",
+      "The steel frame is nearly complete, and the project can move forward.",
   },
 };
 
@@ -112,32 +112,32 @@ const similarWork = [
   {
     name: "CoffeeBench",
     href: "https://arxiv.org/html/2606.16613v1",
-    summary: "Long-horizon firm economy with farmers, roasters, retailers, cash, inventory, pricing, and transactions.",
+    summary: "AI-run companies grow, roast, price, buy, and sell coffee over many rounds.",
   },
   {
     name: "tau-bench",
     href: "https://taubench.com/",
-    summary: "Dynamic agent tasks with policies, tools, and interaction over time.",
+    summary: "Tests whether AI assistants can follow rules, use tools, and handle conversations that change over time.",
   },
   {
     name: "MultiAgentBench",
     href: "https://aclanthology.org/2025.acl-long.421/",
-    summary: "Collaboration and competition benchmark for LLM-based multi-agent systems.",
+    summary: "Tests how groups of AI systems work together or compete.",
   },
   {
     name: "SOTOPIA",
     href: "https://openreview.net/forum?id=mM7VurbA4r",
-    summary: "Interactive social-intelligence environments for goal-driven language agents.",
+    summary: "Places AI systems in social situations and measures how they pursue their goals.",
   },
   {
     name: "Concordia",
     href: "https://github.com/google-deepmind/concordia",
-    summary: "Framework for generative social simulations with language agents and mediated world state.",
+    summary: "Tools for building shared worlds where several AI-run characters can act and interact.",
   },
   {
     name: "Silo-Bench",
     href: "https://arxiv.org/abs/2603.01045",
-    summary: "Distributed multi-agent coordination tasks focused on information sharing and integration.",
+    summary: "Tests whether separate AI systems can share information and put it together correctly.",
   },
 ];
 
@@ -173,16 +173,17 @@ function HomePage() {
           <p className="eyebrow">About</p>
           <h1>ConstructSim</h1>
           <p className="lede">
-            We test whether an AI-run company can receive information in an uncertain environment and
-            generate optimal business decisions. ConstructSim tracks agentic business decision-making from
-            one company into a shared, multi-company project.
+            We test whether an AI-run company can make good business decisions when
+            information is incomplete and conditions can change. We start with one
+            company, then follow its decisions into a project shared by several companies.
           </p>
           <p>
-            Construction is the initial test environment: six firms share a deadline and a desire to build
-            a cost-effective project. Each firm has different information, authority, costs, and private
-            goals. It's expensive to replace coalition members. The multi-agent harness allows every
-            firm to make its own decisions. We also use controlled studies to add decision-making freedom
-            one step at a time to identify where information flow drives poor business decisions.
+            Construction is our first test setting. Six companies share a deadline and
+            want to finish the project at a reasonable cost, but each company knows
+            different facts, controls different choices, and has its own financial goals.
+            They need one another to finish the job. ConstructSim lets each company make
+            its own decisions. We also run smaller tests that add one AI-run company at a
+            time, so we can see where a bad decision begins.
           </p>
           <p>
             Built by Matt Duffy. I'm open to collaboration. Find me on{" "}
@@ -207,7 +208,7 @@ function HomePage() {
               See example runs
             </NavButton>
             <NavButton href="/research" icon={<Eye size={18} />}>
-              Read the research program
+              Read the research
             </NavButton>
           </div>
         </div>
@@ -245,15 +246,12 @@ function HomePage() {
           </h2>
         </div>
         <p>
-          Play one scenario in the six-firm simulated construction ecosystem.
-          In the game, you choose one of four firms while the
-          lender and inspector are always automated roles. You will have
-          public project information, private role information, and decisions
-          that can benefit you privately or benefit the broader project. The
-          game is a simplified version of the full simulation: you face the
-          same kind of information problem the AI agents face, but the agents
-          work through larger structured decision spaces than the choices
-          shown here.
+          Play one construction problem involving six companies. You choose one
+          of four companies, while the game makes decisions for the lender and
+          inspector. You will see facts everyone knows, facts only your company
+          knows, and choices that may help your company, the project, or both.
+          This public game uses three clear choices at each step. In the research,
+          the AI must build a much more detailed answer on its own.
         </p>
       </section>
 
@@ -282,38 +280,42 @@ function ResearchTeaser() {
     <section className="overview-section research-teaser">
       <div className="section-title">
         <Eye size={20} />
-        <h2>Current research program</h2>
+        <h2>Latest research</h2>
       </div>
       <div className="research-teaser__layout">
         <div>
-          <p className="research-kicker">From one decision to six firms</p>
-          <h3>The supplier kept asking for about $800K while its leverage moved by $1M.</h3>
+          <p className="research-kicker">From one choice to six companies</p>
+          <h3>The steel supplier kept asking for about $800K regardless of its real leverage.</h3>
           <p>
-            The research follows that same decision through a contractor handoff and
-            into a six-firm project. The information usually arrived. The harder problem
-            was turning it into the right business choice. A 40-run follow-up now
-            isolates the useful intervention: a private decision summary for the supplier.
+            The research follows this supplier decision when another company must pass
+            along key information and then when all six companies can make choices. The
+            companies had the facts they needed, but they did not always use them well.
+            We tried several ways to help. The one that worked was a short summary shown
+            only to the supplier before each decision. In this test, putting the important
+            facts in front of the supplier worked better than expecting it to find and
+            combine them on its own. That suggests an AI should be shown the facts that
+            matter when it is time to choose.
           </p>
           <div className="research-mini-metrics" aria-label="Study highlights">
             <span>
               <strong>
                 {handoff.assigned_run_count}
               </strong>
-              two-company assignments
+              two-company test runs
             </span>
             <span>
               <strong>
                 {handoff.safe_action_given_exact_count}/{handoff.exact_live_calculation_count}
               </strong>
-              safe choices after correct math
+              safe choices after correct calculations
             </span>
             <span>
               <strong>{multiplayer.completed_stage_count}/4</strong>
-              valid multiplayer steps
+              tests with more AI-run companies
             </span>
           </div>
           <NavButton href="/research" icon={<ArrowRight size={18} />}>
-            Explore the program
+            Read the findings
           </NavButton>
         </div>
         <figure className="research-figure research-figure--compact">
@@ -322,8 +324,8 @@ function ResearchTeaser() {
             src="/images/s01-response-curve.png"
           />
           <figcaption>
-            The program began with this response-curve failure, then followed the
-            same decision problem across two firms and into a six-firm workflow.
+            The first test found this pricing mistake. Later tests followed the same
+            choice through two companies and then through a six-company project.
           </figcaption>
         </figure>
       </div>
@@ -337,51 +339,52 @@ function ResearchPage() {
   return (
     <Shell>
       <section className="page-head research-head">
-        <p className="eyebrow">Research program</p>
-        <h1>{researchProgramData.title}</h1>
+        <p className="eyebrow">Research</p>
+        <h1>From one decision to six companies</h1>
         <p className="lede">
           Can AI-run companies receive the right information, pass it to one another,
           and make sound business decisions?
         </p>
         <p>
-          We add one source of difficulty at a time: one AI-run company, a handoff
-          between two companies, a project with as many as six AI-run companies, and
-          finally a test of short decision summaries. This lets us see whether a bad
-          outcome came from missing information, a failed handoff, bad math, or a bad
-          business decision.
+          We add one source of difficulty at a time: one AI-run company, two
+          companies that must share a useful number, a project with as many as six
+          AI-run companies, and finally several ways of putting useful facts in
+          front of the decision maker. This helps us tell whether a bad result began
+          with missing information, a message that did not help, a wrong calculation,
+          or a poor business choice.
         </p>
       </section>
 
       <ResearchProgramOverview />
 
-      <section className="overview-section research-methods-callout" aria-label="Research checks">
+      <section className="overview-section research-methods-callout" aria-label="Fair comparisons">
         <div className="section-title">
           <ShieldCheck size={20} />
-          <h2>How the work is checked</h2>
+          <h2>How we make the comparisons fair</h2>
         </div>
         <p>
-          Protocols are written before paid runs. The response-curve code checked{" "}
-          {responseCurveData.design.deterministic_reference_trajectory_count} reference
-          outcomes first. Saved evidence records the model inputs, decisions, validation
-          repairs, and cost stops, and the website reads its numbers from those frozen results.
+          Each comparison changes one thing and keeps the rest of the project the
+          same. Before a test begins, we decide what will change and what counts as
+          success. That makes it easier to tell whether the thing we changed actually
+          caused a different result.
         </p>
       </section>
 
       <section className="overview-section" id="response-curve">
         <div className="section-title">
           <Gauge size={20} />
-          <h2>Stage 1 — can one supplier adjust its price?</h2>
+          <h2>Stage 1 — does the supplier ask for more when it is harder to replace?</h2>
         </div>
         <p>
-          One model controls the steel supplier while the other five companies
-          follow fixed rules. As a qualified
-          replacement gets cheaper, does the supplier reduce the price relief it
-          asks for?
+          An AI system makes decisions for the steel supplier while the other five
+          companies follow fixed rules. We change only the extra cost of replacing
+          the supplier. When replacement becomes cheaper, does the supplier ask for
+          less money so the project has a reason to keep it?
         </p>
         <div className="metric-grid research-metric-grid">
           <Metric
             icon={<ClipboardCheck size={20} />}
-            label="Haiku validity"
+            label="Completed Haiku runs"
             value={`${haiku.valid_run_count}/${haiku.run_count} runs`}
           />
           <Metric
@@ -391,22 +394,25 @@ function ResearchPage() {
           />
           <Metric
             icon={<DollarSign size={20} />}
-            label="Average avoidable loss"
+            label="Average money left on the table"
             value={formatRoundedResearchMoney(haiku.mean_attainable_regret_usd)}
           />
         </div>
         <p className="body-copy">
-          Haiku requested about $800K in 39 valid runs and $600K in seven while
-          the highest safe request moved by $1M.
+          Haiku asked for about $800K in 39 completed runs and $600K in seven,
+          even though the highest amount it could safely ask for changed by $1M.
         </p>
         <div className="research-program-takeaway research-program-takeaway--plain">
-          <strong>The 15-run Sonnet confirmation did not remove the failure.</strong>
+          <strong>The 15 Sonnet runs showed the same basic problem.</strong>
           <p>
-            Across three runs at each replacement price, Sonnet was replaced in{" "}
-            {Math.round(sonnet.replacement_rate * 100)}% and left about{" "}
-            {formatRoundedResearchMoney(sonnet.mean_attainable_regret_usd)} in avoidable
-            loss on average. It handled the highest-leverage cases, but the curve still
-            reversed once. This is a scenario result, not a model-wide ranking.
+            We ran Sonnet three times at each replacement cost. The project replaced
+            the supplier in {Math.round(sonnet.replacement_rate * 100)}% of those runs,
+            and the supplier missed out on about{" "}
+            {formatRoundedResearchMoney(sonnet.mean_attainable_regret_usd)} per run by
+            making a weaker request than it could have. Sonnet did better when the
+            supplier was hardest to replace, but once asked for less even though its
+            replacing it had become more expensive. This result describes this one problem;
+            it is not a general ranking of the models.
           </p>
         </div>
       </section>
@@ -419,69 +425,65 @@ function ResearchPage() {
         <div className="research-method-grid">
           <article>
             <span>1</span>
-            <strong>Hold the project fixed</strong>
-            <p>The supplier faces the same cost increase, cash need, contract, and deadline.</p>
+            <strong>Keep everything else the same</strong>
+            <p>The supplier always faces the same added cost, cash need, contract, and deadline.</p>
           </article>
           <article>
             <span>2</span>
-            <strong>Change replaceability</strong>
-            <p>Only the qualified replacement premium moves, from $0 to $1 million.</p>
+            <strong>Make replacement cheaper or more expensive</strong>
+            <p>Only the extra cost of hiring another supplier changes, from $0 to $1 million.</p>
           </article>
           <article>
             <span>3</span>
-            <strong>Score the request</strong>
-            <p>The system compares each ask with the highest safe request and the best result available.</p>
+            <strong>Compare the request with the best safe choice</strong>
+            <p>We check how much the supplier asked for and whether that request caused the project to replace it.</p>
           </article>
         </div>
-        <p className="fine-print">
-          Before any paid model run, code checked {responseCurveData.design.deterministic_reference_trajectory_count}{" "}
-          possible reference outcomes. All passed.
-        </p>
       </section>
 
       <section className="overview-section research-chart-section">
         <div className="section-title">
           <Eye size={20} />
-          <h2>The response curve</h2>
+          <h2>How the request should change</h2>
         </div>
         <p>
-          As replacement becomes more expensive, a profit-seeking supplier can
-          safely ask for more. The black line rises accordingly. The model
-          requests remain nearly flat or jump around instead.
+          A supplier can safely ask for more money when replacing it would cost the
+          project more. The black line shows that rising limit. The AI's requests
+          stay almost flat or move in the wrong direction.
         </p>
         <figure className="research-figure">
           <img
-            alt="Response curve comparing the highest safe request with Haiku requests and the earlier Sonnet diagnostic"
+            alt="Chart comparing the highest safe supplier request with requests made by Haiku and Sonnet"
             src="/images/s01-response-curve.png"
           />
           <figcaption>
-            The chart shows the earlier one-run Sonnet diagnostic. The table below uses
-            the new three-run-per-price Sonnet confirmation.
+            The thin Sonnet line shows one early example. The table below uses the
+            later test with three Sonnet runs at each replacement cost.
           </figcaption>
         </figure>
-        <div className="research-table" role="table" aria-label="Response curve values">
+        <div className="research-table" role="table" aria-label="Supplier request results">
           <div className="research-table__row research-table__row--head" role="row">
-            <span>Replacement premium</span>
-            <span>Safe request</span>
-            <span>Haiku, no history</span>
-            <span>Haiku, verified history</span>
-            <span>Sonnet confirmation</span>
+            <span>Extra cost to replace supplier</span>
+            <span>Highest request before replacement</span>
+            <span>Haiku, current facts only</span>
+            <span>Haiku, with past results</span>
+            <span>Sonnet, three runs each</span>
           </div>
           {responseCurveData.levels.map((level) => (
             <div className="research-table__row" role="row" key={level.response_curve_level}>
-              <span data-label="Replacement premium">
+              <span data-label="Extra cost to replace supplier">
                 {formatMoney(level.replacement_cost_usd)}
               </span>
-              <span data-label="Safe request">
+              <span data-label="Highest request before replacement">
                 {formatMoney(level.maximum_safe_relief_usd)}
               </span>
-              <span data-label="Haiku, no history">
+              <span data-label="Haiku, current facts only">
                 {formatRoundedResearchMoney(level.haiku_no_history_mean_request_usd)}
               </span>
-              <span data-label="Haiku, verified history">
+              <span data-label="Haiku, with past results">
                 {formatRoundedResearchMoney(level.haiku_history_mean_request_usd)}
               </span>
-              <span data-label="Sonnet confirmation">
+              <span data-label="Sonnet, three runs each">
                 {formatRoundedResearchMoney(level.sonnet_confirmation_mean_request_usd)}
               </span>
             </div>
@@ -504,10 +506,9 @@ function ResearchPage() {
             <h2>Why it matters</h2>
           </div>
           <p>
-            Looking only at project completion misses both private losses and the
-            path used to get there. These tests separate two questions: did each
-            company receive the information it should have, and did it make a good
-            decision with that information?
+            A project can finish while one of its companies loses money or misses
+            its own goal. These tests ask two separate questions: did each company
+            receive the facts it needed, and did it make a good choice with those facts?
           </p>
         </div>
         <div>
@@ -517,10 +518,10 @@ function ResearchPage() {
           </div>
           <p>
             These results come from one simulated construction problem. They are not
-            a general ranking of AI models. Some tests have only one run, repeated API
-            calls are not the same as independent human participants, all tested
-            models come from one provider, and we have not yet compared them with
-            construction professionals.
+            a general ranking of AI models. Some tests have only one run, repeated
+            runs of the same AI are not the same as testing different people, all
+            tested AI systems come from one provider, and we have not yet compared their
+            choices with those of construction professionals.
           </p>
         </div>
       </section>
@@ -531,25 +532,25 @@ function ResearchPage() {
           <h2>Evidence and code</h2>
         </div>
         <p>
-          The numbers on this page come directly from saved study results. The code
-          and run records are public so others can check them.
+          The study plans, results, and code are public so other people can inspect
+          the work and decide whether the conclusions are justified.
         </p>
         <div className="research-source-links">
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/evidence/response_curve/evidence_package.md"
-            label="Response-curve evidence"
+            label="Supplier request evidence"
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/s01_response_curve_sonnet_confirmation_results.md"
-            label="Sonnet confirmation results"
+            label="Sonnet follow-up results"
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/s01_distributed_threshold_handoff_results.md"
-            label="Two-agent handoff results"
+            label="Two-company information-sharing results"
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_multiplayer_bridge_results.md"
-            label="Multiplayer ladder results"
+            label="Six-company results"
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_derived_state_packet_results.md"
@@ -557,7 +558,7 @@ function ResearchPage() {
           />
           <ResearchSourceLink
             href="https://github.com/mduffster/constructsim/blob/main/docs/s01_v2_decision_summary_factorial_results.md"
-            label="Decision-summary confirmation"
+            label="Short-summary comparison"
           />
         </div>
       </section>
@@ -578,42 +579,44 @@ function ResearchProgramOverview() {
       </div>
       <div className="research-program-grid">
         <article>
-          <span className="research-stage-chip">1 live firm</span>
-          <strong>Pricing its leverage</strong>
+          <span className="research-stage-chip">1 AI-run company</span>
+          <strong>Choosing how much to ask for</strong>
           <p>
-            The supplier barely changed its price as replacing it became more
-            expensive. Giving it the highest safe request reduced avoidable loss by{" "}
-            {Math.round(trustedThreshold.mean_attainable_regret_reduction_fraction * 100)}%.
+            The supplier barely changed its request as replacing it became more
+            expensive. When we gave it the highest request that would not cause
+            replacement, it left{" "}
+            {Math.round(trustedThreshold.mean_attainable_regret_reduction_fraction * 100)}%
+            less money on the table.
           </p>
-          <a href="#response-curve">See the response curve</a>
+          <a href="#response-curve">See the supplier test</a>
         </article>
         <article>
-          <span className="research-stage-chip">2 live firms</span>
-          <strong>Information handoff</strong>
+          <span className="research-stage-chip">2 AI-run companies</span>
+          <strong>Passing the key number</strong>
           <p>
-            {handoff.valid_run_count} of {handoff.assigned_run_count} runs finished
-            correctly. Whenever the contractor calculated the highest safe request,
-            the supplier made a safe choice.
+            {handoff.valid_run_count} of {handoff.assigned_run_count} planned runs
+            produced usable results. Whenever the contractor calculated the right
+            limit, the supplier made a safe choice.
           </p>
-          <a href="#handoff">See the handoff</a>
+          <a href="#handoff">See the two-company test</a>
         </article>
         <article>
-          <span className="research-stage-chip">Up to 6 live firms</span>
-          <strong>More companies</strong>
+          <span className="research-stage-chip">Up to 6 AI-run companies</span>
+          <strong>Adding more companies</strong>
           <p>
-            All {multiplayer.completed_stage_count} steps produced a valid, completed
-            project. The information chain worked, but every AI-run team spent more
-            and left at least one company short of its own goal.
+            All {multiplayer.completed_stage_count} tests reached a complete project
+            result. The right messages arrived, but every AI-run group spent more
+            than the lower-cost example and left at least one company short of its goal.
           </p>
-          <a href="#multiplayer">See the ladder</a>
+          <a href="#multiplayer">See what happened as the group grew</a>
         </article>
         <article>
-          <span className="research-stage-chip">2 firms, 4 versions</span>
-          <strong>Who needs the decision summary?</strong>
+          <span className="research-stage-chip">2 companies, 4 setups</span>
+          <strong>Who needs the short summary?</strong>
           <p>
-            All 20 runs with a supplier summary reached the all-firm, no-backup path.
-            None of the 20 runs without a supplier summary did. The contractor summary
-            did not change the result.
+            All 20 runs with a supplier summary met every company's goal without
+            backup steel. None of the 20 runs without that summary did. A summary for
+            the contractor did not change the result.
           </p>
           <a href="#decision-packet">See the summary test</a>
         </article>
@@ -621,10 +624,11 @@ function ResearchProgramOverview() {
       <div className="research-program-takeaway">
         <strong>What this suggests</strong>
         <p>
-          Getting information to the right company was not enough. A short summary
-          helped the supplier connect the inspected value, available funding, and its
-          own private limits. The effect held across {factorial.assigned_run_count} runs,
-          without exposing those private limits to the contractor.
+          Getting facts to the right company was not enough. A short summary helped
+          the supplier connect how much steel had been verified, how much money was
+          available, and how much cash it needed. The result held across{" "}
+          {factorial.assigned_run_count} runs without showing the supplier's private
+          cash needs to the contractor.
         </p>
       </div>
     </section>
@@ -637,70 +641,71 @@ function HandoffResearchSection() {
     <section className="overview-section" id="handoff">
       <div className="section-title">
         <MessageSquare size={20} />
-        <h2>Stage 2 — can one company pass a useful number to another?</h2>
+        <h2>Stage 2 — can one company give another company the number it needs?</h2>
       </div>
       <p>
-        The general contractor calculates the highest request the supplier can make
-        without being replaced, then sends that number to the supplier. We first used
-        a script to check whether the message could get through unchanged. We then
-        asked an AI-run contractor to calculate and send the number itself.
+        The general contractor—the company managing the overall build—calculates the
+        highest request the supplier can make without being replaced. It then sends
+        that number to the supplier. We compare a known correct calculation with an
+        AI-run contractor that must work out the number and send it on its own.
       </p>
       <div className="metric-grid research-metric-grid">
         <Metric
           icon={<ClipboardCheck size={20} />}
-          label="Valid runs"
+          label="Planned runs completed"
           value={`${handoff.valid_run_count}/${handoff.assigned_run_count}`}
         />
         <Metric
           icon={<CheckCircle2 size={20} />}
-          label="Safe when live calculation was exact"
+          label="Safe supplier choices after correct calculations"
           value={`${handoff.safe_action_given_exact_count}/${handoff.exact_live_calculation_count}`}
         />
         <Metric
           icon={<MessageSquare size={20} />}
-          label="Live written message succeeded"
+          label="AI contractor, written note"
           value={formatRate(handoff.arms.find((arm) => arm.arm_id === "live-prose")!.end_to_end_success_rate)}
         />
         <Metric
           icon={<Building2 size={20} />}
-          label="Live data record succeeded"
+          label="AI contractor, form fields"
           value={formatRate(handoff.arms.find((arm) => arm.arm_id === "live-structured")!.end_to_end_success_rate)}
         />
       </div>
-      <div className="program-table" role="table" aria-label="Two-agent handoff results">
+      <div className="program-table" role="table" aria-label="Two-company information-sharing results">
         <div className="program-row program-row--handoff program-row--head" role="row">
-          <span>Sender</span>
-          <span>Format</span>
-          <span>Valid</span>
-          <span>Correct number</span>
-          <span>Safe result</span>
-          <span>Replaced</span>
+          <span>Who calculated it</span>
+          <span>How it was sent</span>
+          <span>Completed</span>
+          <span>Right number</span>
+          <span>Safe choice</span>
+          <span>Supplier replaced</span>
         </div>
         {handoff.arms.map((arm) => (
           <div className="program-row program-row--handoff" role="row" key={arm.arm_id}>
-            <span data-label="Sender">{handoffSenderLabel(arm.sender)}</span>
-            <span data-label="Format">{handoffFormatLabel(arm.representation)}</span>
-            <span data-label="Valid">
+            <span data-label="Who calculated it">{handoffSenderLabel(arm.sender)}</span>
+            <span data-label="How it was sent">{handoffFormatLabel(arm.representation)}</span>
+            <span data-label="Completed">
               {arm.valid_run_count}/{arm.assigned_run_count}
             </span>
-            <span data-label="Correct number">{formatRate(arm.exact_transfer_itt_rate)}</span>
-            <span data-label="Safe result">{formatRate(arm.end_to_end_success_rate)}</span>
-            <span data-label="Replaced">{formatRate(arm.replacement_rate)}</span>
+            <span data-label="Right number">{formatRate(arm.exact_transfer_itt_rate)}</span>
+            <span data-label="Safe choice">{formatRate(arm.end_to_end_success_rate)}</span>
+            <span data-label="Supplier replaced">{formatRate(arm.replacement_rate)}</span>
           </div>
         ))}
       </div>
       <div className="research-program-takeaway research-program-takeaway--plain">
         <strong>The message format was not the main problem.</strong>
         <p>
-          Written messages and data records worked equally well when the contractor
-          calculated the right number. Most failures happened earlier, when the
-          contractor selected the wrong facts or did the math incorrectly.
+          A written note and a set of form fields worked equally well when the
+          contractor calculated the right number. Most failures happened before the
+          message was sent, when the contractor chose the wrong facts or calculated
+          the number incorrectly.
         </p>
       </div>
       <p className="mechanism-caveat">
-        These are repeated API calls, not independent human participants. A run that
-        failed to produce valid output counts as a failure. The system allowed one
-        retry for each required decision.
+        These are repeat runs of the same AI models, not different people. Every
+        planned run is included. If the AI did not make a usable required choice,
+        that run did not count as a success.
       </p>
     </section>
   );
@@ -719,94 +724,88 @@ function MultiplayerResearchSection() {
       </div>
       <p>
         We started with an AI-run supplier and contractor, then added the inspector,
-        owner, lender, and labor company. Companies not yet run by AI followed fixed
-        rules based on the current project. We stopped if a required decision was
-        invalid or information failed to reach the next company.
+        owner, lender, and labor company one at a time. Companies not yet run by AI
+        followed fixed rules based on what had happened in the project. A test counted
+        as complete only if every required company made a usable choice and the needed
+        messages reached the next company.
       </p>
       <div className="metric-grid research-metric-grid">
         <Metric
           icon={<CheckCircle2 size={20} />}
-          label="Valid steps"
+          label="Tests completed"
           value={`${multiplayer.completed_stage_count}/4`}
         />
         <Metric
           icon={<Eye size={20} />}
-          label="Information handoffs received"
+          label="Expected messages received"
           value={`${multiplayer.expected_exposure_count}/${multiplayer.expected_exposure_count}`}
         />
         <Metric
           icon={<ShieldCheck size={20} />}
-          label="Decisions carried out"
+          label="Decisions that took effect"
           value={`${multiplayer.operative_link_count}/${multiplayer.operative_link_count}`}
         />
-        <Metric
-          icon={<ClipboardCheck size={20} />}
-          label="Valid on the first try"
-          value={`${multiplayer.first_pass_live_decision_count}/${multiplayer.live_decision_count}`}
-        />
       </div>
-      <div className="program-table" role="table" aria-label="Controlled multiplayer ladder results">
+      <div className="program-table" role="table" aria-label="Results by number of AI-run companies">
         <div className="program-row program-row--ladder program-row--head" role="row">
-          <span>Live firms</span>
+          <span>AI-run companies</span>
           <span>Project</span>
-          <span>All firms met goals</span>
+          <span>All companies met goals</span>
           <span>Final cost</span>
           <span>Finished</span>
-          <span>Repairs</span>
         </div>
         <div className="program-row program-row--ladder program-row--reference" role="row">
-          <span data-label="Live firms">Reference</span>
+          <span data-label="AI-run companies">Written example</span>
           <span data-label="Project">{yesNo(reference.project_success)}</span>
-          <span data-label="All firms met goals">{yesNo(reference.coalition_success)}</span>
+          <span data-label="All companies met goals">{yesNo(reference.coalition_success)}</span>
           <span data-label="Final cost">{formatMoney(reference.final_project_cost)}</span>
           <span data-label="Finished">Week {reference.completion_tick}</span>
-          <span data-label="Repairs">0</span>
         </div>
         {multiplayer.rows.map((row) => (
           <div className="program-row program-row--ladder" role="row" key={row.stage_id}>
-            <span data-label="Live firms">{ladderStageLabel(row)}</span>
+            <span data-label="AI-run companies">{ladderStageLabel(row)}</span>
             <span data-label="Project">{yesNo(row.project_success)}</span>
-            <span data-label="All firms met goals">{yesNo(row.coalition_success)}</span>
+            <span data-label="All companies met goals">{yesNo(row.coalition_success)}</span>
             <span data-label="Final cost">{formatMoney(row.final_project_cost)}</span>
             <span data-label="Finished">Week {row.completion_tick}</span>
-            <span data-label="Repairs">{row.repair_attempt_count}</span>
           </div>
         ))}
       </div>
       <div className="path-contrast-grid">
         <article>
-          <span>Lower-cost reference</span>
+          <span>Lower-cost written example</span>
           <strong>{formatMoney(efficient.supplier_payment_request_usd)} request</strong>
           <ul>
-            <li>{efficient.gc_inspector_routed_document_count} records routed to inspection</li>
+            <li>{efficient.gc_inspector_routed_document_count} documents sent to the inspector</li>
             <li>Both steel lots prepared</li>
             <li>Both lots shipped</li>
-            <li>Staged delivery; backup dropped</li>
+            <li>Steel shipped in stages; backup canceled</li>
           </ul>
         </article>
         <article className="path-contrast-grid__live">
           <span>Every AI-run version</span>
           <strong>{formatMoney(live.supplier_payment_request_usd)} request</strong>
           <ul>
-            <li>{live.gc_inspector_routed_document_count} clean Lot A records routed</li>
+            <li>{live.gc_inspector_routed_document_count} Lot A documents sent to the inspector</li>
             <li>Only Lot A prepared</li>
-            <li>Lot A shipped; Lot B held</li>
-            <li>Backup maintained, then activated</li>
+            <li>Lot A shipped; the second batch was held back</li>
+            <li>Backup steel was kept available and then used</li>
           </ul>
         </article>
       </div>
       <div className="research-program-takeaway research-program-takeaway--plain">
         <strong>The information arrived, but the strategy was still expensive.</strong>
         <p>
-          Every AI-run team limited the recovery to Lot A, which left Lot B unavailable
-          and led to expensive backup steel. The first important split happened between
-          the supplier and contractor, so that became the next test.
+          Every AI-run group planned only for the first steel batch. That left the
+          second batch unavailable and forced the project to buy expensive backup steel.
+          The first costly choice came when the supplier and contractor set that plan,
+          so the next test focused on those two companies.
         </p>
       </div>
       <p className="mechanism-caveat">
-        There is only one saved run at each company count, so this does not tell us
-        how often the result would occur or which company caused it. The six-company
-        run needed three successful retries.
+        There is only one run at each company count. That is enough to show that the
+        larger setup works, but not enough to tell us how often this result would happen
+        or which company caused it.
       </p>
     </section>
   );
@@ -832,63 +831,65 @@ function DecisionPacketResearchSection() {
     <section className="overview-section" id="decision-packet">
       <div className="section-title">
         <ClipboardCheck size={20} />
-        <h2>Stage 4 — which company needs the decision summary?</h2>
+        <h2>Stage 4 — which company needs the short summary?</h2>
       </div>
       <p>
         The supplier and contractor were run by AI while the other four companies
-        followed fixed rules. After a six-run pilot, we tested four versions: no summary,
-        supplier only, contractor only, and both. Each summary reorganized only facts that
-        recipient was already allowed to see. The supplier's private cash limits never
-        appeared in the contractor's summary.
+        followed fixed rules. We compared four setups: no summary, a supplier summary,
+        a contractor summary, and both summaries. Each
+        summary used only facts that company was already allowed to know. The supplier's
+        private cash needs never appeared in the contractor's summary.
       </p>
       <div className="metric-grid research-metric-grid">
         <Metric
           icon={<CheckCircle2 size={20} />}
-          label="Valid runs with complete records"
+          label="Completed runs"
           value={`${factorial.valid_run_count}/${factorial.assigned_run_count}`}
         />
         <Metric
           icon={<ClipboardCheck size={20} />}
-          label="All firms won, no backup"
-          value={`${withoutSupplierJoint}/20 → ${withSupplierJoint}/20`}
+          label="Without a supplier summary"
+          value={`${withoutSupplierJoint}/20 good results`}
         />
         <Metric
           icon={<ShieldCheck size={20} />}
-          label="Supplier-summary effect"
-          value={`+${Math.round(factorial.supplier_summary_risk_difference * 100)} points`}
+          label="With a supplier summary"
+          value={`${withSupplierJoint}/20 good results`}
         />
         <Metric
           icon={<MessageSquare size={20} />}
-          label="Contractor-summary effect"
-          value={`${Math.round(factorial.contractor_summary_risk_difference * 100)} points`}
+          label="Did a contractor summary change the result?"
+          value={factorial.contractor_summary_risk_difference === 0 ? "No" : "Yes"}
         />
       </div>
       <div className="program-table" role="table" aria-label="Decision summary results">
         <div className="program-row program-row--packet program-row--head" role="row">
           <span>Version</span>
-          <span>All firms won, no backup</span>
-          <span>95% exact interval</span>
-          <span>Full cure</span>
-          <span>Backup</span>
+          <span>All companies met goals, no backup</span>
+          <span>Uncertainty from only 10 runs</span>
+          <span>Both steel batches fixed</span>
+          <span>Used backup steel</span>
           <span>Finished</span>
-          <span>Mean cost</span>
+          <span>Average cost</span>
         </div>
         {factorial.arms.map((arm) => (
           <FactorialResultRow arm={arm} key={arm.condition_id} />
         ))}
       </div>
       <div className="research-program-takeaway">
-        <strong>The supplier summary was sufficient.</strong>
+        <strong>The supplier summary was the part that changed the result.</strong>
         <p>
-          Both arms with a supplier summary prepared the full steel sequence in every run,
-          made Lot B ready, and avoided backup. Neither arm without that summary reached
-          the same joint outcome. Giving the contractor a summary did not change either path.
+          Both setups with a supplier summary fixed both steel batches in every run,
+          made the second batch ready, and avoided backup steel. Neither setup without
+          that summary reached the same result. Giving the contractor a summary did
+          not change what happened.
         </p>
       </div>
       <p className="mechanism-caveat">
-        There are ten repeated temperature-zero calls per version in one simulated problem.
-        The exact intervals describe this frozen API setting, not real firms or projects.
-        The test identifies the useful recipient, not which field inside the summary mattered.
+        Each setup was tested ten times in this one simulated problem. The wide
+        uncertainty ranges show how little ten runs can tell us about what would
+        happen elsewhere. This test shows which company benefited from a summary,
+        but not which sentence inside the summary made the difference.
       </p>
     </section>
   );
@@ -909,20 +910,20 @@ function FactorialResultRow({
       role="row"
     >
       <span data-label="Version">{factorialConditionLabel(arm.condition_id)}</span>
-      <span data-label="All firms won, no backup">
+      <span data-label="All companies met goals, no backup">
         {arm.joint_outcome_count}/{arm.assigned_run_count}
       </span>
-      <span data-label="95% exact interval">
+      <span data-label="Uncertainty from only 10 runs">
         {formatPercentInterval(arm.joint_outcome_exact_95_ci)}
       </span>
-      <span data-label="Full cure">
+      <span data-label="Both steel batches fixed">
         {arm.full_sequence_cure_count}/{arm.assigned_run_count}
       </span>
-      <span data-label="Backup">
+      <span data-label="Used backup steel">
         {arm.backup_activation_count}/{arm.assigned_run_count}
       </span>
       <span data-label="Finished">Week {arm.mean_completion_tick}</span>
-      <span data-label="Mean cost">{formatMoney(arm.mean_final_project_cost)}</span>
+      <span data-label="Average cost">{formatMoney(arm.mean_final_project_cost)}</span>
     </div>
   );
 }
@@ -941,7 +942,7 @@ function formatPercentInterval(interval: [number, number]) {
 }
 
 function ladderStageLabel(row: ResearchProgramLadderRow) {
-  return `${row.live_role_count} live`;
+  return `${row.live_role_count} AI-run`;
 }
 
 function yesNo(value: boolean) {
@@ -953,14 +954,14 @@ function formatRate(value: number) {
 }
 
 function handoffSenderLabel(value: string) {
-  return value === "Scripted GC" ? "Scripted contractor" : "AI-run contractor";
+  return value === "Scripted GC" ? "Known correct calculation" : "AI-run contractor";
 }
 
 function handoffFormatLabel(value: string) {
   const labels: Record<string, string> = {
     "No handoff": "No message",
     "Rendered prose": "Written message",
-    "Structured record": "Data record",
+    "Structured record": "Form fields",
   };
   return labels[value] ?? value;
 }
@@ -978,13 +979,13 @@ function PlayLanding() {
     <Shell variant="game">
       <section className="page-head">
         <p className="eyebrow">Choose your organization</p>
-        <h1>Play the off-site steel draw</h1>
+        <h1>Play the steel payment problem</h1>
         <p className="lede">
-          You will play one scenario as one of four firms. The lender and
-          inspector remain in the project as system actors, and their decisions
-          can still change the result. Each choice you make is a simplified
-          stand-in for a much larger structured decision the AI agents must
-          construct in the full simulation.
+          Choose one of four companies and make three decisions during a troubled
+          steel delivery. The game makes decisions for the lender and inspector,
+          and their choices can still change what happens. Your three options at
+          each step are simplified versions of the more detailed answers the AI
+          must produce in the research.
         </p>
       </section>
       <section className="role-grid" aria-label="Playable roles">
@@ -1007,9 +1008,9 @@ function PlayLanding() {
         })}
       </section>
       <section className="system-note">
-        <strong>System participants:</strong>{" "}
+        <strong>Companies run by the game:</strong>{" "}
         {gameData.system_roles.map((roleId) => roleLabel(roleId)).join(", ")}.
-        They still inspect, fund, block, release, or constrain the project.
+        They can approve steel, release money, block work, or let it proceed.
       </section>
     </Shell>
   );
@@ -1176,7 +1177,7 @@ function ContextScreen({ role, onStart }: { role: AgentId; onStart: () => void }
               </dd>
             </div>
             <div>
-              <dt>Steel package</dt>
+              <dt>Steel contract</dt>
               <dd>{formatMoney(Number(baseline.first_steel_sequence_contract_value_usd))}</dd>
             </div>
             <div>
@@ -1218,7 +1219,7 @@ function DecisionBrief({
         <div className="info-panel info-panel--public">
           <div className="section-title">
             <ClipboardCheck size={20} />
-            <h2>Public info</h2>
+            <h2>What everyone knows</h2>
           </div>
           <ul className="info-list">
             {node.critical_updates.slice(0, 2).map((item) => (
@@ -1226,10 +1227,10 @@ function DecisionBrief({
             ))}
           </ul>
         </div>
-        <div className="info-panel info-panel--private" aria-label="Private info">
+        <div className="info-panel info-panel--private" aria-label="Information only your company knows">
           <div className="section-title">
             <ShieldCheck size={20} />
-            <h2>Private info</h2>
+            <h2>What only your company knows</h2>
           </div>
           <p>{node.situation}</p>
           <ul>
@@ -1239,6 +1240,16 @@ function DecisionBrief({
           </ul>
         </div>
       </div>
+      {node.terms.length > 0 ? (
+        <div className="term-list" aria-label="Words used in this decision">
+          {node.terms.map((item) => (
+            <div key={item.term}>
+              <strong>{item.term}</strong>
+              <span>{item.meaning}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -1298,7 +1309,8 @@ function DisclosurePanel({ disclosure }: { disclosure: Disclosure }) {
         <h2>What you told the team vs. what you know</h2>
       </div>
       <p className="disclosure-lead">
-        The AI agents score this gap directly. Here it is in plain language.
+        The research tracks whether a company's public claim matches what it
+        privately knows. Here is what your choice communicated.
       </p>
       <div className="disclosure-grid">
         <div className="disclosure-cell disclosure-cell--claimed">
@@ -1349,19 +1361,19 @@ function ProjectScene({
 
       <div className="scene-bars" aria-label="Risk meters">
         <SceneBar
-          label="Payment path"
+          label="Money available"
           status={paymentPathLabel(state)}
           tone="cash"
           value={paymentPathScore(state)}
         />
         <SceneBar
-          label="Steel release"
+          label="Steel cleared to move"
           status={releasePathLabel(state)}
           tone="release"
           value={releasePathScore(state)}
         />
         <SceneBar
-          label="Project pressure"
+          label="Schedule and safety risk"
           status={pressureLabel(state)}
           tone="risk"
           value={pressureScore(state)}
@@ -1426,7 +1438,7 @@ function PartnerDecisionReview({
         Trust is optional and does not change the project. Each slider starts at 3,
         meaning neutral. Move it only if you want to record a view. At the end, we
         describe what your ratings suggest you believed about each partner; they are
-        not graded against the partner&apos;s scripted behavior.
+        not compared with the choices the game made for that partner.
       </p>
       <div className="partner-review-list">
         {partnerMoves.map((move) => {
@@ -1440,11 +1452,11 @@ function PartnerDecisionReview({
               <p>{move.summary}</p>
               <div className="decision-read-grid">
                 <div>
-                  <span>Charitable read</span>
+                  <span>Most generous reading</span>
                   <p>{reads.charitable}</p>
                 </div>
                 <div>
-                  <span>Uncharitable read</span>
+                  <span>Most skeptical reading</span>
                   <p>{reads.uncharitable}</p>
                 </div>
               </div>
@@ -1494,10 +1506,10 @@ function EndScreen({ state }: { state: GameState }) {
         </p>
       </div>
       <div className="metric-grid">
-        <Metric icon={<DollarSign />} label="Your payoff" value={formatMoney(evaluation.playerPayoff)} />
-        <Metric icon={<ShieldCheck />} label="Organization target" value={evaluation.playerPrivateSuccess ? "Met" : "Missed"} />
-        <Metric icon={<Users />} label="Outcome mix" value={outcomeMixValue(evaluation)} />
-        <Metric icon={<Gauge />} label="Schedule vs baseline" value={formatDelta(scheduleDelta, "week")} />
+        <Metric icon={<DollarSign />} label="Your company's financial result" value={formatMoney(evaluation.playerPayoff)} />
+        <Metric icon={<ShieldCheck />} label="Your company's goal" value={evaluation.playerPrivateSuccess ? "Met" : "Missed"} />
+        <Metric icon={<Users />} label="Project and your company" value={outcomeMixValue(evaluation)} />
+        <Metric icon={<Gauge />} label="Delay from original plan" value={formatDelta(scheduleDelta, "week")} />
       </div>
       <OutcomeExplanation evaluation={evaluation} role={state.selectedRole} />
       <ComparisonPanel evaluation={evaluation} />
@@ -1525,9 +1537,9 @@ function EndScreen({ state }: { state: GameState }) {
           );
         })}
         <div className="timeline-row timeline-row--muted">
-          <strong>Partners</strong>
-          <span>{counterparties.length} counterparty decisions responded to your project state</span>
-          <em>state-reactive decisions</em>
+          <strong>Other companies</strong>
+          <span>{counterparties.length} decisions were made based on what had happened so far</span>
+          <em>Choices changed with the project</em>
         </div>
       </section>
 
@@ -1598,7 +1610,8 @@ function CrowdComparisonPanel({
         <p>
           You are the first recorded {roleLabel(state.selectedRole)} playthrough.
           As more people play, this panel will show how your calls compare to
-          theirs — and to the {validAgentRuns} valid AI-agent runs, where{" "}
+          theirs — and to the {validAgentRuns} completed runs where AI made the
+          choices, of which{" "}
           {agentSuccesses} ended in project success.
         </p>
       </section>
@@ -1617,8 +1630,8 @@ function CrowdComparisonPanel({
       <p>
         {stats.rolePlays} people have finished a playthrough as the{" "}
         {roleLabel(state.selectedRole)}. {successRate}% reached project success
-        — the AI agent population managed {agentSuccesses} of {validAgentRuns}{" "}
-        valid runs. Here is where your calls sat in the crowd:
+        — AI made the choices in {validAgentRuns} other completed runs, with{" "}
+        {agentSuccesses} project successes. Here is how your choices compare:
       </p>
       <div className="crowd-list">
         {playerNodes.map((node) => {
@@ -1698,7 +1711,7 @@ function TrustReflectionPanel({
       </div>
       <p className="trust-calibration-lead">
         These ratings describe what you expected from each partner. There is no right
-        answer here, and the game does not treat any scripted partner as good or bad.
+        answer here, and the game does not treat any partner it controls as good or bad.
       </p>
       <div className="trust-summary-card">
         <span>Partners you chose to rate</span>
@@ -1753,12 +1766,12 @@ function OutcomeExplanation({
     ? "The project stayed within the public cost and schedule limits."
     : "The project missed the public cost or schedule limits.";
   const privateText = evaluation.playerPrivateSuccess
-    ? `Your organization also met its private target of ${formatMoney(privateTarget)}.`
-    : `Your organization missed its private target of ${formatMoney(privateTarget)} by ${formatMoney(Math.abs(privateGap))}.`;
+    ? `Your company also met its financial goal of ${formatMoney(privateTarget)}.`
+    : `Your company missed its financial goal of ${formatMoney(privateTarget)} by ${formatMoney(Math.abs(privateGap))}.`;
 
   return (
     <section className="outcome-explanation" aria-label="Outcome explanation">
-      <strong>{evaluation.projectSuccess && !evaluation.playerPrivateSuccess ? "Project success, private miss" : outcomeMixValue(evaluation)}</strong>
+      <strong>{evaluation.projectSuccess && !evaluation.playerPrivateSuccess ? "The project succeeded, but your company missed its goal" : outcomeMixValue(evaluation)}</strong>
       <p>
         {projectText} {privateText}
       </p>
@@ -1777,23 +1790,23 @@ function ResultsPage() {
 
   const rows = [
     {
-      label: "Coordinated phased success",
+      label: "Success through shared compromise",
       cost: idealWitness.final_project_cost,
       week: idealWitness.completion_tick,
-      note: "Every firm gives a little; the project lands despite the steel problem.",
+      note: "Every company gives a little, and the project succeeds despite the steel problem.",
     },
     {
-      label: "Excessive-caution failure",
+      label: "Failure from too much caution",
       cost: failureWitness.final_project_cost,
       week: failureWitness.completion_tick,
-      note: "Every firm self-protects; the project fails with no deception involved.",
+      note: "Every company protects itself, and the project fails even though no one lies.",
     },
     blowoutWitness
       ? {
-          label: "Panic-spending failure",
+          label: "Failure from emergency spending",
           cost: blowoutWitness.final_project_cost,
           week: blowoutWitness.completion_tick,
-          note: "The team buys backup steel, overtime, and standby all at once — on time, but over budget.",
+          note: "The team buys backup steel, overtime, and pays workers to wait — on time, but over budget.",
         }
       : null,
   ].filter(
@@ -1815,9 +1828,9 @@ function ResultsPage() {
           only if the final cost stays at or under{" "}
           <strong>{formatMoney(limits.success_cost_ceiling_usd)}</strong> and the
           work finishes by <strong>week {limits.success_deadline_week}</strong>.
-          Anything between the plan and those limits is money and time the steel
-          problem burned. A firm can also miss its own private profit target even
-          when the project succeeds — that is the "firms met target" column.
+          Anything between the plan and those limits is money and time lost to the
+          steel problem. A company can also miss its own financial goal even when
+          the project succeeds. The "companies meeting goals" column shows that.
         </p>
         <section className="project-strip" aria-label="Targets">
           <dl>
@@ -1839,23 +1852,24 @@ function ResultsPage() {
               <dd>Over budget, too late, or unsafe steel installed</dd>
             </div>
             <div>
-              <dt>Firms involved</dt>
-              <dd>6, each with a private profit target</dd>
+              <dt>Companies involved</dt>
+              <dd>6, each with its own financial goal</dd>
             </div>
           </dl>
         </section>
       </section>
 
-      <section className="research-crosslink" aria-label="Latest controlled experiment">
+      <section className="research-crosslink" aria-label="Latest research">
         <div>
-          <strong>Looking for the latest controlled findings?</strong>
+          <strong>Looking for the latest findings?</strong>
           <span>
-            The Research page follows one decision from the supplier response curve,
-            through a contractor handoff, and into a 40-run decision-summary confirmation.
+            The Research page follows one supplier choice from a one-company test,
+            through a two-company information test, and into 40 runs that compare
+            different short summaries.
           </span>
         </div>
         <a href="/research#decision-packet">
-          Read the research program <ArrowRight size={16} />
+          Read the findings <ArrowRight size={16} />
         </a>
       </section>
 
@@ -1864,15 +1878,15 @@ function ResultsPage() {
       <section className="overview-section">
         <div className="section-title">
           <Gauge size={20} />
-          <h2>Scripted reference paths</h2>
+          <h2>Written examples for comparison</h2>
         </div>
         <p>
-          These are hand-scripted runs the harness uses as fixed points — what
-          coordinated success looks like, and two ways the project fails without
-          any deception: everyone playing it too safe, or everyone buying their
-          way out of trouble at once.
+          We wrote these examples by hand to show one route where the companies
+          work together successfully and two routes where the project fails without
+          anyone lying: every company protects itself too much, or every company
+          spends heavily at the same time.
         </p>
-        <section className="comparison-panel" aria-label="Reference paths">
+        <section className="comparison-panel" aria-label="Written examples for comparison">
           {rows.map((row) => (
             <div className="comparison-row" key={row.label}>
               <strong>{row.label}</strong>
@@ -1896,22 +1910,22 @@ function ResponseCurveMechanismSection() {
     <section className="overview-section mechanism-result">
       <div className="section-title">
         <Eye size={20} />
-        <h2>What explains the supplier failure?</h2>
+        <h2>Why did the supplier make poor requests?</h2>
       </div>
       <p className="mechanism-lede">
-        <strong>Giving the model a formula was not enough. Giving it the highest safe request was.</strong>{" "}
-        We repeated the same supplier task with three levels of help. The project and
-        the other companies stayed the same.
+        <strong>A formula was not enough. The correct limit was.</strong>{" "}
+        We repeated the same supplier choice with three kinds of help while keeping
+        the project and the other companies the same.
       </p>
 
       <div className="mechanism-table" role="table" aria-label="Supplier decision support results">
         <div className="mechanism-row mechanism-row--head" role="row">
           <span>Help provided</span>
-          <span>Test size</span>
-          <span>Valid</span>
-          <span>Average avoidable loss</span>
-          <span>Replaced</span>
-          <span>Price pattern breaks</span>
+          <span>Number of runs</span>
+          <span>Completed</span>
+          <span>Average money left on the table</span>
+          <span>Supplier replaced</span>
+          <span>Times the request moved the wrong way</span>
         </div>
         {mechanism.conditions.map((condition) => (
           <div
@@ -1923,34 +1937,35 @@ function ResponseCurveMechanismSection() {
               <strong>{mechanismConditionLabel(condition.condition_id)}</strong>
               <small>{mechanismConditionDescription(condition.condition_id)}</small>
             </span>
-            <span data-label="Test size">{mechanismEvidenceLabel(condition.evidence_tier)}</span>
-            <span data-label="Valid">
+            <span data-label="Number of runs">{mechanismEvidenceLabel(condition.evidence_tier)}</span>
+            <span data-label="Completed">
               {condition.valid_run_count}/{condition.run_count}
             </span>
-            <span data-label="Average avoidable loss">
+            <span data-label="Average money left on the table">
               {formatRoundedResearchMoney(condition.mean_attainable_regret_usd)}
             </span>
-            <span data-label="Replaced">{Math.round(condition.replacement_rate * 100)}%</span>
-            <span data-label="Price pattern breaks">{condition.request_monotonicity_violations}</span>
+            <span data-label="Supplier replaced">{Math.round(condition.replacement_rate * 100)}%</span>
+            <span data-label="Times the request moved the wrong way">{condition.request_monotonicity_violations}</span>
           </div>
         ))}
       </div>
 
       <div className="mechanism-takeaway">
-        <strong>{reduction}% less avoidable loss</strong>
+        <strong>{reduction}% less money left on the table</strong>
         <p>
-          When the model received the highest safe request, it was never replaced and
-          its requests moved in the right direction as market conditions changed. This
-          points to trouble selecting the right facts and doing the math. It still left{" "}
+          When the AI received the highest safe request, the project never replaced
+          it and its requests changed in the right direction as replacement became more
+          expensive. This suggests that the AI struggled to choose the right facts
+          and calculate the limit. It still left{" "}
           {formatRoundedResearchMoney(
             mechanism.trusted_threshold_effect.residual_high_level_anchor_usd
           )} on the table in the highest-price case.
         </p>
       </div>
       <p className="mechanism-caveat">
-        The formula test has only one run at each price level. Providing the correct
-        number tests whether the model can use it; it does not show that
-        the model can calculate the number on its own.
+        The formula version has only one run at each replacement cost. Giving the
+        the AI the correct limit shows whether it can use that number. It does not show
+        that the AI can calculate the limit on its own.
       </p>
     </section>
   );
@@ -1958,9 +1973,9 @@ function ResponseCurveMechanismSection() {
 
 function mechanismEvidenceLabel(value: string) {
   const labels: Record<string, string> = {
-    five_per_cell_confirmation: "5 runs per price",
-    one_per_cell_modal_diagnostic: "1 run per price",
-    three_per_cell_confirmation: "3 runs per price",
+    five_per_cell_confirmation: "5 runs per replacement cost",
+    one_per_cell_modal_diagnostic: "1 run per replacement cost",
+    three_per_cell_confirmation: "3 runs per replacement cost",
   };
   return labels[value] ?? value;
 }
@@ -1998,7 +2013,7 @@ function PopulationSection() {
     <section className="overview-section">
       <div className="section-title">
         <Users size={20} />
-        <h2>When the project succeeds but firms still lose</h2>
+        <h2>When the project succeeds but companies still lose</h2>
       </div>
       <div className="metric-grid research-metric-grid">
         <Metric
@@ -2008,35 +2023,34 @@ function PopulationSection() {
         />
         <Metric
           icon={<Users size={20} />}
-          label="Successful projects where every firm met its goal"
+          label="Successful projects where every company met its goal"
           value={`${allFirmSuccesses}/${successfulRuns.length}`}
         />
       </div>
       <p>
         A project can finish under its public cost and schedule limits while one or
-        more firms miss their own private target. In these runs, the model made every
-        decision for all six firms. {successfulRuns.length} of {validRuns.length} valid
-        runs completed the project, but only {allFirmSuccesses} of those successful
-        projects also met every firm's private goal.
+        more companies miss their own financial goal. In these runs, the AI made
+        every decision for all six companies. {successfulRuns.length} of{" "}
+        {validRuns.length} completed runs finished the project, but only{" "}
+        {allFirmSuccesses} of those successful projects also met every company's goal.
       </p>
       <p>
-        This is exploratory evidence, not a controlled estimate. The runs predate the
-        role-expansion ladder and combine
-        temperature-zero and temperature-one batches with different repair budgets.
-        Each row is one complete run with <strong>{modelLabel}</strong> playing
-        all six firms. Final costs ranged {formatMoney(population.cost_min ?? 0)} to{" "}
-        {formatMoney(population.cost_max ?? 0)}. "Firms met target" counts how
-        many of the six organizations also hit their private profit goals. Anything below
-        6 is a cost of coordination that project-level numbers don't capture.
+        These were early tests and were not designed to support a strong comparison.
+        Some test settings changed between groups of runs, so the rows are best read
+        as examples of what can happen. In every row, <strong>{modelLabel}</strong>{" "}
+        made decisions for all six companies. Final costs ranged from{" "}
+        {formatMoney(population.cost_min ?? 0)} to {formatMoney(population.cost_max ?? 0)}.
+        "Companies meeting goals" shows how many of the six companies also reached their
+        own profit goal. A number below 6 reveals a loss that the project-wide result
+        does not show.
       </p>
-      <div className="population-table" role="table" aria-label="Live agent runs">
+      <div className="population-table" role="table" aria-label="Examples where AI played all six companies">
         <div className="population-row population-row--head" role="row">
           <span>Run</span>
           <span>Outcome</span>
           <span>Final cost</span>
           <span>Finished</span>
-          <span>Firms met target</span>
-          <span>Repairs</span>
+          <span>Companies meeting goals</span>
         </div>
         {validRuns.map((run, displayIndex) => (
           <div
@@ -2046,7 +2060,6 @@ function PopulationSection() {
           >
             <span>
               Run {displayIndex + 1}
-              {run.temperature === 0 ? " (deterministic)" : ""}
             </span>
             <span>{populationOutcomeLabel(run)}</span>
             <span>{run.final_project_cost === null ? "n/a" : formatMoney(run.final_project_cost)}</span>
@@ -2056,53 +2069,23 @@ function PopulationSection() {
                 ? "n/a"
                 : `${run.firms_meeting_private_target}/6`}
             </span>
-            <span>{run.repair_attempt_count ?? "n/a"}</span>
           </div>
         ))}
       </div>
-      <PopulationRepairNote runs={population.runs} />
     </section>
-  );
-}
-
-function PopulationRepairNote({ runs }: { runs: PopulationRun[] }) {
-  const lowBudgetRuns = runs.filter((run) => (run.repair_budget ?? 1) <= 1);
-  const highBudgetRuns = runs.filter((run) => (run.repair_budget ?? 1) > 1);
-  const invalidLow = lowBudgetRuns.filter((run) => !run.run_valid).length;
-  const invalidHigh = highBudgetRuns.filter((run) => !run.run_valid).length;
-  if (lowBudgetRuns.length === 0 && highBudgetRuns.length === 0) {
-    return null;
-  }
-  return (
-    <p className="population-footnote">
-      When an agent submits a malformed decision, the harness sends the
-      validation errors back and lets it retry instead of guessing. "Repairs"
-      counts those retries.{" "}
-      {lowBudgetRuns.length > 0 && (
-        <>
-          With a single retry allowed, {invalidLow} of {lowBudgetRuns.length}{" "}
-          runs still ended early on an invalid decision.{" "}
-        </>
-      )}
-      {highBudgetRuns.length > 0 && (
-        <>
-          With up to three retries, {invalidHigh} of {highBudgetRuns.length}{" "}
-          runs ended early. Runs that failed anyway are excluded from the table
-          above.
-        </>
-      )}
-    </p>
   );
 }
 
 function populationOutcomeLabel(run: PopulationRun) {
   if (run.project_success) {
-    return run.coalition_success ? "Success — every firm won" : "Success — some firms lost";
+    return run.coalition_success
+      ? "Success — every company met its goal"
+      : "Success — some companies missed their goals";
   }
   const labels: Record<string, string> = {
     BUDGET_INFEASIBLE: "Failed — over budget",
     SCHEDULE_INFEASIBLE: "Failed — too late",
-    CRITICAL_PATH_DEADLOCK: "Failed — work deadlocked",
+    CRITICAL_PATH_DEADLOCK: "Failed — required work could not continue",
   };
   return labels[run.terminal_status] ?? "Failed";
 }
@@ -2116,14 +2099,14 @@ function ComparisonPanel({
 }) {
   const rows = [
     {
-      label: "Ideal: everyone coordinates",
+      label: "Written example: everyone works together",
       cost: evaluation.idealOutcome.final_project_cost,
       week: evaluation.idealOutcome.completion_tick,
       note: "Project succeeds despite the steel problem",
     },
     evaluation.modelOutcome
       ? {
-          label: "Claude Haiku all-agent run",
+          label: "Example where Claude Haiku played all companies",
           cost: evaluation.modelOutcome.final_project_cost,
           week: evaluation.modelOutcome.completion_tick,
           note: plainOutcomeNote(evaluation.modelOutcome.path_label),
@@ -2156,24 +2139,24 @@ function ComparisonPanel({
 function plainOutcomeNote(pathLabel: string | null) {
   const labels: Record<string, string> = {
     backup_project_success: "Project succeeds, but only after using backup steel",
-    phased_coalition_success: "Project succeeds through coordinated phased delivery",
-    coordination_delay_failure: "Project fails after coordination delays compound",
+    phased_coalition_success: "Project succeeds because the companies deliver the steel in stages",
+    coordination_delay_failure: "Project fails after delays build up",
     schedule_infeasible: "Project fails because the schedule becomes impossible",
   };
-  return labels[pathLabel ?? ""] ?? "Model-produced project outcome";
+  return labels[pathLabel ?? ""] ?? "AI-produced project outcome";
 }
 
 function outcomeMixValue(evaluation: GameEvaluation) {
   if (evaluation.projectSuccess && evaluation.playerPrivateSuccess) {
-    return "Aligned";
+    return "Both met their goals";
   }
   if (evaluation.projectSuccess) {
-    return "Mixed";
+    return "Project only";
   }
   if (evaluation.playerPrivateSuccess) {
-    return "Private only";
+    return "Your company only";
   }
-  return "Missed";
+  return "Neither met its goal";
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -2251,13 +2234,13 @@ function plainObjective(role: AgentId) {
     owner:
       "You want the project to finish, but every added dollar and week costs you money.",
     gc:
-      "You need steel installation to progress without putting too much short-term GC money at risk or overpaying for backup steel.",
+      "You need the steel work to keep moving without putting too much of your company's cash at risk or overpaying for backup steel.",
     steel_supplier:
-      "You need cash to fix, finish, and ship the steel — without giving away your margin.",
+      "You need cash to fix, finish, and ship the steel — without giving away too much profit.",
     labor_subcontractor:
-      "You control crew and crane capacity. Holding the capacity available for this project helps the project but costs you other work where you could deploy your resources.",
+      "You control the workers and crane. Keeping them available helps this project, but you could earn money by sending them to other jobs instead.",
     lender:
-      "You release loan money only when you can prove the steel is real, the owner has skin in the game, and the loan stays protected.",
+      "You release loan money only when there is proof that the steel is ready, the owner has committed its own money, and the loan is protected.",
     inspector:
       "You decide what steel is safe and legal to use.",
   }[role];
@@ -2375,25 +2358,25 @@ function pressureScore(state: ProjectGameState) {
 
 function paymentPathLabel(state: ProjectGameState) {
   if (paymentPathScore(state) >= 100) {
-    return "ready";
+    return "enough money";
   }
   if (state.cash_secured_usd > 0) {
-    return "partial";
+    return "some money";
   }
-  return "unfunded";
+  return "no money yet";
 }
 
 function releasePathLabel(state: ProjectGameState) {
   if (state.backup_status === "active") {
-    return "backup active";
+    return "using backup steel";
   }
   if (state.lot_a_released && state.lot_b_released) {
-    return "released";
+    return "both batches approved";
   }
   if (state.lot_a_released || state.lot_b_released || state.release_value_usd > 0) {
-    return "partial";
+    return "some steel approved";
   }
-  return "held";
+  return "waiting for approval";
 }
 
 function pressureLabel(state: ProjectGameState) {
@@ -2402,7 +2385,7 @@ function pressureLabel(state: ProjectGameState) {
     return "high";
   }
   if (score >= 45) {
-    return "watch";
+    return "medium";
   }
   return "low";
 }
@@ -2426,21 +2409,21 @@ function partnerDecisionReads(move: {
   return {
     balanced: {
       charitable:
-        `The ${actor} is treating the recovery path as workable and is keeping the project moving while accepting some exposure.`,
+        `The ${actor} believes the plan can work and is keeping the project moving even though some risk remains.`,
       uncharitable:
-        `The ${actor} may be pushing ahead before every condition is fully settled because momentum helps their own position.`,
+        `The ${actor} may be moving ahead before every open question is settled because progress helps its own position.`,
     },
     conservative: {
       charitable:
-        `The ${actor} is adding controls because the current package still has real payment, release, or schedule risk.`,
+        `The ${actor} is asking for more proof because payment, steel approval, or timing is still uncertain.`,
       uncharitable:
-        `The ${actor} may be slowing the job and shifting cost, delay, or proof burdens to other players.`,
+        `The ${actor} may be slowing the job and making other companies carry more cost, delay, or paperwork.`,
     },
     self_protective: {
       charitable:
-        `The ${actor} is protecting itself from a package that may not be supportable yet.`,
+        `The ${actor} is protecting itself from a plan that may not work yet.`,
       uncharitable:
-        `The ${actor} may be prioritizing its own downside over the shared project schedule.`,
+        `The ${actor} may care more about avoiding its own loss than keeping the shared project on time.`,
     },
   }[move.choiceId];
 }
